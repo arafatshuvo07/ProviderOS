@@ -4,11 +4,9 @@ import {
   ArrowLeft,
   ArrowRight,
   Boxes,
-  Braces,
   BrainCircuit,
   CircleGauge,
   LayoutDashboard,
-  HardDrive,
   LoaderCircle,
   Moon,
   PanelLeftClose,
@@ -22,8 +20,6 @@ import { Badge, Button, InlineNotice } from "./components";
 import { classNames } from "./lib";
 import { ContextPage } from "./pages/ContextPage";
 import { DashboardPage } from "./pages/DashboardPage";
-import { HarnessPage } from "./pages/HarnessPage";
-import { LocalPage } from "./pages/LocalPage";
 import { ModelsPage } from "./pages/ModelsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StatusPage } from "./pages/StatusPage";
@@ -77,8 +73,6 @@ const NAV_ITEMS: Array<{
   { id: "usage", label: "Usage", description: "Quotas, balance, traffic", icon: CircleGauge },
   { id: "status", label: "Status", description: "Agents, speed, savings, requests", icon: Activity },
   { id: "models", label: "Models", description: "Providers, credentials, and catalog", icon: Boxes },
-  { id: "local", label: "Local", description: "Runtime and on-device models", icon: HardDrive },
-  { id: "harness", label: "Harness", description: "OpenClaw, Cursor, Claude, Gemini, DeepSeek, Codex", icon: Braces, experimental: true },
   { id: "context", label: "Context Manager", description: "Sessions across harnesses", icon: BrainCircuit },
   { id: "settings", label: "Settings", description: "Routing and desktop", icon: Settings },
 ];
@@ -451,8 +445,6 @@ export default function App() {
       case "usage": return <UsagePage target={target} account={accountUsage} providerUsage={providerUsage} api={api} refreshing={refreshing} dataReady={dataReady} onRefresh={() => void refreshAll()} focusRequest={usageFocusRequest} t={t} />;
       case "status": return <StatusPage {...shared} health={health} account={accountUsage} providerUsage={providerUsage} />;
       case "models": return <ModelsPage {...shared} catalog={snapshot?.catalog} setup={providers} usage={providerUsage} focusRequest={modelFocusRequest} />;
-      case "local": return <LocalPage {...shared} operation={operation} />;
-      case "harness": return <HarnessPage {...shared} operation={operation} onNavigate={navigateTo} />;
       case "context": return <ContextPage {...shared} />;
       case "settings": return <SettingsPage {...shared} onRefresh={refreshAll} health={health} presence={presence} chatgptSession={chatgptSession ?? snapshot?.chatgptSession} accountPool={accountPool} accountPoolError={readErrors.accountPool} theme={theme} onTheme={setTheme} language={language} onLanguage={setLanguage} t={t} />;
     }

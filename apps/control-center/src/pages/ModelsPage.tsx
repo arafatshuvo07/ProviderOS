@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Check, ChevronDown, Filter, KeyRound, Link2, LogIn, MoreHorizontal, Plus, SearchX, ShieldCheck, Trash2 } from "lucide-react";
+import { Check, ChevronDown, CloudDownload, Filter, KeyRound, Link2, LogIn, MoreHorizontal, Plus, SearchX, ShieldCheck, Trash2, X } from "lucide-react";
 import { Badge, Button, CatalogSkeleton, Dialog, EmptyState, PageHeader, PanelSkeleton, SearchField, SkeletonBlock, Toggle } from "../components";
 import { BrandLogo, ProviderLogo, brandForModel } from "../provider-branding";
 import { formatContext, formatDateTime } from "../lib";
@@ -157,6 +157,7 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
   const [expandedFamilyId, setExpandedFamilyId] = useState<string | null>(null);
   const [managedProviderId, setManagedProviderId] = useState<string | null>(null);
   const [addModelsOpen, setAddModelsOpen] = useState(false);
+  const [addModelsProviderId, setAddModelsProviderId] = useState<string | null>(null);
   const [loadingConnectedCatalogs, setLoadingConnectedCatalogs] = useState(false);
   const [credentialProvider, setCredentialProvider] = useState<ProviderSetup | null>(null);
   const [removeProvider, setRemoveProvider] = useState<ProviderSetup | null>(null);
@@ -377,10 +378,16 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
 
   // Opening the picker loads every connected provider at once, so one search
   // box can cover them all. Stored lists answer immediately; only an explicit
-  // reload re-asks the providers.
-  const loadConnectedCatalogs = async ({ refresh = false } = {}) => {
+  // reload re-asks the providers. A provider-scoped fetch (the connection
+  // menu's Fetch models action) re-asks that one provider right away so a
+  // model the provider added recently shows up without touching the others.
+  const loadConnectedCatalogs = async (
+    { refresh = false, onlyProviderId }: { refresh?: boolean; onlyProviderId?: string } = {},
+  ) => {
     if (!api || loadingConnectedCatalogs) return;
-    const requests = catalogRequests().filter(({ sourceId }) => refresh || (catalogStates[sourceId]?.status ?? "idle") === "idle");
+    const requests = catalogRequests().filter(({ entry, sourceId }) =>
+      (refresh || (catalogStates[sourceId]?.status ?? "idle") === "idle")
+      && (!onlyProviderId || entry.id === onlyProviderId));
     if (!requests.length) return;
     setLoadingConnectedCatalogs(true);
     try {
@@ -422,9 +429,13 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
     }
   };
 
-  const openAddModels = () => {
+  const openAddModels = (providerId?: string) => {
+    setAddModelsProviderId(providerId ?? null);
     setAddModelsOpen(true);
-    void loadConnectedCatalogs();
+    // Scoped to one provider: ask that provider live so the list includes
+    // anything it started serving since the last visit. Everything else
+    // keeps answering from its stored list.
+    void loadConnectedCatalogs({ refresh: Boolean(providerId), onlyProviderId: providerId });
   };
 
   const openProviderMenu = (providerId: string) => {
@@ -463,6 +474,10 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
       }}
       onKey={(entry) => entry.setup && setCredentialProvider(entry.setup)}
       onRemove={(entry) => entry.setup && setRemoveProvider(entry.setup)}
+      onFetchModels={(entry) => {
+        setManagedProviderId(null);
+        openAddModels(entry.id);
+      }}
     />
   );
   const renderConnectionDialogs = () => (
@@ -753,7 +768,7 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
                 </div>
               ) : null}
             </div>
-            <Button variant="primary" disabled={!api || !connectedProviderCount} onClick={openAddModels}>
+            <Button variant="primary" disabled={!api || !connectedProviderCount} onClick={() => openAddModels()}>
               <Plus aria-hidden size={14} strokeWidth={1.9} /> Add models
             </Button>
           </div>
@@ -802,8 +817,14 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
         loading={loadingConnectedCatalogs}
         disabled={!api}
         pendingModels={pendingModels}
-        onReload={() => void loadConnectedCatalogs({ refresh: true })}
+        focusProviderId={addModelsProviderId}
+        onClearFocus={() => {
+          setAddModelsProviderId(null);
+          void loadConnectedCatalogs();
+        }}
+        onReload={() => void loadConnectedCatalogs({ refresh: true, onlyProviderId: addModelsProviderId ?? undefined })}
         onAdd={(selection) => void addCatalogModels(selection)}
+        onAddOne={(model) => void addCatalogModels([model])}
         onClose={() => setAddModelsOpen(false)}
       />
       {renderConnectionDialogs()}
@@ -827,6 +848,7 @@ function ConnectionsBar({
   onSignIn,
   onKey,
   onRemove,
+  onFetchModels,
 }: {
   directory: ProviderDirectoryEntry[];
   enabledProviders: Set<string>;
@@ -843,6 +865,7 @@ function ConnectionsBar({
   onSignIn: (entry: ProviderDirectoryEntry) => void;
   onKey: (entry: ProviderDirectoryEntry) => void;
   onRemove: (entry: ProviderDirectoryEntry) => void;
+  onFetchModels: (entry: ProviderDirectoryEntry) => void;
 }) {
   const barRef = useRef<HTMLElement | null>(null);
   const setConnectMenuOpen = onConnectMenuOpen;
@@ -901,6 +924,7 @@ function ConnectionsBar({
                 onSignIn={() => onSignIn(entry)}
                 onKey={() => onKey(entry)}
                 onRemove={() => onRemove(entry)}
+                onFetchModels={() => onFetchModels(entry)}
               />
             ) : null}
           </div>
@@ -957,6 +981,7 @@ function ProviderMenu({
   onSignIn,
   onKey,
   onRemove,
+  onFetchModels,
 }: {
   entry: ProviderDirectoryEntry;
   usage?: NonNullable<ProviderUsageSnapshot["providers"]>[number];
@@ -967,6 +992,7 @@ function ProviderMenu({
   onSignIn: () => void;
   onKey: () => void;
   onRemove: () => void;
+  onFetchModels: () => void;
 }) {
   const setup = entry.setup;
   return (
@@ -994,6 +1020,16 @@ function ProviderMenu({
             />
           </label>
           <div className="pm-connection-menu-actions">
+            {entry.setup?.catalogSources?.length ? (
+              <Button
+                variant="ghost"
+                disabled={!apiAvailable}
+                title="Ask this provider for the models it serves right now, then add the ones you want"
+                onClick={onFetchModels}
+              >
+                <CloudDownload aria-hidden size={14} strokeWidth={1.7} /> Fetch models
+              </Button>
+            ) : null}
             {setup.kind === "oauth" || setup.signIn ? (
               <Button
                 variant="ghost"
@@ -1495,8 +1531,11 @@ function AddModelsDialog({
   loading,
   disabled,
   pendingModels,
+  focusProviderId,
+  onClearFocus,
   onReload,
   onAdd,
+  onAddOne,
   onClose,
 }: {
   open: boolean;
@@ -1505,8 +1544,11 @@ function AddModelsDialog({
   loading: boolean;
   disabled: boolean;
   pendingModels: PendingCatalogModels;
+  focusProviderId?: string | null;
+  onClearFocus: () => void;
   onReload: () => void;
   onAdd: (selection: CatalogModel[]) => void;
+  onAddOne: (model: CatalogModel) => void;
   onClose: () => void;
 }) {
   const [query, setQuery] = useState("");
@@ -1524,13 +1566,24 @@ function AddModelsDialog({
     (): CatalogModel[] => (open ? loadedCatalogModels(directory, catalogStates) : []),
     [catalogStates, directory, open],
   );
+  // A provider-scoped fetch (connection menu → Fetch models) shows only that
+  // provider's list until the chip clears it; the toolbar Reload then re-asks
+  // just this provider instead of every connected one.
+  const focusedProvider = useMemo(
+    () => directory.find((entry) => entry.id === focusProviderId) ?? null,
+    [directory, focusProviderId],
+  );
+  const scopedModels = useMemo(
+    () => (focusedProvider ? catalogModels.filter((model) => model.providerId === focusedProvider.id) : catalogModels),
+    [catalogModels, focusedProvider],
+  );
   const matching = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return catalogModels;
-    return catalogModels.filter((model) => (
+    if (!needle) return scopedModels;
+    return scopedModels.filter((model) => (
       `${model.displayName} ${model.modelId} ${model.providerName} ${model.sourceName}`.toLowerCase().includes(needle)
     ));
-  }, [catalogModels, query]);
+  }, [scopedModels, query]);
   // Freshness belongs next to the list it describes: a stored catalog can be
   // up to a day old, and nothing else on this surface would say so.
   const lastRead = useMemo(() => Object.values(catalogStates)
@@ -1560,20 +1613,32 @@ function AddModelsDialog({
     >
       <div className="pm-add-models">
         <div className="pm-add-models-toolbar">
+          {focusedProvider ? (
+            <button
+              type="button"
+              className="pm-add-models-focus-chip"
+              title="Showing this provider only. Click to show every connected provider."
+              onClick={onClearFocus}
+            >
+              <ProviderLogo providerId={focusedProvider.id} displayName={focusedProvider.displayName} size="small" />
+              <span>{focusedProvider.displayName}</span>
+              <X aria-hidden size={12} strokeWidth={2} />
+            </button>
+          ) : null}
           <SearchField value={query} onChange={setQuery} placeholder="Search every connected provider" />
           <span className="pm-results-count" aria-live="polite">
             {loading
               ? "Loading catalogs"
-              : `${matching.length} of ${catalogModels.length} models${lastRead ? ` · read ${formatDateTime(lastRead)}` : ""}`}
+              : `${matching.length} of ${scopedModels.length} models${lastRead ? ` · read ${formatDateTime(lastRead)}` : ""}`}
           </span>
           <Button variant="ghost" disabled={disabled || loading} onClick={onReload}>
             {loading ? "Asking providers" : "Reload"}
           </Button>
         </div>
 
-        {loading && !catalogModels.length ? <CatalogSkeleton label="Loading provider catalogs" /> : null}
+        {loading && !scopedModels.length ? <CatalogSkeleton label="Loading provider catalogs" /> : null}
 
-        {!loading && !catalogModels.length ? (
+        {!loading && !scopedModels.length ? (
           <EmptyState
             icon={<SearchX size={20} />}
             title={errors.length ? "Catalogs could not be loaded" : "No catalogs available"}
@@ -1617,7 +1682,22 @@ function AddModelsDialog({
                   {adding ? <Badge tone="neutral">Adding</Badge>
                     : model.registered ? <Badge tone="neutral">Added</Badge>
                     : blocked ? <Badge tone="neutral">Not yet supported</Badge>
-                    : null}
+                    : (
+                      <Button
+                        variant="ghost"
+                        className="pm-add-models-row-add"
+                        disabled={disabled || (!selectedKeys.has(model.key) && selected.length >= CATALOG_ADD_BATCH_LIMIT)}
+                        onClick={(event) => {
+                          // The row is a <label>; a plain click would also flip
+                          // the checkbox. Adding one model must not select it.
+                          event.preventDefault();
+                          event.stopPropagation();
+                          onAddOne(model);
+                        }}
+                      >
+                        Add
+                      </Button>
+                    )}
                 </label>
               );
             })}
@@ -1631,7 +1711,7 @@ function AddModelsDialog({
           </div>
         ) : null}
 
-        {catalogModels.length && !matching.length ? (
+        {scopedModels.length && !matching.length ? (
           <div className="pm-add-models-empty">No catalog model matches this search.</div>
         ) : null}
 

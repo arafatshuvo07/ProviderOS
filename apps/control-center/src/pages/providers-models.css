@@ -1317,3 +1317,37 @@
     grid-column: 3;
   }
 }
+
+/* Provider-scoped fetch: the chip that names the provider the dialog was
+   opened for from a connection menu, and the row-level Add shortcut. */
+.pm-add-models-focus-chip {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  justify-self: start;
+  padding: 4px 9px 4px 5px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-0);
+  color: var(--ink-strong);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 560;
+  transition: background 130ms ease, border-color 130ms ease;
+}
+
+.pm-add-models-focus-chip:hover {
+  background: var(--surface-2);
+}
+
+.pm-add-models-focus-chip svg {
+  color: var(--ink-soft);
+}
+
+.pm-add-models-row-add {
+  justify-self: end;
+  padding: 3px 10px;
+  font-size: 11px;
+}

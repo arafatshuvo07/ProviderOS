@@ -1407,7 +1407,7 @@ test("control center sidebar keeps the requested product order", async () => {
   const navBlock = source.match(/const NAV_ITEMS:[\s\S]*?= \[([\s\S]*?)\n\];/)?.[1];
   assert.ok(navBlock, "NAV_ITEMS block should be readable");
   const ids = [...navBlock.matchAll(/id: "([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(ids, ["dashboard", "usage", "status", "models", "local", "harness", "context", "settings"]);
+  assert.deepEqual(ids, ["dashboard", "usage", "status", "models", "context", "settings"]);
   assert.doesNotMatch(navBlock, /deferred|Soon/);
   assert.match(navBlock, /label: "Models"/);
 
@@ -1713,7 +1713,7 @@ test("the model directory combines provider setup with de-duplicated model-famil
   assert.match(models, /const loadConnectedCatalogs = async/);
   assert.match(models, /refresh \|\| \(catalogStates\[sourceId\]\?\.status \?\? "idle"\) === "idle"/);
   assert.match(models, /discoverProviderModels\(sourceId, \{ refresh \}\)/);
-  assert.match(models, /onReload=\{\(\) => void loadConnectedCatalogs\(\{ refresh: true \}\)\}/);
+  assert.match(models, /onReload=\{\(\) => void loadConnectedCatalogs\(\{ refresh: true, onlyProviderId: addModelsProviderId \?\? undefined \}\)\}/);
   // A stored list can be a day old, so the dialog says when it was read.
   assert.match(models, /read \$\{formatDateTime\(lastRead\)\}/);
   assert.match(models, /Lists are stored locally/);
@@ -1963,7 +1963,8 @@ test("Harness page renders fixed client rows backed by the shared session index"
   assert.match(harness, /assets\/clients\/claude\.svg/);
   assert.match(harness, /assets\/providers\/gemini\.svg/);
   assert.match(harness, /model\.visible && \(model\.enabled \|\| model\.native\)/);
-  assert.match(app, /OpenClaw, Cursor, Claude, Gemini, DeepSeek, Codex/);
+  // The Harness section was removed from the primary nav; the page file stays only as dead source.
+  assert.doesNotMatch(app, /OpenClaw, Cursor, Claude, Gemini, DeepSeek, Codex/);
   assert.match(styles, /\.lhc-harness-list/);
   assert.match(styles, /\.lhc-harness-row/);
   assert.match(styles, /\.lhc-harness-logo/);

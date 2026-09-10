@@ -178,8 +178,8 @@ const bridgeSource = String.raw`
   };
 
   const record = (name, ...args) => calls.push({ name, args });
-  const catalog = (providerId) => {
-    record("discoverProviderModels", providerId);
+  const catalog = (providerId, options = {}) => {
+    record("discoverProviderModels", providerId, { ...options });
     if (providerId === "kilo-free") {
       return {
         provider: providerId,
@@ -429,7 +429,7 @@ const bridgeSource = String.raw`
       };
     },
     controlTray: async () => ({ status: { supported: true } }),
-    discoverProviderModels: async (providerId) => catalog(providerId),
+    discoverProviderModels: async (providerId, options) => catalog(providerId, options),
     addProviderModels: async (providerId, modelIds) => {
       record("addProviderModels", providerId, [...modelIds]);
       return { ok: true };
@@ -632,115 +632,6 @@ test("the production renderer exposes model discovery and picker actions", { tim
     await page.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "Usage overview");
     assert.equal(await page.getByLabel("Usage source").inputValue(), "chatgpt-subscription");
 
-    // Harness is one client per row, in the product order the operator uses,
-    // and the shared metadata index continues into Context Manager.
-    await page.getByRole("button", { name: "Harness Experimental", exact: true }).click();
-    assert.equal(await page.locator(".primary-nav .badge-warning", { hasText: "Experimental" }).count(), 1);
-    assert.equal(await page.locator(".title-tabs .badge-warning", { hasText: "Experimental" }).count(), 1);
-    assert.equal(await page.locator(".page-scroll-harness").evaluate((element) => getComputedStyle(element).display), "block");
-    const harnessRows = page.locator(".lhc-harness-row");
-    await harnessRows.first().waitFor();
-    assert.equal(await harnessRows.count(), 6);
-    assert.deepEqual(
-      (await harnessRows.locator("h2").allTextContents()).map((value) => value.trim()),
-      ["OpenClaw", "Cursor", "Claude Code", "Gemini CLI", "DeepSeek Harness", "Codex"],
-    );
-    assert.equal(await harnessRows.nth(0).locator('[data-client-logo="openclaw"]').count(), 1);
-    assert.equal(await harnessRows.nth(1).locator('[data-client-logo="cursor"]').count(), 1);
-    assert.equal(await harnessRows.nth(2).locator('[data-client-logo="claude"]').count(), 1);
-    assert.equal(await harnessRows.nth(3).locator('[data-client-logo="gemini"]').count(), 1);
-    assert.equal(await harnessRows.nth(4).locator('[data-client-logo="dsh"]').count(), 1);
-    assert.equal(await harnessRows.nth(5).locator('[data-client-logo="codex"]').count(), 1);
-    assert.deepEqual(
-      await page.locator(".lhc-harness-table-head span").allTextContents(),
-      ["Client", "Runtime", "Models", "Sessions", "Actions"],
-    );
-    assert.equal(await page.getByText("1 published", { exact: true }).count(), 5);
-    assert.equal(await page.getByText("1 available", { exact: true }).count(), 1);
-    assert.equal(await page.getByLabel("Stable public HTTPS origin").count(), 0);
-    assert.deepEqual(
-      (await page.locator(".lhc-harness-actions button").allTextContents()).map((label) => label.trim()),
-      ["Open", "Open", "Open", "Open", "Open", "Open"],
-    );
-    for (const client of ["OpenClaw", "Cursor", "Claude Code", "Gemini CLI", "DeepSeek Harness", "Codex"]) {
-      assert.equal(await page.getByRole("button", { name: `Open ${client}`, exact: true }).count(), 1);
-    }
-    assert.deepEqual(
-      await harnessRows.evaluateAll((rows) => rows.map((row) => row.querySelectorAll(".lhc-harness-actions button").length)),
-      [1, 1, 1, 1, 1, 1],
-    );
-    assert.equal(await page.getByRole("button", { name: /documentation|terminal|agent/i }).count(), 0);
-    await harnessRows.nth(0).getByRole("button", { name: "Open OpenClaw", exact: true }).click();
-    assert.deepEqual(
-      await page.evaluate(() => window.routerControlTest.calls().find((call) => call.name === "launchHarness")),
-      { name: "launchHarness", args: ["openclaw", "app"] },
-    );
-    await page.evaluate(() => window.routerControlTest.setOpenClawHarnessConfigured(false));
-    await page.getByRole("button", { name: "Context Manager", exact: true }).click();
-    await page.getByRole("button", { name: "Harness Experimental", exact: true }).click();
-    await harnessRows.nth(0).getByRole("button", { name: "Set up", exact: true }).click();
-    await harnessRows.nth(0).getByRole("button", { name: "Open OpenClaw", exact: true }).waitFor();
-    assert.equal(
-      await page.evaluate(() => window.routerControlTest.calls()
-        .filter((call) => call.name === "setupHarness" && call.args[0] === "openclaw").length),
-      1,
-    );
-    assert.equal(await page.locator(".lhc-agent-bridges").count(), 0);
-    assert.deepEqual(
-      await page.locator(".lhc-harness-bridge strong").allTextContents(),
-      ["Available", "Available", "Not detected"],
-    );
-    const rowBoxes = await harnessRows.evaluateAll((rows) => rows.map((row) => {
-      const box = row.getBoundingClientRect();
-      return { x: box.x, y: box.y, width: box.width, height: box.height };
-    }));
-    assert.equal(rowBoxes.every((box) => box.width === rowBoxes[0].width), true);
-    for (let index = 1; index < rowBoxes.length; index += 1) {
-      assert.equal(Math.abs(rowBoxes[index].y - (rowBoxes[index - 1].y + rowBoxes[index - 1].height)) < 1, true);
-    }
-    const listBox = await page.locator(".lhc-harness-list").boundingBox();
-    assert.ok(listBox);
-    const lastRow = rowBoxes.at(-1);
-    assert.ok(lastRow);
-    const listEndDelta = (listBox.y + listBox.height) - (lastRow.y + lastRow.height);
-    assert.ok(listEndDelta >= 0 && listEndDelta < 3, JSON.stringify({ listBox, rowBoxes, listEndDelta }));
-    const harnessColumns = await harnessRows.evaluateAll((rows) => rows.map((row) => {
-      const box = (selector) => {
-        const rect = row.querySelector(selector).getBoundingClientRect();
-        return { x: rect.x, y: rect.y, width: rect.width };
-      };
-      return {
-        identity: box(":scope > header"),
-        runtime: box(".lhc-harness-runtime"),
-        catalog: box(".lhc-harness-catalog"),
-        sessions: box(".lhc-harness-sessions"),
-        actions: box(":scope > footer"),
-      };
-    }));
-    for (const column of ["identity", "runtime", "catalog", "sessions", "actions"]) {
-      assert.equal(harnessColumns.every((row) => Math.abs(row[column].x - harnessColumns[0][column].x) < 1), true);
-      assert.equal(harnessColumns.every((row) => Math.abs(row[column].width - harnessColumns[0][column].width) < 1), true);
-    }
-    assert.equal(harnessColumns.every((row) => Math.abs(row.actions.y - harnessColumns[0].actions.y - (rowBoxes[harnessColumns.indexOf(row)].y - rowBoxes[0].y)) < 1), true);
-    await page.setViewportSize({ width: 880, height: 840 });
-    assert.equal(
-      await harnessRows.first().evaluate((row) => getComputedStyle(row).gridTemplateColumns.split(" ").length),
-      3,
-    );
-    await page.setViewportSize({ width: 1280, height: 840 });
-    await page.evaluate(() => window.routerControlTest.setCursorHarnessState("install"));
-    await page.getByRole("button", { name: "Context Manager", exact: true }).click();
-    await page.getByRole("button", { name: "Harness Experimental", exact: true }).click();
-    await page.getByRole("button", { name: "Connect Cursor", exact: true }).click();
-    const cursorProgress = page.getByRole("progressbar", { name: "Cursor setup progress" });
-    await cursorProgress.waitFor();
-    assert.match(await harnessRows.nth(1).innerText(), /Installing Cloudflare connector/);
-    await harnessRows.nth(1).getByRole("button", { name: "Open Cursor", exact: true }).waitFor();
-    assert.equal(await cursorProgress.count(), 0);
-    assert.equal(
-      await page.evaluate(() => window.routerControlTest.calls().filter((call) => call.name === "connectCursor").length),
-      1,
-    );
     await page.getByRole("button", { name: "Context Manager", exact: true }).click();
     await page.getByRole("heading", { name: "Context Manager", exact: true }).waitFor();
     assert.equal(await page.locator(".lhc-session-row").count(), 3);
@@ -913,23 +804,6 @@ test("the production renderer exposes model discovery and picker actions", { tim
       .some((call) => call.name === "removeChatGptSubscriptionAccount"));
     await optimisticPage.close();
 
-    // Huge community GGUFs stay guarded, but the explicit oversized-model
-    // acknowledgement must make their exact Ollama tag selectable. Otherwise
-    // the catalog advertises GLM while forcing the operator to retype it.
-    await page.getByRole("button", { name: "Local", exact: true }).click();
-    await page.getByRole("heading", { name: "Local", exact: true }).waitFor();
-    const glmFamily = page.locator(".lhc-catalog-family").filter({ hasText: "GLM-5.3-Flash" });
-    await glmFamily.locator(".lhc-catalog-family-trigger").click();
-    const glmRow = glmFamily.locator(".lhc-catalog-model").filter({ hasText: "UD-IQ1_S" });
-    const glmSelect = glmRow.getByRole("button", { name: "Select", exact: true });
-    assert.equal(await glmSelect.isDisabled(), true);
-    await page.getByRole("checkbox", { name: "Allow a model larger than the router recommends for this machine" }).check();
-    assert.equal(await glmSelect.isEnabled(), true);
-    await glmSelect.click();
-    assert.equal(
-      await page.getByRole("textbox", { name: "Model tag or Ollama URL" }).inputValue(),
-      "hf.co/unsloth/GLM-5.3-Flash-GGUF:UD-IQ1_S",
-    );
 
     const cancelledLoginPage = await newEnglishTestPage(browser, { viewport: { width: 1280, height: 840 } });
     const cancelledLoginErrors = [];
@@ -1236,6 +1110,90 @@ test("health polling and core refresh share latest-wins ordering", { timeout: 12
       await page.getByRole("listitem", { name: /^Router state:/ }).getAttribute("aria-label"),
       /version health-2/,
     );
+    assert.deepEqual(pageErrors, [], `renderer errors: ${pageErrors.join("; ")}`);
+  } finally {
+    await browser.close();
+    await close();
+  }
+});
+
+test("connection fetch models opens the provider-scoped catalog with per-row add", { timeout: 120_000 }, async () => {
+  assert.equal(existsSync(path.join(dist, "index.html")), true, "npm test must build the renderer first");
+  assert.ok(chromiumPath, "No Chromium executable is available for the Control Center renderer test.");
+
+  const { url, close } = await serveRenderer();
+  const browser = await chromium.launch({
+    executablePath: chromiumPath,
+    headless: true,
+    args: process.platform === "linux" ? ["--no-sandbox"] : [],
+  });
+  const pageErrors = [];
+  try {
+    const page = await newEnglishTestPage(browser, { viewport: { width: 1280, height: 840 } });
+    page.setDefaultTimeout(10_000);
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") pageErrors.push(message.text());
+    });
+
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    await page.getByRole("navigation", { name: "Control center sections" }).waitFor();
+    await page.waitForFunction(() => window.routerControlTest.navigationReady());
+
+    // The Local and Harness sections are removed from the primary nav.
+    const nav = page.locator(".primary-nav");
+    assert.equal(await nav.getByRole("button", { name: "Local", exact: true }).count(), 0);
+    assert.equal(await nav.getByRole("button", { name: "Harness", exact: true }).count(), 0);
+
+    await page.getByRole("button", { name: "Models", exact: true }).click();
+    const connections = page.locator(".pm-connections");
+    await connections.waitFor();
+
+    const callsBefore = await page.evaluate(() => window.routerControlTest.calls().length);
+
+    // One provider chip at a time: the DeepSeek connection opens its menu,
+    // whose Fetch models action asks only that provider, live.
+    await connections.locator(".pm-chip").filter({ hasText: "DeepSeek" }).click();
+    const providerMenu = page.locator(".pm-connection-menu");
+    await providerMenu.waitFor();
+    const fetchButton = providerMenu.getByRole("button", { name: "Fetch models", exact: true });
+    assert.equal(await fetchButton.count(), 1);
+    await fetchButton.click();
+
+    const addDialog = page.locator(".pm-add-models");
+    await addDialog.waitFor();
+    await page.waitForFunction(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .some((call) => call.name === "discoverProviderModels"), { before: callsBefore });
+
+    // The scoped fetch re-asks exactly this provider instead of reading the
+    // stored list, so models the provider added since the last visit appear.
+    const discovers = await page.evaluate(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .filter((call) => call.name === "discoverProviderModels")
+      .map((call) => call.args), { before: callsBefore });
+    assert.ok(discovers.length >= 1, "the scoped fetch must call provider discovery");
+    assert.deepEqual(discovers[0], ["deepseek", { refresh: true }]);
+
+    // The dialog names the provider it was opened for and shows its list.
+    const focusChip = addDialog.locator(".pm-add-models-focus-chip");
+    assert.match(await focusChip.innerText(), /DeepSeek/);
+    const addableRow = addDialog.locator(".pm-add-models-row").filter({ hasText: "catalog-addable" });
+    await addableRow.waitFor();
+
+    // Adding one model must not require the batch selection: the row's own
+    // Add button publishes it straight away and must not flip the checkbox.
+    await addableRow.getByRole("button", { name: "Add", exact: true }).click();
+    await page.waitForFunction(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .some((call) => call.name === "addProviderModels"), { before: callsBefore });
+    const adds = await page.evaluate(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .filter((call) => call.name === "addProviderModels")
+      .map((call) => call.args), { before: callsBefore });
+    assert.deepEqual(adds, [["deepseek", ["catalog-addable"]]]);
+    assert.equal(await addableRow.locator("input[type=checkbox]").isChecked(), false);
+
     assert.deepEqual(pageErrors, [], `renderer errors: ${pageErrors.join("; ")}`);
   } finally {
     await browser.close();
