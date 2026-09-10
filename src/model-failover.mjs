@@ -3,7 +3,11 @@ import path from "node:path";
 
 import { writePrivateJson } from "./file-security.mjs";
 import { STATE_DIR } from "./paths.mjs";
-import { upstreamFailureKind } from "./error-translation.mjs";
+import {
+  providerCredentialFailure,
+  providerPolicyFailure,
+  upstreamFailureKind,
+} from "./error-translation.mjs";
 import { PROVIDERS } from "./model-registry.mjs";
 import { cooldownScope } from "./provider-cooldown.mjs";
 import { canonicalProviderId } from "./provider-selection.mjs";
@@ -78,14 +82,14 @@ function isoOrUndefined(value) {
 // `{ swap: false }`, or `{ swap: true, reason, until }` where `until` is present
 // only when the provider itself said when it would be back.
 //
-// Deliberately narrow. A rejected credential, an unknown model, and a malformed
-// request all produce the same answer from every other provider too, so a swap
-// would spend two more round trips to reprint the same failure with a different
-// model's name on it -- and for a credential in particular it would hide the one
-// fact the operator needs. A generic 5xx is excluded because the routed turn
-// path retries only the forwarder's reserved pre-response transport marker;
-// masking any other provider outage costs the operator an incident they would
-// want to see.
+// Deliberately narrow. An unknown model, malformed request, and ambiguous
+// credential rejection all produce the same answer from every other provider,
+// so swapping would spend more round trips to reprint the same failure. The
+// two explicit exceptions are a stale/revoked API key and an account-policy
+// block: both are deterministic refusals from that provider, so another
+// configured provider can safely serve the still-unrelayed turn. A generic 5xx
+// remains excluded because masking an outage costs the operator an incident
+// they would want to see.
 export function classifyRoutedFailure({ status, bodyText, retryAfterSeconds, now } = {}) {
   const code = Number(status);
   if (!Number.isFinite(code) || code < 400) return { swap: false };
@@ -93,9 +97,14 @@ export function classifyRoutedFailure({ status, bodyText, retryAfterSeconds, now
   // has committed a response. A generic provider 5xx remains an application
   // failure and is never switched away silently.
   if (code >= 500) {
-    return hasProviderTransportError(bodyText)
-      ? { swap: true, reason: "transport" }
-      : { swap: false };
+    if (hasProviderTransportError(bodyText)) return { swap: true, reason: "transport" };
+    // LiteLLM can turn an upstream account-policy refusal into a 502. The
+    // refusal cannot be repaired on that provider, while another configured
+    // provider can still answer the turn before any bytes are relayed.
+    if (providerPolicyFailure({ status: code, bodyText })) {
+      return { swap: true, reason: "provider_policy" };
+    }
+    return { swap: false };
   }
   const at = nowMs(now);
   const retryAfter = Number(retryAfterSeconds);
@@ -122,6 +131,10 @@ export function classifyRoutedFailure({ status, bodyText, retryAfterSeconds, now
         ? cappedUntil(at, retryAfter * 1_000)
         : providerNamedResetUntil(bodyText, at);
     return { swap: true, reason: "out_of_usage", ...(until ? { until } : {}) };
+  }
+
+  if (providerCredentialFailure({ status: code, bodyText })) {
+    return { swap: true, reason: "provider_auth" };
   }
 
   if (code === 429 && Number.isFinite(retryAfter) && retryAfter > MIN_RATE_LIMIT_COOLDOWN_SECONDS) {

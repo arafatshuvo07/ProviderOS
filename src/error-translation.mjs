@@ -99,6 +99,26 @@ const ENTITLEMENT_PATTERNS = [
   /no api access/i,
 ];
 
+// Some OpenAI-compatible gateways wrap an account-level safety refusal in a
+// 5xx Bad Gateway response. It is not a transient transport outage, but it is
+// still safe to move this turn to another configured provider: the refusal is
+// specific to the upstream account and the client has not seen any bytes yet.
+// Keep this deliberately narrow so an ordinary provider 5xx remains visible.
+const PROVIDER_POLICY_BLOCK_PATTERNS = [
+  /\bpolicy violation\b[\s\S]{0,120}\b(?:user|account)\b[\s\S]{0,80}\b(?:blocked|suspended)\b/i,
+  /\b(?:user|account)\b[\s\S]{0,80}\b(?:blocked|suspended)\b[\s\S]{0,120}\bpolicy violation\b/i,
+];
+
+// A few OpenAI-compatible gateways use a 401 for an explicitly invalid API
+// key, but leave other authentication failures ambiguous. Only the concrete
+// "Authentication Fails ... api key ... invalid" contract is safe to skip for
+// this turn; the operator still needs the original error when the wording does
+// not prove that the stored key itself is stale or revoked.
+const PROVIDER_CREDENTIAL_INVALID_PATTERNS = [
+  /\bauthentication fails\b[\s\S]{0,120}\bapi\s*key\b[\s\S]{0,60}\binvalid\b/i,
+  /\binvalid[_\s-]+api[_\s-]+key\b/i,
+];
+
 function isPlanEntitlement(detail) {
   return ENTITLEMENT_PATTERNS.some((pattern) => pattern.test(detail));
 }
@@ -111,6 +131,25 @@ function isOutOfUsage(detail, errorType) {
     return true;
   }
   return QUOTA_PATTERNS.some((pattern) => pattern.test(detail));
+}
+
+// Returns true only for the provider's explicit account-policy refusal, and
+// only when a gateway has surfaced it as a server-side failure. A 401/403
+// remains an actionable credential/entitlement error for the selected route.
+export function providerPolicyFailure({ status, bodyText }) {
+  if (!(Number(status) >= 500)) return false;
+  const detail = extractUpstreamDetail(bodyText);
+  return PROVIDER_POLICY_BLOCK_PATTERNS.some((pattern) => pattern.test(detail));
+}
+
+// Returns true only for a provider's explicit invalid-key response. A generic
+// 401/403 remains non-swappable so malformed requests and unclear auth
+// failures do not disappear behind a different model.
+export function providerCredentialFailure({ status, bodyText }) {
+  const code = Number(status);
+  if (code !== 401 && code !== 403) return false;
+  const detail = extractUpstreamDetail(bodyText);
+  return PROVIDER_CREDENTIAL_INVALID_PATTERNS.some((pattern) => pattern.test(detail));
 }
 
 // Ollama's MLX runner returns this deterministic request-size failure as an

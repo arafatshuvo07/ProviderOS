@@ -83,6 +83,20 @@ test("classifyRoutedFailure swaps only a marked provider transport 5xx", () => {
   );
 });
 
+test("classifyRoutedFailure swaps an upstream policy-block 502", () => {
+  const verdict = classifyRoutedFailure({
+    status: 502,
+    bodyText: JSON.stringify({
+      error: {
+        message:
+          "litellm.BadGatewayError: BadGatewayError: OpenAIException - Policy Violation: this user has been blocked for a previous policy violation. Received Model Group=commandcode-gpt-5-6-luna",
+      },
+    }),
+    now: NOW,
+  });
+  assert.deepEqual(verdict, { swap: true, reason: "provider_policy" });
+});
+
 test("classifyRoutedFailure recognizes the observed Z.ai five-hour window message", () => {
   const verdict = classifyRoutedFailure({
     status: 429,
@@ -224,6 +238,19 @@ test("classifyRoutedFailure never swaps an entitlement failure for a quota one",
     now: NOW,
   });
   assert.equal(verdict.swap, false);
+});
+
+test("classifyRoutedFailure swaps an explicit invalid API-key 401", () => {
+  const verdict = classifyRoutedFailure({
+    status: 401,
+    bodyText: JSON.stringify({
+      error: {
+        message: "Authentication Fails, Your api key: ****3ce0 is invalid",
+      },
+    }),
+    now: NOW,
+  });
+  assert.deepEqual(verdict, { swap: true, reason: "provider_auth" });
 });
 
 test("classifyRoutedFailure leaves every other failure exactly as it was", () => {

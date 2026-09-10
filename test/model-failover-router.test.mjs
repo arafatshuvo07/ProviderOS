@@ -143,6 +143,10 @@ const BAD_KEY_BODY = JSON.stringify({
   error: { message: "Incorrect API key provided.", type: "invalid_request_error", code: "401" },
 });
 
+const EXPLICIT_INVALID_KEY_BODY = JSON.stringify({
+  error: { message: "Authentication Fails, Your api key: ****3ce0 is invalid" },
+});
+
 const TRANSPORT_BODY = JSON.stringify({
   error: {
     type: "provider_transport_error",
@@ -605,6 +609,49 @@ test("an unmarked provider 502 is never retried", async () => {
   }
 });
 
+test("an upstream policy block fails over before returning the gateway 502", async () => {
+  const seen = [];
+  const gw = await gateway(async (request, response) => {
+    const body = await bodyJson(request);
+    seen.push(body);
+    if (body.model === V2_PRIMARY.gatewayModel) {
+      response.writeHead(502, { "Content-Type": "application/json" });
+      response.end(
+        JSON.stringify({
+          error: {
+            message:
+              "litellm.BadGatewayError: BadGatewayError: OpenAIException - Policy Violation: this user has been blocked for a previous policy violation. Received Model Group=commandcode-gpt-5-6-luna",
+          },
+        }),
+      );
+      return;
+    }
+    response.writeHead(200, { "Content-Type": "text/event-stream" });
+    response.end(contentSse("policy-fallback"));
+  });
+  const routerPort = await openPort();
+  const child = run(routerEnv(gw.port, routerPort), {
+    chain: [V2_FALLBACK.slug],
+    v2Credentials: true,
+  });
+  try {
+    await waitFor(`http://127.0.0.1:${routerPort}/health`, child);
+    const result = await readRouted(routerPort, { ...TURN_BODY, model: V2_PRIMARY.slug });
+
+    assert.deepEqual(seen.map((body) => body.model), [
+      V2_PRIMARY.gatewayModel,
+      V2_FALLBACK.gatewayModel,
+    ]);
+    assert.equal(result.status, 200);
+    assert.equal(result.complete, true);
+    assert.match(result.body, /answered-by-policy-fallback/);
+    assert.match(child.testErrors(), /reason=provider_policy/);
+  } finally {
+    await stopChild(child);
+    await closeServer(gw.server);
+  }
+});
+
 test("a marked provider transport failure does not move an ordinary turn", async () => {
   const seen = [];
   const gw = await gateway(async (request, response) => {
@@ -911,6 +958,39 @@ test("a rejected credential keeps its own error and is never swapped away", asyn
     assert.equal(payload.error.type, "authentication_error");
     assert.match(payload.error.message, /DeepSeek/i);
     assert.doesNotMatch(child.testErrors(), /failover/);
+  } finally {
+    await stopChild(child);
+    await closeServer(gw.server);
+  }
+});
+
+test("an explicit invalid API key fails over before returning the 401", async () => {
+  const seen = [];
+  const gw = await gateway(async (request, response) => {
+    const body = await bodyJson(request);
+    seen.push(body);
+    if (body.model === PRIMARY.gatewayModel) {
+      const payload = Buffer.from(EXPLICIT_INVALID_KEY_BODY, "utf8");
+      response.writeHead(401, {
+        "Content-Type": "application/json",
+        "Content-Length": String(payload.length),
+      });
+      response.end(payload);
+      return;
+    }
+    response.writeHead(200, { "Content-Type": "text/event-stream" });
+    response.end(contentSse("invalid-key-fallback"));
+  });
+  const routerPort = await openPort();
+  const child = run(routerEnv(gw.port, routerPort), { chain: [FALLBACK.slug] });
+  try {
+    await waitFor(`http://127.0.0.1:${routerPort}/health`, child);
+    const result = await readRouted(routerPort, TURN_BODY);
+    assert.deepEqual(seen.map((body) => body.model), [PRIMARY.gatewayModel, FALLBACK.gatewayModel]);
+    assert.equal(result.status, 200);
+    assert.equal(result.complete, true);
+    assert.match(result.body, /answered-by-invalid-key-fallback/);
+    assert.match(child.testErrors(), /reason=provider_auth/);
   } finally {
     await stopChild(child);
     await closeServer(gw.server);

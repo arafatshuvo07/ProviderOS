@@ -37,6 +37,10 @@ extraResources:
     filter:
       - "**/*"
 mac:
+  # Use an ad-hoc signature when no Apple Developer identity is available.
+  # electron-builder patches Electron fuses before signing; without this,
+  # disabling automatic signing leaves the patched framework invalid on macOS.
+  identity: '-'
   category: public.app-category.developer-tools
   icon: assets/icon.png
   target: [dmg, zip]
