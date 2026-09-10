@@ -213,6 +213,15 @@ const CURATION_ROUTES = Object.freeze({
       "zai-org/GLM-5.2-Fast",
       "zai-org/GLM-5.3",
     ]),
+    // Local customization: route newly discovered ids instead of blocking
+    // them. Command Code serves its Claude family through one Anthropic-style
+    // Messages endpoint (every certified Messages model is claude-*) and
+    // everything else through Chat, so a prefix rule plus a Chat fallback
+    // settles the protocol for any id the static lists have not seen yet. A
+    // guessed route that fails only fails its own first request, which beats
+    // a picker that can never learn about a new model.
+    prefixRoutes: Object.freeze([["claude", "commandcode-messages"]]),
+    fallbackProviderId: "commandcode",
     models: Object.freeze({}),
   }),
   "opencode-go": Object.freeze({
@@ -310,6 +319,16 @@ function curatedModelRouteSelection(providerId, upstreamModel, { existingProvide
     return { providerId: route.messagesProvider };
   }
   if (route?.primaryModels?.includes(upstreamModel)) return { providerId: primary };
+  // Family-prefix and fallback routing come before the fail-closed verdict so
+  // a provider that has declared them keeps accepting newly discovered ids.
+  // Exact lists above still win, so a certified exception stays reachable.
+  if (route?.prefixRoutes?.length) {
+    const lower = upstreamModel.toLowerCase();
+    for (const [prefix, target] of route.prefixRoutes) {
+      if (lower.startsWith(prefix)) return { providerId: target };
+    }
+  }
+  if (route?.fallbackProviderId) return { providerId: route.fallbackProviderId };
   if (route?.providers.length > 1) {
     // Preserve a route the operator already chose, but never invent a protocol
     // for a newly discovered id. OpenCode's one /models catalog backs Chat,

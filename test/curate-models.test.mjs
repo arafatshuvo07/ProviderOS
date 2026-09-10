@@ -140,7 +140,7 @@ test("OpenCode Free Muse curation carries its model-specific tool-choice repair"
   assert.equal(curatedModelRequestProfile("opencode-free", "nemotron-3-ultra-free"), undefined);
 });
 
-test("Command Code curation accepts only its exact certified Chat and Messages routes", () => {
+test("Command Code curation keeps certified routes and settles new ids by family", () => {
   assert.deepEqual(curationProviderIds("commandcode"), [
     "commandcode",
     "commandcode-messages",
@@ -158,66 +158,19 @@ test("Command Code curation accepts only its exact certified Chat and Messages r
       model.slug,
     );
   }
-  assert.match(
-    curatedModelBlockReason("commandcode", "claude-future-messages-only"),
-    /provider catalog lists claude-future-messages-only.*has not verified whether the model uses Chat or Messages.*router compatibility limitation.*future update/s,
-  );
-  for (const model of ["gpt-5.3-codex", "gpt-5.4", "gpt-5.4-mini"]) {
-    assert.match(
-      curatedModelBlockReason("commandcode", model),
-      new RegExp(`provider catalog lists ${model}.*router compatibility limitation`, "s"),
-    );
-  }
-  assert.throws(
-    () => curatedModelProviderId("commandcode", "claude-future-messages-only"),
-    /cannot be added safely/,
-  );
+  // Local customization: the Claude family rides the Messages endpoint and
+  // everything else rides Chat, so newly discovered ids stay addable instead
+  // of being blocked until a release certifies them by hand.
   assert.equal(
-    curatedModelProviderId("commandcode", "existing-private-model", {
-      existingProvider: "commandcode-messages",
-    }),
+    curatedModelProviderId("commandcode", "claude-future-messages-only"),
     "commandcode-messages",
   );
-});
-
-test("scripted OpenCode curation refuses an uncertified discovered protocol route", () => {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "curate-models-opencode-blocked-"));
-  const fixture = path.join(dir, "models.json");
-  writeFileSync(fixture, JSON.stringify({ data: [{ id: "future-responses-only-model" }] }));
-  try {
-    const result = spawnSync(
-      process.execPath,
-      [
-        path.join(root, "src", "curate-models.mjs"),
-        "opencode-go",
-        "--models",
-        "future-responses-only-model",
-        "--fixture",
-        fixture,
-        "--no-apply",
-      ],
-      {
-        cwd: root,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          CODEX_ROUTER_STATE_DIR: dir,
-          MODEL_ROUTER_USER_MODELS: path.join(dir, "user-models.json"),
-          OPENCODE_API_KEY: "",
-        },
-      },
-    );
-    assert.equal(result.status, 1);
-    assert.match(
-      result.stderr,
-      /provider catalog lists future-responses-only-model.*cannot be added safely/s,
-    );
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
+  for (const model of ["gpt-5.3-codex", "gpt-5.4", "gpt-5.4-mini"]) {
+    assert.equal(curatedModelProviderId("commandcode", model), "commandcode", model);
   }
 });
 
-test("scripted Command Code curation refuses an uncertified discovered protocol route", () => {
+test("scripted Command Code curation routes an uncertified Claude discovery to Messages", () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "curate-models-commandcode-blocked-"));
   const fixture = path.join(dir, "models.json");
   writeFileSync(fixture, JSON.stringify({ data: [{ id: "claude-future-messages-only" }] }));
@@ -244,11 +197,11 @@ test("scripted Command Code curation refuses an uncertified discovered protocol 
         },
       },
     );
-    assert.equal(result.status, 1);
-    assert.match(
-      result.stderr,
-      /provider catalog lists claude-future-messages-only.*cannot be added safely/s,
-    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Saved 1 curated Command Code model/);
+    const curated = JSON.parse(readFileSync(path.join(dir, "user-models.json"), "utf8"));
+    assert.equal(curated.models[0].provider, "commandcode-messages");
+    assert.equal(curated.models[0].upstreamModel, "claude-future-messages-only");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

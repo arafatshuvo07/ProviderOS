@@ -98,12 +98,8 @@ test("Command Code discovery parses the Provider API model list", () => {
     );
     const result = JSON.parse(output);
     assert.deepEqual(result.unregistered, ["claude-sonnet-4-6"]);
-    assert.deepEqual(result.addable, []);
-    assert.deepEqual(Object.keys(result.blocked), ["claude-sonnet-4-6"]);
-    assert.match(
-      result.blocked["claude-sonnet-4-6"],
-      /provider catalog lists claude-sonnet-4-6.*has not verified whether the model uses Chat or Messages.*router compatibility limitation.*future update/s,
-    );
+    assert.deepEqual(result.addable, ["claude-sonnet-4-6"]);
+    assert.deepEqual(result.blocked, {});
     assert.ok(result.unavailable.includes("deepseek/deepseek-v4-pro"));
     assert.doesNotMatch(output, /Bearer|api[_-]?key/i);
   } finally {
