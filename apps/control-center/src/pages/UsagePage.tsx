@@ -172,6 +172,36 @@ export function UsagePage({
     );
   }, [source, sources]);
 
+  // Per-model token share for the scope the page is looking at: the retained
+  // router ledger when it exists (the same scope as the headline total), or
+  // the rolling window otherwise, narrowed to the selected provider row.
+  const modelUsage = useMemo(() => {
+    const scopeProviders = providerUsage?.retained?.providers ?? providerUsage?.providers ?? [];
+    const scoped = source?.kind === "provider"
+      ? scopeProviders.filter((provider) => provider.id === source.id)
+      : scopeProviders;
+    const rows = new Map<string, { slug: string; displayName: string; totalTokens: number; requests: number }>();
+    for (const provider of scoped) {
+      for (const model of provider.models ?? []) {
+        const slug = model.slug || model.displayName || "unknown";
+        const row = rows.get(slug) ?? { slug, displayName: model.displayName || slug, totalTokens: 0, requests: 0 };
+        row.totalTokens += model.totalTokens ?? ((model.inputTokens ?? 0) + (model.outputTokens ?? 0));
+        row.requests += model.requests ?? 0;
+        rows.set(slug, row);
+      }
+    }
+    const list = [...rows.values()]
+      .filter((row) => row.totalTokens > 0)
+      .sort((left, right) => right.totalTokens - left.totalTokens);
+    const grand = list.reduce((sum, row) => sum + row.totalTokens, 0);
+    const top = list.slice(0, 8).map((row) => ({ ...row, share: grand ? row.totalTokens / grand : 0 }));
+    const restTokens = list.slice(8).reduce((sum, row) => sum + row.totalTokens, 0);
+    if (restTokens > 0) {
+      top.push({ slug: "other-models", displayName: "Other models", totalTokens: restTokens, requests: 0, share: restTokens / grand });
+    }
+    return { rows: top, count: list.length };
+  }, [providerUsage, source?.id, source?.kind]);
+
   const targetAllowanceSourceId = focusRequest?.allowance
     ? navigationSourceId(focusRequest.sourceId)
     : undefined;
@@ -431,10 +461,49 @@ export function UsagePage({
               ) : null}
             </section>
           </div>
+
+          {modelUsage.rows.length ? (
+            <section className="panel-section us-model-usage" aria-label="Model usage">
+              <SectionHeading
+                title="Model usage"
+                description={`${modelUsage.count} routed model${modelUsage.count === 1 ? "" : "s"} in this scope, ranked by tokens measured by the router.`}
+              />
+              <div className="us-model-usage-list" role="list">
+                {modelUsage.rows.map((row) => {
+                  const color = modelUsageColor(row.slug);
+                  return (
+                    <div className="us-model-usage-row" role="listitem" key={row.slug}>
+                      <span className="us-model-usage-dot" style={{ background: color }} aria-hidden />
+                      <span className="us-model-usage-name" title={row.slug}>{row.displayName}</span>
+                      <span className="us-model-usage-tokens">{compactNumber(row.totalTokens)} tokens</span>
+                      <span className="us-model-usage-share">{`${(row.share * 100).toFixed(1)}%`}</span>
+                      <span className="us-model-usage-bar" aria-hidden>
+                        <i style={{ width: `${Math.max(2, Math.round(row.share * 100))}%`, background: color }} />
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
         </>
       )}
     </div>
   );
+}
+
+const MODEL_USAGE_COLORS = [
+  "#4f46e5", "#0e9384", "#d97706", "#db2776",
+  "#2563eb", "#7c3aed", "#0284c7", "#16a34a",
+];
+
+function modelUsageColor(slug: string): string {
+  if (slug === "other-models") return "#98a1b1";
+  let hash = 0;
+  for (let index = 0; index < slug.length; index += 1) {
+    hash = (hash * 31 + slug.charCodeAt(index)) >>> 0;
+  }
+  return MODEL_USAGE_COLORS[hash % MODEL_USAGE_COLORS.length];
 }
 
 function buildSources(

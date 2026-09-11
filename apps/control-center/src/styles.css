@@ -1,6 +1,24 @@
-/* Switchboard UI typeface: Inter Variable, self-hosted so the packaged app
-   never depends on the network. Chromium needs the liga/calt fix; cv05 keeps
-   capital-I and lowercase-l distinguishable at small UI sizes. */
+/* Switchboard UI typeface: Geist (Vercel), self-hosted so the packaged app
+   never depends on the network. Geist Mono carries every numeric readout so
+   token counts align and read at a glance. Inter stays as the fallback face. */
+@font-face {
+  font-family: "Geist";
+  src: url("./assets/fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GeistMono";
+  src: url("./assets/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Chromium needs the liga/calt fix; cv05 keeps capital-I and lowercase-l
+   distinguishable at small UI sizes. */
 @font-face {
   font-family: "InterVariable";
   src: url("./assets/fonts/InterVariable.woff2") format("woff2");
@@ -11,7 +29,7 @@
 
 :root {
   color-scheme: light;
-  font-family: "InterVariable", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  font-family: "Geist", "InterVariable", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   font-optical-sizing: auto;
   font-synthesis: none;
   font-feature-settings: 'liga' 1, 'calt' 1, 'cv05' 1;
@@ -2610,7 +2628,8 @@ progress::-webkit-progress-value { border-radius: 999px; background: var(--accen
 /* Titles and section headings read calmer with tighter tracking. */
 .titlebar,
 .page-eyebrow {
-  font-family: "InterVariable", "Inter", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: "GeistMono", "Geist", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.02em;
 }
 
 .page-eyebrow {
@@ -2618,8 +2637,11 @@ progress::-webkit-progress-value { border-radius: 999px; background: var(--accen
   letter-spacing: 0.14em;
 }
 
-/* Numeric readouts across Usage/Status align in tabular figures. */
+/* Numeric readouts across Usage/Status use Geist Mono: token counts align
+   in tabular figures and read at a glance. */
 .us-metric-card strong,
 .pm-results-count {
+  font-family: "GeistMono", "Geist", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.01em;
 }

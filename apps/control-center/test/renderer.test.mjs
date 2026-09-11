@@ -405,6 +405,24 @@ const bridgeSource = String.raw`
             last24hTokens: totalTokens,
             last24hRequests: 8,
             dailyUsageBuckets: [{ startDate: "2026-08-27", tokens: totalTokens, requests: 8 }],
+            models: [
+              {
+                slug: "deepseek/deepseek-v4-pro",
+                displayName: "deepseek-v4-pro",
+                totalTokens: 9_000,
+                inputTokens: 7_000,
+                outputTokens: 2_000,
+                requests: 5,
+              },
+              {
+                slug: "deepseek/deepseek-v4-flash",
+                displayName: "deepseek-v4-flash",
+                totalTokens: 3_000,
+                inputTokens: 2_400,
+                outputTokens: 600,
+                requests: 3,
+              },
+            ],
             account: {
               status: "available",
               metrics: [
@@ -1193,6 +1211,63 @@ test("connection fetch models opens the provider-scoped catalog with per-row add
       .map((call) => call.args), { before: callsBefore });
     assert.deepEqual(adds, [["deepseek", ["catalog-addable"]]]);
     assert.equal(await addableRow.locator("input[type=checkbox]").isChecked(), false);
+
+    assert.deepEqual(pageErrors, [], `renderer errors: ${pageErrors.join("; ")}`);
+  } finally {
+    await browser.close();
+    await close();
+  }
+});
+
+test("usage page ranks per-model token share with mono numerics", { timeout: 120_000 }, async () => {
+  assert.equal(existsSync(path.join(dist, "index.html")), true, "npm test must build the renderer first");
+  assert.ok(chromiumPath, "No Chromium executable is available for the Control Center renderer test.");
+
+  const { url, close } = await serveRenderer();
+  const browser = await chromium.launch({
+    executablePath: chromiumPath,
+    headless: true,
+    args: process.platform === "linux" ? ["--no-sandbox"] : [],
+  });
+  const pageErrors = [];
+  try {
+    const page = await newEnglishTestPage(browser, { viewport: { width: 1280, height: 840 } });
+    page.setDefaultTimeout(10_000);
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") pageErrors.push(message.text());
+    });
+
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => window.routerControlTest.navigationReady());
+    assert.equal(
+      await page.evaluate(() => window.routerControlTest.navigate({ destination: "usage" })),
+      true,
+    );
+    await page.getByRole("heading", { name: "Usage", exact: true }).waitFor();
+
+    const section = page.locator(".us-model-usage");
+    await section.waitFor();
+    await page.getByText("Model usage", { exact: true }).waitFor();
+
+    const rows = section.locator(".us-model-usage-row");
+    assert.equal(await rows.count(), 2);
+    assert.match(await rows.nth(0).locator(".us-model-usage-name").innerText(), /deepseek-v4-pro/);
+    assert.equal(await rows.nth(0).locator(".us-model-usage-tokens").innerText(), "9k tokens");
+    assert.equal(await rows.nth(0).locator(".us-model-usage-share").innerText(), "75.0%");
+    assert.match(await rows.nth(1).locator(".us-model-usage-name").innerText(), /deepseek-v4-flash/);
+    assert.equal(await rows.nth(1).locator(".us-model-usage-tokens").innerText(), "3k tokens");
+    assert.equal(await rows.nth(1).locator(".us-model-usage-share").innerText(), "25.0%");
+
+    // The bar widths follow the shares, and the token count reads in Geist Mono.
+    const firstBarWidth = await rows.nth(0).locator(".us-model-usage-bar i").evaluate(
+      (element) => element.style.width,
+    );
+    assert.equal(firstBarWidth, "75%");
+    const tokenFont = await rows.nth(0).locator(".us-model-usage-tokens").evaluate(
+      (element) => getComputedStyle(element).fontFamily,
+    );
+    assert.match(tokenFont, /GeistMono/);
 
     assert.deepEqual(pageErrors, [], `renderer errors: ${pageErrors.join("; ")}`);
   } finally {
