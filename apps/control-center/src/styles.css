@@ -1,52 +1,77 @@
+/* Switchboard UI typeface: Inter Variable, self-hosted so the packaged app
+   never depends on the network. Chromium needs the liga/calt fix; cv05 keeps
+   capital-I and lowercase-l distinguishable at small UI sizes. */
+@font-face {
+  font-family: "InterVariable";
+  src: url("./assets/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  font-family: "InterVariable", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  font-optical-sizing: auto;
   font-synthesis: none;
+  font-feature-settings: 'liga' 1, 'calt' 1, 'cv05' 1;
+  /* Layered canvas: the app sits on a soft gray; cards and dialogs float on
+     top in white with quiet borders and one soft shadow. */
+  --app-bg: #eef0f4;
   --surface-0: #ffffff;
-  --surface-1: #f8f8f7;
-  --surface-2: #f0f0ef;
-  --surface-3: #e7e7e5;
+  --surface-1: #f6f7f9;
+  --surface-2: #eceef2;
+  --surface-3: #e3e6ec;
   --raised: #ffffff;
-  --ink-strong: #1a1a1a;
-  --ink: #3d3d3d;
-  --ink-subtle: #6e6e6e;
-  --ink-faint: #9b9b9b;
-  --line: #e5e5e3;
-  --line-strong: #d3d3d1;
-  --accent: #4e6fae;
-  --accent-soft: #e9eef8;
-  --success: #168447;
-  --success-soft: #e8f4ec;
-  --warning: #9a6817;
-  --warning-soft: #f8f0df;
-  --danger: #a64141;
-  --danger-soft: #f8eaea;
-  --shadow: rgba(31, 31, 31, 0.13);
+  --sidebar-bg: #e7e9ef;
+  --ink-strong: #111827;
+  --ink: #374151;
+  --ink-subtle: #5f6b7d;
+  --ink-faint: #98a1b1;
+  --line: #e4e7ec;
+  --line-strong: #cfd4dd;
+  --accent: #4f46e5;
+  --accent-strong: #4338ca;
+  --accent-soft: #eef2ff;
+  --success: #0e7a55;
+  --success-soft: #e5f5ee;
+  --warning: #b45309;
+  --warning-soft: #fcf1df;
+  --danger: #d92d20;
+  --danger-soft: #fdeceb;
+  --shadow: rgba(16, 24, 40, 0.18);
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-float: 0 16px 40px -12px rgba(16, 24, 40, 0.22), 0 4px 12px rgba(16, 24, 40, 0.08);
   --sidebar-width: 238px;
 }
 
 :root.dark {
   color-scheme: dark;
-  --surface-0: #0a0a0a;
-  --surface-1: #0e0e0e;
-  --surface-2: #161616;
-  --surface-3: #212121;
-  --raised: #242423;
-  --ink-strong: #e6e6e6;
-  --ink: #bdbdbd;
-  --ink-subtle: #8f8f8f;
-  --ink-faint: #6a6a6a;
-  --line: #1e1e1e;
-  --line-strong: #2e2e2e;
-  --accent: #91aef0;
-  --accent-soft: #172036;
-  --success: #63bd82;
-  --success-soft: #10251a;
-  --warning: #d6a856;
-  --warning-soft: #2b2110;
-  --danger: #d68f8f;
-  --danger-soft: #2d1717;
-  --shadow: rgba(0, 0, 0, 0.38);
+  --app-bg: #0b0c0f;
+  --surface-0: #15171b;
+  --surface-1: #191c21;
+  --surface-2: #20242b;
+  --surface-3: #2a2f38;
+  --raised: #191b20;
+  --sidebar-bg: #0f1114;
+  --ink-strong: #f3f4f6;
+  --ink: #c8cdd5;
+  --ink-subtle: #969eab;
+  --ink-faint: #6b7280;
+  --line: #22262d;
+  --line-strong: #31363f;
+  --accent: #8b93f8;
+  --accent-strong: #a5abfa;
+  --accent-soft: #20224d;
+  --success: #57c79a;
+  --success-soft: #12291f;
+  --warning: #e2b263;
+  --warning-soft: #2c2213;
+  --danger: #f08c85;
+  --danger-soft: #2f1715;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 16px 40px -12px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -63,9 +88,9 @@ body,
 }
 
 body {
-  background: var(--surface-0);
+  background: var(--app-bg);
   color: var(--ink);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   user-select: none;
@@ -124,7 +149,7 @@ button {
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   width: 100%;
   height: 100%;
-  background: var(--surface-0);
+  background: var(--app-bg);
   transition: grid-template-columns 220ms ease;
 }
 
@@ -138,7 +163,7 @@ button {
   flex-direction: column;
   overflow: hidden;
   border-right: 1px solid var(--line);
-  background: var(--surface-1);
+  background: var(--sidebar-bg);
   transition: opacity 160ms ease;
 }
 
@@ -170,12 +195,12 @@ button {
   padding-top: 9px;
   padding-bottom: 7px;
   border-bottom: 0;
-  background: var(--surface-1);
+  background: var(--sidebar-bg);
 }
 
 .native-titlebar .titlebar {
   padding-left: 14px;
-  background: var(--surface-0);
+  background: var(--app-bg);
 }
 
 /* macOS hiddenInset traffic lights sit over the sidebar, or the titlebar
@@ -474,7 +499,7 @@ button {
   min-height: 0;
   grid-template-rows: 36px minmax(0, 1fr);
   overflow: hidden;
-  background: var(--surface-0);
+  background: var(--app-bg);
 }
 
 .native-titlebar .app-main {
@@ -2475,4 +2500,126 @@ progress::-webkit-progress-value { border-radius: 999px; background: var(--accen
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Switchboard design polish: typography scale, elevation, controls.   */
+/* Layered canvas (gray app bg) with white cards, one indigo accent,   */
+/* and quiet shadows. Overrides above defaults; keep additions here.   */
+/* ------------------------------------------------------------------ */
+
+/* Panels and cards float on the gray canvas instead of blending in. */
+.panel-section {
+  box-shadow: var(--shadow-card);
+}
+
+.page-header h1 {
+  font-weight: 660;
+  letter-spacing: -0.035em;
+  font-size: clamp(26px, 2.6vw, 36px);
+}
+
+.page-description {
+  font-size: 13.5px;
+}
+
+/* Sidebar: calm gray rail with an accent-tinted active pill. */
+.primary-nav button {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.primary-nav button.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.primary-nav button.is-active svg {
+  color: var(--accent);
+}
+
+.router-wordmark strong {
+  font-weight: 680;
+  letter-spacing: -0.02em;
+}
+
+/* Buttons: accent primary, crisp white secondary, comfortable metrics. */
+.button {
+  min-height: 34px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.button-primary {
+  border-color: transparent;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 94%, white 6%), var(--accent));
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+:root.dark .button-primary {
+  color: #0b0c0f;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--accent-strong);
+  opacity: 1;
+}
+
+.button-secondary {
+  background: var(--raised);
+  box-shadow: var(--shadow-card);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--surface-1);
+}
+
+.button-danger:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+/* Dialogs and menus get real elevation. */
+.dialog-panel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-float);
+}
+
+.dialog-panel > header {
+  padding: 18px 18px 14px;
+}
+
+.dialog-panel > header h2 {
+  font-size: 15px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+
+.dialog-panel > header p {
+  font-size: 11px;
+}
+
+.pm-filter-menu,
+.pm-connect-menu {
+  box-shadow: var(--shadow-float);
+}
+
+/* Titles and section headings read calmer with tighter tracking. */
+.titlebar,
+.page-eyebrow {
+  font-family: "InterVariable", "Inter", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.page-eyebrow {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+}
+
+/* Numeric readouts across Usage/Status align in tabular figures. */
+.us-metric-card strong,
+.pm-results-count {
+  font-feature-settings: 'tnum' 1;
 }
