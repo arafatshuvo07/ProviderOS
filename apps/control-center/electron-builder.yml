@@ -1,5 +1,5 @@
 appId: io.github.codex-router.control-center
-productName: Codex Router
+productName: Switchboard
 directories:
   output: release
 files:
