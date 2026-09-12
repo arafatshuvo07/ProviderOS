@@ -1139,7 +1139,8 @@ test("desktop shells keep their routing mark while the Control Center sidebar st
 
   const renderer = readFileSync(path.join(root, "apps", "control-center", "src", "App.tsx"), "utf8");
   assert.doesNotMatch(renderer, /assets\/32x32\.png/);
-  assert.match(renderer, /<strong>Codex Router<\/strong>/);
+  // The sidebar wordmark follows the desktop app's user-visible name.
+  assert.match(renderer, /<strong>Switchboard<\/strong>/);
   const builder = readFileSync(path.join(root, "apps", "control-center", "electron-builder.yml"), "utf8");
   assert.match(builder, /mac:[\s\S]*icon:\s*assets\/icon\.png/);
   assert.match(builder, /win:[\s\S]*icon:\s*assets\/icon\.ico/);
