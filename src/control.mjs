@@ -89,6 +89,7 @@ const boundedAntigravityOperation =
   (args[0] === "login" && args[1] === "antigravity-oauth") ||
   (args[0] === "probe-provider" && args[1] === "antigravity-oauth");
 const restartBearingOverlayOperation = new Set([
+  "generic-providers",
   "set-apply",
   "credential",
   "auth-mode",
