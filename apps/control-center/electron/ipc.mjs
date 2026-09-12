@@ -1185,6 +1185,61 @@ async function validateProvider(providerId, capability) {
   return { id, provider };
 }
 
+// Operator-added custom providers are generic OpenAI-compatible endpoints
+// registered at runtime. Their mutations are the trusted generic commands, so
+// this boundary only translates the dialog's fields into those arguments.
+const CUSTOM_PROVIDER_ADAPTERS = new Set(["openai-chat", "openai-responses"]);
+
+function parseCustomProviderEndpoint(value) {
+  const raw = typeof value === "string" ? value.trim() : "";
+  if (!raw) throw new Error("Base URL is required.");
+  let endpoint;
+  try {
+    endpoint = new URL(raw);
+  } catch {
+    throw new Error("Base URL must be an absolute HTTP(S) URL.");
+  }
+  if (!["http:", "https:"].includes(endpoint.protocol)) {
+    throw new Error("Base URL must use http or https.");
+  }
+  if (!endpoint.hostname || endpoint.username || endpoint.password) {
+    throw new Error("Base URL must include a hostname and must not embed credentials.");
+  }
+  if (endpoint.search || endpoint.hash) {
+    throw new Error("Base URL must not include a query string or fragment.");
+  }
+  return endpoint;
+}
+
+// The generic provider registry requires an `[a-z0-9][a-z0-9-]*` id. The page
+// only supplies a display name, so the id is derived here and de-duplicated
+// against the runtime registry instead of surfacing the slug rule to the UI.
+function customProviderIdFromName(name, taken) {
+  const slug = name.toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "custom";
+  if (!taken.has(slug)) return slug;
+  for (let suffix = 2; suffix < 100; suffix += 1) {
+    const candidate = `${slug}-${suffix}`;
+    if (!taken.has(candidate)) return candidate;
+  }
+  throw new Error("Custom providers with this name are already registered; pick a different name.");
+}
+
+// Loopback and private endpoints need the descriptor's explicit allowPrivate.
+// The operator typed this URL into the dialog themselves, so the local cases
+// (Ollama, LM Studio, llama.cpp, a LAN gateway) are approved at the moment
+// they are entered rather than through a second question after the fact.
+function customProviderNeedsPrivateAllowance(endpoint) {
+  const host = endpoint.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local")) return true;
+  if (/^127\./.test(host) || /^10\./.test(host) || /^192\.168\./.test(host) || /^169\.254\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  return host === "::1" || host.startsWith("fd") || host.startsWith("fe80");
+}
+
 async function validateCatalogProvider(providerId) {
   const id = stringValue(providerId, "Provider catalog", PROVIDER_ID);
   const providers = await providerEntries();
@@ -1496,9 +1551,57 @@ export function registerIpcHandlers({
   }));
 
   handleAction("setProviderEnabled", async ({ providerId, enabled = true } = {}) => {
-    const { id } = await validateProvider(providerId);
+    const { id, provider } = await validateProvider(providerId);
     if (typeof enabled !== "boolean") throw new Error("enabled must be boolean.");
+    // Generic providers are routable by their descriptor flag, not provider
+    // selection; the generic command owns publication and the router reload.
+    if (provider.generic) {
+      return runJson(["generic-providers", enabled ? "enable" : "disable", id, "--json"], {
+        timeoutMs: CATALOG_MUTATION_TIMEOUT_MS,
+      });
+    }
     return updateProviderSelection(id, enabled);
+  });
+  handleAction("addCustomProvider", async ({ name, baseUrl, adapter = "openai-chat", credential = "" } = {}) => {
+    const displayName = typeof name === "string" ? name.trim() : "";
+    if (!displayName || displayName.length > 120) {
+      throw new Error("Give the provider a name of up to 120 characters.");
+    }
+    const endpoint = parseCustomProviderEndpoint(baseUrl);
+    if (!CUSTOM_PROVIDER_ADAPTERS.has(adapter)) {
+      throw new Error("Choose a supported API format.");
+    }
+    if (typeof credential !== "string" || credential.length > 16 * 1024) {
+      throw new Error("API key is invalid.");
+    }
+    const listed = await runJson(["generic-providers", "list", "--json"]);
+    const taken = new Set((Array.isArray(listed?.providers) ? listed.providers : [])
+      .map((entry) => String(entry?.id)));
+    const id = customProviderIdFromName(displayName, taken);
+    await runJson(["generic-providers", "add", id,
+      "--name", displayName,
+      "--base-url", endpoint.href.replace(/\/+$/, ""),
+      "--adapter", adapter,
+      ...(customProviderNeedsPrivateAllowance(endpoint) ? ["--allow-private"] : []),
+      "--json"], { timeoutMs: CATALOG_MUTATION_TIMEOUT_MS });
+    if (credential.trim()) {
+      await runJson(["generic-providers", "credential", id, "set", "--json"], {
+        stdin: credential,
+        timeoutMs: CATALOG_MUTATION_TIMEOUT_MS,
+      });
+    }
+    return { providerId: id, providers: await runJson(["providers"]) };
+  });
+  handleAction("removeCustomProvider", async ({ providerId } = {}) => {
+    const id = stringValue(providerId, "Provider", PROVIDER_ID);
+    const provider = (await providerEntries()).find((entry) => String(entry.id) === id);
+    if (!provider?.generic) throw new Error(`Unknown custom provider: ${id}`);
+    // The generic remove command owns the descriptor, its curated routes, the
+    // picker decisions, and the credential in one overlay transaction.
+    await runJson(["generic-providers", "remove", id, "--json"], {
+      timeoutMs: CATALOG_MUTATION_TIMEOUT_MS,
+    });
+    return { providers: await runJson(["providers"]) };
   });
   handleAction("addProviderModels", async ({ providerId, modelIds } = {}) => {
     const { id } = await validateCatalogProvider(providerId);
@@ -1586,9 +1689,18 @@ export function registerIpcHandlers({
     };
   });
   handleAction("saveProviderCredential", async ({ providerId, credential } = {}) => {
-    const { id } = await validateProvider(providerId, "credential");
+    const { id, provider } = await validateProvider(providerId, "credential");
     if (typeof credential !== "string" || !credential.trim() || credential.length > 16 * 1024) {
       throw new Error("Credential is invalid.");
+    }
+    // A custom provider's key follows the generic transactional path (its
+    // descriptor, protected store, and publication), not the registry's.
+    if (provider.generic) {
+      await runJson(["generic-providers", "credential", id, "set", "--json"], {
+        stdin: credential,
+        timeoutMs: CATALOG_MUTATION_TIMEOUT_MS,
+      });
+      return runJson(["providers"]);
     }
     // control credential owns the credential write, provider enable, and
     // publication under one cross-process model-overlay lock. Do not split a
@@ -1602,6 +1714,13 @@ export function registerIpcHandlers({
   });
   handleAction("removeProviderCredential", async ({ providerId } = {}) => {
     const { id, provider } = await validateProvider(providerId);
+    // Disconnect on a custom provider takes its key away but keeps the
+    // endpoint registered, so reconnecting never re-enters the base URL.
+    if (provider.generic) {
+      return runJson(["generic-providers", "credential", id, "remove", "--json"], {
+        timeoutMs: CATALOG_MUTATION_TIMEOUT_MS,
+      });
+    }
     if (provider.kind !== "api" && id !== "antigravity-oauth") {
       throw new Error(`${provider.displayName || id} has no router-managed credential to remove.`);
     }

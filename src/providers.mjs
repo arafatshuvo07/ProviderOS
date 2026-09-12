@@ -159,8 +159,25 @@ function list() {
 
 const GENERIC_MUTATIONS = new Set(["add", "edit", "enable", "disable", "remove"]);
 
+// The desktop app hands the secret to a spawned control child over a pipe that
+// is written and closed immediately. An interactive terminal keeps the hidden
+// prompt: `isTTY` distinguishes the two, so a piped shell typo still fails
+// loudly instead of silently storing an empty key.
+async function readPipedStdinSecret() {
+  if (process.stdin.isTTY) return undefined;
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of process.stdin) {
+    size += chunk.length;
+    if (size > 16 * 1024) throw new Error("The provider credential is too large.");
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 async function runGenericCredentialCommand(args, {
   prompt = promptForSecret,
+  readPipedSecret = readPipedStdinSecret,
   transact = transactModelOverlayMutation,
   applyPublication = applyModelOverlayPublication,
 } = {}) {
@@ -186,8 +203,9 @@ async function runGenericCredentialCommand(args, {
     return result;
   }
 
+  const pipedSecret = action === "set" ? await readPipedSecret() : undefined;
   const value = action === "set"
-    ? prompt(`${descriptor.displayName} API key`)
+    ? (pipedSecret !== undefined ? pipedSecret : prompt(`${descriptor.displayName} API key`))
     : undefined;
   let credentialId = descriptor.credentialRef;
   await transact({

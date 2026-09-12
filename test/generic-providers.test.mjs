@@ -281,7 +281,12 @@ test("generic provider credential CLI binds a hidden-prompt key and removes it c
   };
   const configured = await runGenericCommand(
     ["credential", providerId, "set", "--json"],
-    { prompt: () => secret, transact, applyPublication: async () => ({ published: false }) },
+    {
+      prompt: () => secret,
+      readPipedSecret: async () => undefined,
+      transact,
+      applyPublication: async () => ({ published: false }),
+    },
   );
   assert.equal(configured.configured, true);
   assert.match(configured.credentialRef, /^cred_/);
@@ -304,6 +309,62 @@ test("generic provider credential CLI binds a hidden-prompt key and removes it c
   assert.equal(readProviderCredentialStore().credentials.some(
     (credential) => credential.id === configured.credentialRef,
   ), false);
+});
+
+test("piped stdin sets a generic credential that onboarding surfaces as a custom provider", async () => {
+  const providerId = "generic-onboarding";
+  addGenericProvider({
+    id: providerId,
+    displayName: "Generic Onboarding",
+    baseUrl: "https://provider.example.test/v1",
+  });
+  const transact = async ({ mutate, applyPublication }) => {
+    await mutate();
+    await applyPublication();
+  };
+  const saved = await runGenericCommand(
+    ["credential", providerId, "set", "--json"],
+    {
+      readPipedSecret: async () => "TEST_PIPED_STDIN_TOKEN_5a91\n",
+      transact,
+      applyPublication: async () => ({ published: false }),
+    },
+  );
+  assert.equal(saved.configured, true);
+  assert.match(saved.credentialRef, /^cred_/);
+  assert.equal(getGenericProvider(providerId).credentialRef, saved.credentialRef);
+
+  const { providerOnboardingSnapshot } = await import("../src/provider-onboarding.mjs");
+  const entry = providerOnboardingSnapshot().providers.find((candidate) => candidate.id === providerId);
+  assert.ok(entry, "the runtime generic provider must join the onboarding snapshot");
+  assert.equal(entry.generic, true);
+  assert.equal(entry.genericEnabled, true);
+  assert.equal(entry.kind, "api");
+  assert.equal(entry.configured, true);
+  assert.equal(entry.baseUrl, "https://provider.example.test/v1");
+  assert.deepEqual(entry.catalogSources, [
+    { id: providerId, displayName: "Generic Onboarding", kind: "models-endpoint" },
+  ]);
+
+  // Disconnecting takes only the key: a keyless endpoint is still ready, so
+  // the provider stays registered with its endpoint metadata intact.
+  const removed = await runGenericCommand(
+    ["credential", providerId, "remove", "--json"],
+    { transact, applyPublication: async () => ({ published: false }) },
+  );
+  assert.equal(removed.credentialRef, null);
+  const keyless = providerOnboardingSnapshot().providers.find((candidate) => candidate.id === providerId);
+  assert.equal(keyless.genericEnabled, true);
+  assert.equal(keyless.configured, true);
+
+  const disabled = await runGenericCommand(
+    ["disable", providerId, "--json"],
+    { transact, applyPublication: async () => ({ published: false }) },
+  );
+  assert.equal(disabled.enabled, false);
+  const off = providerOnboardingSnapshot().providers.find((candidate) => candidate.id === providerId);
+  assert.equal(off.genericEnabled, false);
+  assert.equal(off.configured, true, "a disabled provider must not re-prompt for its key");
 });
 
 test("generic requests fail closed when a credential is unavailable or not an API key", async () => {

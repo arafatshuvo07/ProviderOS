@@ -161,6 +161,21 @@ const bridgeSource = String.raw`
         catalogSources: [{ id: "deepseek", displayName: "DeepSeek", kind: "models-endpoint" }],
       },
       {
+        id: "my-relay",
+        displayName: "My Relay",
+        kind: "api",
+        generic: true,
+        genericEnabled: true,
+        baseUrl: "https://relay.example.test/v1",
+        adapter: "openai-chat",
+        configured: true,
+        action: "ready",
+        credentialLabel: "API key",
+        disconnectable: true,
+        planNote: "Custom OpenAI-compatible endpoint: https://relay.example.test/v1 (openai-chat).",
+        catalogSources: [{ id: "my-relay", displayName: "My Relay", kind: "models-endpoint" }],
+      },
+      {
         id: "kilo-free",
         displayName: "Kilo Free",
         kind: "anonymous",
@@ -190,6 +205,19 @@ const bridgeSource = String.raw`
         blocked: {},
         unavailable: [],
         free: ["kilo-unselected-free"],
+      };
+    }
+    if (providerId === "my-relay" || providerId === "added-relay") {
+      return {
+        provider: providerId,
+        discovered: ["relay-alpha"],
+        registered: [],
+        unregistered: ["relay-alpha"],
+        addable: ["relay-alpha"],
+        blocked: {},
+        unavailable: [],
+        contextLengths: { "relay-alpha": 65536 },
+        fetchedAt: "2026-08-24T00:00:00.000Z",
       };
     }
     return {
@@ -238,7 +266,9 @@ const bridgeSource = String.raw`
     },
     getProviders: async () => {
       await new Promise((resolve) => setTimeout(resolve, providerDelayMs));
-      return providers;
+      // The real bridge re-parses the router's JSON on every read, so each
+      // refresh hands React a fresh object it can actually re-render from.
+      return JSON.parse(JSON.stringify(providers));
     },
     getPresence: async () => ({ mode: "always" }),
     getHealth: async () => {
@@ -458,6 +488,30 @@ const bridgeSource = String.raw`
     },
     setPickerModel: async () => ({ ok: true }),
     setProviderEnabled: async () => ({ ok: true }),
+    addCustomProvider: async (input) => {
+      record("addCustomProvider", input);
+      const id = "added-relay";
+      providers.providers.push({
+        id,
+        displayName: input.name,
+        kind: "api",
+        generic: true,
+        genericEnabled: true,
+        baseUrl: input.baseUrl,
+        adapter: input.adapter,
+        configured: true,
+        action: "ready",
+        credentialLabel: "API key",
+        disconnectable: true,
+        catalogSources: [{ id, displayName: input.name, kind: "models-endpoint" }],
+      });
+      return { providerId: id, providers };
+    },
+    removeCustomProvider: async (providerId) => {
+      record("removeCustomProvider", providerId);
+      providers.providers = providers.providers.filter((entry) => entry.id !== providerId);
+      return { providers };
+    },
     setChatGptAccountSelection: async (selection) => {
       record("setChatGptAccountSelection", selection);
       return { ok: true };
@@ -663,18 +717,22 @@ test("the production renderer exposes model discovery and picker actions", { tim
     // chips, the rest behind one menu.
     const connections = page.locator(".pm-connections");
     await connections.waitFor();
-    assert.match(await connections.innerText(), /3 of 8 connected/);
+    assert.match(await connections.innerText(), /4 of 9 connected/);
+    // A custom endpoint has no known brand artwork, so its chip shows the
+    // generated fallback initials in front of the display name.
     assert.deepEqual(
       (await connections.locator(".pm-chip:not(.pm-chip-add)").allTextContents()).map((text) => text.trim()).sort(),
-      ["DeepSeek", "OpenCode Free", "opencode Go/Zen"].sort(),
+      ["DeepSeek", "MRMy Relay", "OpenCode Free", "opencode Go/Zen"].sort(),
     );
     await connections.getByRole("button", { name: "Connect provider", exact: true }).click();
     const connectMenu = page.locator(".pm-connect-menu");
     await connectMenu.waitFor();
     // An anonymous endpoint is not connected until it is explicitly enabled,
-    // so it belongs with the providers still waiting for a connection.
+    // so it belongs with the providers still waiting for a connection. The
+    // menu always ends with the custom-endpoint registration entry.
     assert.match(await connectMenu.innerText(), /Kilo Free/);
-    assert.equal(await connectMenu.getByRole("menuitem").count(), 5);
+    assert.match(await connectMenu.innerText(), /Add custom provider…/);
+    assert.equal(await connectMenu.getByRole("menuitem").count(), 6);
     await page.keyboard.press("Escape");
 
     // A single-route model's thinking menu opens below its definition-list
@@ -730,7 +788,7 @@ test("the production renderer exposes model discovery and picker actions", { tim
     const bulkCatalogProviders = await page.evaluate(() => window.routerControlTest.calls()
       .filter((call) => call.name === "discoverProviderModels")
       .map((call) => call.args[0]));
-    assert.deepEqual(bulkCatalogProviders, ["deepseek"]);
+    assert.deepEqual(bulkCatalogProviders, ["deepseek", "my-relay"]);
 
     const blockedRow = addDialog.locator(".pm-add-models-row").filter({ hasText: "blocked-preview" });
     await blockedRow.waitFor();
@@ -1211,6 +1269,99 @@ test("connection fetch models opens the provider-scoped catalog with per-row add
       .map((call) => call.args), { before: callsBefore });
     assert.deepEqual(adds, [["deepseek", ["catalog-addable"]]]);
     assert.equal(await addableRow.locator("input[type=checkbox]").isChecked(), false);
+
+    assert.deepEqual(pageErrors, [], `renderer errors: ${pageErrors.join("; ")}`);
+  } finally {
+    await browser.close();
+    await close();
+  }
+});
+
+test("custom provider registers an endpoint, fetches its models, and deletes it", { timeout: 120_000 }, async () => {
+  assert.equal(existsSync(path.join(dist, "index.html")), true, "npm test must build the renderer first");
+  assert.ok(chromiumPath, "No Chromium executable is available for the Control Center renderer test.");
+
+  const { url, close } = await serveRenderer();
+  const browser = await chromium.launch({
+    executablePath: chromiumPath,
+    headless: true,
+    args: process.platform === "linux" ? ["--no-sandbox"] : [],
+  });
+  const pageErrors = [];
+  try {
+    const page = await newEnglishTestPage(browser, { viewport: { width: 1280, height: 840 } });
+    page.setDefaultTimeout(10_000);
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") pageErrors.push(message.text());
+    });
+
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    await page.getByRole("navigation", { name: "Control center sections" }).waitFor();
+    await page.waitForFunction(() => window.routerControlTest.navigationReady());
+
+    await page.getByRole("button", { name: "Models", exact: true }).click();
+    const connections = page.locator(".pm-connections");
+    await connections.waitFor();
+
+    const callsBefore = await page.evaluate(() => window.routerControlTest.calls().length);
+
+    // The connect menu always offers custom endpoint registration, even with
+    // every built-in provider either connected or listed above it.
+    await connections.getByRole("button", { name: "Connect provider", exact: true }).click();
+    const connectMenu = page.locator(".pm-connect-menu");
+    await connectMenu.waitFor();
+    await connectMenu.getByRole("menuitem", { name: /Add custom provider/ }).click();
+
+    const form = page.locator(".pm-custom-provider-form");
+    await form.waitFor();
+    await form.locator("#custom-provider-name").fill("My Relay Two");
+    await form.locator("#custom-provider-url").fill("https://relay2.example.test/v1");
+    await form.locator("#custom-provider-key").fill("sk-custom-test");
+    await form.getByRole("button", { name: "Add provider", exact: true }).click();
+
+    await page.waitForFunction(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .some((call) => call.name === "addCustomProvider"), { before: callsBefore });
+    const added = await page.evaluate(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .find((call) => call.name === "addCustomProvider")?.args, { before: callsBefore });
+    assert.deepEqual(added, [{
+      name: "My Relay Two",
+      baseUrl: "https://relay2.example.test/v1",
+      adapter: "openai-chat",
+      credential: "sk-custom-test",
+    }]);
+
+    // Saving hands straight to the provider-scoped fetch, so the operator sees
+    // the new endpoint's models without hunting for the dialog again.
+    await page.waitForFunction(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .some((call) => call.name === "discoverProviderModels"
+        && call.args[0] === "added-relay" && call.args[1].refresh === true), { before: callsBefore });
+    const scopedDialog = page.locator(".pm-add-models");
+    await scopedDialog.waitFor();
+    assert.match(await scopedDialog.locator(".pm-add-models-focus-chip").innerText(), /My Relay Two/);
+    const relayRow = scopedDialog.locator(".pm-add-models-row").filter({ hasText: "relay-alpha" });
+    await relayRow.waitFor();
+    await scopedDialog.getByRole("button", { name: "Cancel", exact: true }).click();
+
+    // A connected custom provider manages its endpoint from the same menu:
+    // fetch, key replacement, and a delete that withdraws its routes.
+    await connections.locator(".pm-chip").filter({ hasText: /My Relay$/ }).click();
+    const providerMenu = page.locator(".pm-connection-menu");
+    await providerMenu.waitFor();
+    assert.match(await providerMenu.innerText(), /relay\.example\.test/);
+    assert.equal(await providerMenu.getByRole("button", { name: "Fetch models", exact: true }).count(), 1);
+    assert.equal(await providerMenu.getByRole("button", { name: "Delete provider", exact: true }).count(), 1);
+
+    await providerMenu.getByRole("button", { name: "Delete provider", exact: true }).click();
+    const confirmDialog = page.locator(".dialog-panel").filter({ hasText: "Delete custom provider" });
+    await confirmDialog.waitFor();
+    await confirmDialog.getByRole("button", { name: "Delete", exact: true }).click();
+    await page.waitForFunction(({ before }) => window.routerControlTest.calls()
+      .slice(before)
+      .some((call) => call.name === "removeCustomProvider" && call.args[0] === "my-relay"), { before: callsBefore });
 
     assert.deepEqual(pageErrors, [], `renderer errors: ${pageErrors.join("; ")}`);
   } finally {

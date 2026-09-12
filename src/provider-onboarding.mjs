@@ -14,6 +14,8 @@ import { antigravityOAuthStatus } from "./antigravity-oauth-status.mjs";
 import { removeAntigravityToken } from "./antigravity-oauth-session.mjs";
 import { KIMI_CLI_NPM_PACKAGE } from "./kimi-oauth-onboarding.mjs";
 import { MODELS, PROVIDERS, providerNeedsNoKey } from "./model-registry.mjs";
+import { readGenericProviders } from "./generic-provider-state.mjs";
+import { genericProviderCredentialReady } from "./generic-provider-readiness.mjs";
 import {
   forgetProviderCatalogFamilyCache,
   providerCatalogSources,
@@ -106,7 +108,7 @@ export function providerOnboardingSnapshot() {
   const selectable = [...PROVIDERS.values()].filter((provider) => !provider.variantOf);
   const poolAuthoritySnapshot = providerApiKeyAuthoritySnapshot();
   return {
-    providers: selectable.map((provider) => {
+    providers: [...selectable.map((provider) => {
       const catalogSources = providerCatalogSources(provider.id);
       if (provider.kind === "oauth") {
         // Antigravity has no vendor CLI to install or reuse: its sign-in is
@@ -218,7 +220,44 @@ export function providerOnboardingSnapshot() {
       }
       return entry;
     }),
+    // Operator-added custom endpoints live in runtime state, not the checked-in
+    // registry, so they never appear from the map above. They join the same
+    // onboarding surface with `generic: true`: discovery, curation, and routing
+    // already treat them as OpenAI-compatible providers, and the desktop app
+    // routes their key/enable/remove actions through the generic commands.
+    // A damaged state file is one failed optional layer here, exactly as in
+    // the runtime registry.
+    ...genericOnboardingEntries()],
   };
+}
+
+function genericOnboardingEntries() {
+  try {
+    return readGenericProviders({ reservedProviderIds: PROVIDERS }).map((provider) => {
+      const configured = genericProviderCredentialReady(provider.id);
+      return {
+        id: provider.id,
+        displayName: provider.displayName,
+        kind: "api",
+        generic: true,
+        // The descriptor's own on/off. Provider selection never lists generic
+        // providers — the router routes them whenever this flag is on.
+        genericEnabled: provider.enabled === true,
+        ...(provider.baseUrl ? { baseUrl: provider.baseUrl } : {}),
+        ...(provider.adapter ? { adapter: provider.adapter } : {}),
+        configured,
+        action: configured ? "ready" : "add-key",
+        credentialLabel: "API key",
+        disconnectable: true,
+        catalogSources: [{ id: provider.id, displayName: provider.displayName, kind: "models-endpoint" }],
+        ...(provider.description
+          ? { planNote: provider.description }
+          : { planNote: `Custom OpenAI-compatible endpoint: ${provider.baseUrl} (${provider.adapter}).` }),
+      };
+    });
+  } catch {
+    return [];
+  }
 }
 
 // npm and every CLI it installs globally start with `#!/usr/bin/env node`, so

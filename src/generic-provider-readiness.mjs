@@ -21,10 +21,29 @@ function credentialAvailable(provider) {
 // have been installed. A credentialless endpoint is ready only after an
 // operator explicitly registered and enabled it in generic provider state.
 export function genericProviderConfigured(providerId) {
+  return genericProviderEnabled(providerId) && genericProviderCredentialReady(providerId);
+}
+
+// The enabled half of `genericProviderConfigured`, so onboarding surfaces can
+// label a disabled provider that already holds a working credential as
+// reconnectable instead of asking for a key it would overwrite.
+export function genericProviderEnabled(providerId) {
+  try {
+    return readGenericProviders({ reservedProviderIds: PROVIDERS })
+      .some((entry) => entry.id === providerId && entry.enabled);
+  } catch {
+    return false;
+  }
+}
+
+// The credential half alone: true when the descriptor needs no key or its
+// bound credential is present. Deliberately ignores `enabled` — a disabled
+// provider with a key must not re-prompt for it.
+export function genericProviderCredentialReady(providerId) {
   try {
     const provider = readGenericProviders({ reservedProviderIds: PROVIDERS })
       .find((entry) => entry.id === providerId);
-    if (!provider?.enabled) return false;
+    if (!provider) return false;
     return !provider.credentialRef || credentialAvailable(provider);
   } catch {
     return false;

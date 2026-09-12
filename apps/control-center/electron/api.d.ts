@@ -156,6 +156,13 @@ export interface RouterControl {
   refreshAll(): Promise<unknown>;
   setProviderEnabled(provider: string, enabled: boolean): Promise<unknown>;
   addProviderModels(provider: string, modelIds: string[]): Promise<unknown>;
+  addCustomProvider(input: {
+    name: string;
+    baseUrl: string;
+    adapter?: string;
+    credential?: string;
+  }): Promise<unknown>;
+  removeCustomProvider(provider: string): Promise<unknown>;
   connectProvider(provider: string): Promise<unknown>;
   saveProviderCredential(provider: string, credential: string): Promise<unknown>;
   removeProviderCredential(provider: string): Promise<unknown>;

@@ -84,7 +84,8 @@ interface ModelsPageProps {
   api?: RouterControlApi;
   refreshing: boolean;
   dataReady: RouterDataReady;
-  onRefresh: () => void;
+  /** Awaited only where the next step needs the refreshed snapshot on screen. */
+  onRefresh: () => void | Promise<void>;
   runAction: RunAction;
   focusRequest?: ModelViewFocusRequest;
 }
@@ -154,6 +155,12 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
   // The connect menu lives in the connections strip but is also the first-run
   // call to action, so the page owns whether it is open.
   const [connectMenuOpen, setConnectMenuOpen] = useState(false);
+  const [addCustomOpen, setAddCustomOpen] = useState(false);
+  const [deleteProviderSetup, setDeleteProviderSetup] = useState<ProviderSetup | null>(null);
+  // Set when a just-registered custom endpoint should get its scoped fetch as
+  // soon as the refreshed snapshot actually carries it; a direct call would
+  // run against the pre-refresh directory closure.
+  const [deferredFetchProviderId, setDeferredFetchProviderId] = useState<string | null>(null);
   const [expandedFamilyId, setExpandedFamilyId] = useState<string | null>(null);
   const [managedProviderId, setManagedProviderId] = useState<string | null>(null);
   const [addModelsOpen, setAddModelsOpen] = useState(false);
@@ -438,8 +445,35 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
     void loadConnectedCatalogs({ refresh: Boolean(providerId), onlyProviderId: providerId });
   };
 
+  // A just-registered custom endpoint reaches the directory only after the
+  // refresh commit has re-rendered; opening the scoped fetch the moment its
+  // setup row is on screen makes the save feel like it fetched directly.
+  useEffect(() => {
+    if (!deferredFetchProviderId) return;
+    const entry = directoryById.get(deferredFetchProviderId);
+    if (!entry?.setup?.catalogSources?.length) return;
+    setDeferredFetchProviderId(null);
+    openAddModels(deferredFetchProviderId);
+  }, [deferredFetchProviderId, directoryById]);
+
   const openProviderMenu = (providerId: string) => {
     setManagedProviderId((current) => (current === providerId ? null : providerId));
+  };
+
+  // Registering a custom endpoint waits for the refreshed provider snapshot so
+  // the scoped fetch below can ask the new provider for its models by id.
+  const submitCustomProvider = async (input: { name: string; baseUrl: string; adapter: "openai-chat" | "openai-responses"; credential: string }) => {
+    if (!api) return;
+    let created: { providerId?: string } | undefined;
+    await runAction(`Add custom provider ${input.name}`, async () => {
+      created = await api.addCustomProvider(input);
+      await onRefresh();
+    });
+    if (created?.providerId) {
+      setConnectMenuOpen(false);
+      setAddCustomOpen(false);
+      setDeferredFetchProviderId(created.providerId);
+    }
   };
 
   const renderConnections = () => !dataReady.providers && !setup ? (
@@ -460,7 +494,9 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
       onCloseProvider={() => setManagedProviderId(null)}
       connectMenuOpen={connectMenuOpen}
       onConnectMenuOpen={setConnectMenuOpen}
-      isEnabled={(entry) => optimisticProviders.value(entry.id, enabledProviders.has(entry.id) || entry.models.some((model) => model.native))}
+      isEnabled={(entry) => entry.setup?.generic
+        ? Boolean(entry.setup.genericEnabled)
+        : optimisticProviders.value(entry.id, enabledProviders.has(entry.id) || entry.models.some((model) => model.native))}
       onEnabledChange={(entry, checked) => {
         if (!api) return;
         void optimisticProviders.mutate(entry.id, checked, `${checked ? "Enable" : "Disable"} ${entry.displayName}`, () => api.setProviderEnabled(entry.id, checked));
@@ -474,6 +510,8 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
       }}
       onKey={(entry) => entry.setup && setCredentialProvider(entry.setup)}
       onRemove={(entry) => entry.setup && setRemoveProvider(entry.setup)}
+      onDeleteProvider={(entry) => entry.setup && setDeleteProviderSetup(entry.setup)}
+      onAddCustom={() => setAddCustomOpen(true)}
       onFetchModels={(entry) => {
         setManagedProviderId(null);
         openAddModels(entry.id);
@@ -482,6 +520,12 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
   );
   const renderConnectionDialogs = () => (
     <>
+      <AddCustomProviderDialog
+        open={addCustomOpen}
+        disabled={!api}
+        onSubmit={(input) => submitCustomProvider(input)}
+        onClose={() => setAddCustomOpen(false)}
+      />
       <CredentialDialog
         provider={credentialProvider}
         onSave={(provider, secret) => api
@@ -489,6 +533,24 @@ export function ModelsPage({ target, catalog, setup, usage, api, refreshing, dat
           : Promise.resolve()}
         onClose={() => setCredentialProvider(null)}
       />
+      <Dialog open={Boolean(deleteProviderSetup)} title="Delete custom provider" description="This removes the endpoint, its API key, and every model route added from it." onClose={() => setDeleteProviderSetup(null)}>
+        <div className="pm-credential-warning"><ShieldCheck aria-hidden size={17} strokeWidth={1.7} /><p>{deleteProviderSetup
+          ? `${deleteProviderSetup.displayName} (${deleteProviderSetup.baseUrl ?? "custom endpoint"}) and its curated models are withdrawn from installed clients as part of the delete.`
+          : ""}</p></div>
+        <div className="dialog-actions">
+          <Button variant="secondary" onClick={() => setDeleteProviderSetup(null)}>Cancel</Button>
+          <Button variant="danger" onClick={() => {
+            const provider = deleteProviderSetup;
+            setDeleteProviderSetup(null);
+            if (provider && api) {
+              void runProviderCredentialAction(provider, `Delete ${provider.displayName}`, async () => {
+                await api.removeCustomProvider(provider.id);
+                await onRefresh();
+              });
+            }
+          }}><Trash2 aria-hidden size={14} strokeWidth={1.7} /> Delete</Button>
+        </div>
+      </Dialog>
       <Dialog open={Boolean(removeProvider)} title="Disconnect provider" description="The provider is withdrawn from installed clients before its managed credential is deleted." onClose={() => setRemoveProvider(null)}>
         <div className="pm-credential-warning"><ShieldCheck aria-hidden size={17} strokeWidth={1.7} /><p>{removeProvider?.id === "antigravity-oauth"
           ? "This removes only the router-owned OAuth client, session, and live proof. Official Antigravity or agy credentials are never read or changed."
@@ -848,6 +910,8 @@ function ConnectionsBar({
   onSignIn,
   onKey,
   onRemove,
+  onDeleteProvider,
+  onAddCustom,
   onFetchModels,
 }: {
   directory: ProviderDirectoryEntry[];
@@ -865,6 +929,8 @@ function ConnectionsBar({
   onSignIn: (entry: ProviderDirectoryEntry) => void;
   onKey: (entry: ProviderDirectoryEntry) => void;
   onRemove: (entry: ProviderDirectoryEntry) => void;
+  onDeleteProvider: (entry: ProviderDirectoryEntry) => void;
+  onAddCustom: () => void;
   onFetchModels: (entry: ProviderDirectoryEntry) => void;
 }) {
   const barRef = useRef<HTMLElement | null>(null);
@@ -924,12 +990,13 @@ function ConnectionsBar({
                 onSignIn={() => onSignIn(entry)}
                 onKey={() => onKey(entry)}
                 onRemove={() => onRemove(entry)}
+                onDeleteProvider={() => onDeleteProvider(entry)}
                 onFetchModels={() => onFetchModels(entry)}
               />
             ) : null}
           </div>
         ))}
-        {available.length ? (
+        {available.length || apiAvailable ? (
           <div className="pm-chip-wrap">
             <button
               type="button"
@@ -954,6 +1021,7 @@ function ConnectionsBar({
                       if (!entry.setup) return;
                       if (entry.setup.kind === "oauth" || entry.setup.signIn) onSignIn(entry);
                       else if (entry.setup.kind === "anonymous") onEnabledChange(entry, true);
+                      else if (entry.setup.generic && entry.setup.configured) onEnabledChange(entry, true);
                       else onKey(entry);
                     }}
                   >
@@ -962,6 +1030,21 @@ function ConnectionsBar({
                     <small>{connectionMethod(entry)}</small>
                   </button>
                 ))}
+                <div className="pm-connect-menu-separator" role="separator" aria-hidden />
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={!apiAvailable}
+                  title="Register any OpenAI-compatible endpoint by its base URL, then fetch its models"
+                  onClick={() => {
+                    setConnectMenuOpen(false);
+                    onAddCustom();
+                  }}
+                >
+                  <Plus aria-hidden size={13} strokeWidth={2} />
+                  <span>Add custom provider…</span>
+                  <small>Endpoint + key</small>
+                </button>
               </div>
             ) : null}
           </div>
@@ -981,6 +1064,7 @@ function ProviderMenu({
   onSignIn,
   onKey,
   onRemove,
+  onDeleteProvider,
   onFetchModels,
 }: {
   entry: ProviderDirectoryEntry;
@@ -992,6 +1076,7 @@ function ProviderMenu({
   onSignIn: () => void;
   onKey: () => void;
   onRemove: () => void;
+  onDeleteProvider: () => void;
   onFetchModels: () => void;
 }) {
   const setup = entry.setup;
@@ -1049,6 +1134,11 @@ function ProviderMenu({
             {((setup.kind === "api" && setup.configured) || setup.disconnectable) && entry.id !== "local" ? (
               <Button variant="ghost" disabled={!apiAvailable} onClick={onRemove}>
                 <Trash2 aria-hidden size={14} strokeWidth={1.7} /> Disconnect
+              </Button>
+            ) : null}
+            {setup.generic ? (
+              <Button variant="ghost" disabled={!apiAvailable} onClick={onDeleteProvider}>
+                <Trash2 aria-hidden size={14} strokeWidth={1.7} /> Delete provider
               </Button>
             ) : null}
           </div>
@@ -1733,6 +1823,110 @@ function AddModelsDialog({
   );
 }
 
+const CUSTOM_PROVIDER_FORMATS = [
+  { value: "openai-chat", label: "OpenAI Chat Completions (/v1/chat/completions)" },
+  { value: "openai-responses", label: "OpenAI Responses (/v1/responses)" },
+] as const;
+
+function AddCustomProviderDialog({ open, disabled, onSubmit, onClose }: {
+  open: boolean;
+  disabled: boolean;
+  onSubmit: (input: { name: string; baseUrl: string; adapter: "openai-chat" | "openai-responses"; credential: string }) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [credential, setCredential] = useState("");
+  const [adapter, setAdapter] = useState<"openai-chat" | "openai-responses">("openai-chat");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) return;
+    setName("");
+    setBaseUrl("");
+    setCredential("");
+    setAdapter("openai-chat");
+    setSubmitting(false);
+  }, [open]);
+
+  const endpoint = baseUrl.trim();
+  // The same hosts the router accepts with allowPrivate — naming them here
+  // tells the operator their local endpoint was understood before saving.
+  const localNote = useMemo(() => {
+    try {
+      const parsed = new URL(endpoint);
+      const host = parsed.hostname.toLowerCase();
+      if (!["http:", "https:"].includes(parsed.protocol)) return "";
+      if (host === "localhost" || host.endsWith(".localhost") || host === "::1"
+        || /^127\./.test(host) || /^10\./.test(host) || /^192\.168\./.test(host)) {
+        return "Local endpoint: it will be registered with local-network access allowed.";
+      }
+    } catch {
+      // Not a valid URL yet; the Save button stays enabled and the router's
+      // validation names the problem if it slips through.
+    }
+    return "";
+  }, [endpoint]);
+
+  const ready = Boolean(name.trim() && endpoint && !submitting);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!ready) return;
+    setSubmitting(true);
+    const input = { name: name.trim(), baseUrl: endpoint, adapter, credential };
+    setCredential("");
+    onClose();
+    try {
+      await onSubmit(input);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function close() {
+    setName("");
+    setBaseUrl("");
+    setCredential("");
+    onClose();
+  }
+  return (
+    <Dialog
+      open={open}
+      title="Add custom provider"
+      description="Register any OpenAI-compatible endpoint. Its models are fetched right after saving."
+      onClose={close}
+    >
+      <form className="pm-credential-form pm-custom-provider-form" onSubmit={(event) => void submit(event)}>
+        <label htmlFor="custom-provider-name">Name</label>
+        <input id="custom-provider-name" value={name} onChange={(event) => setName(event.target.value)} autoComplete="off" spellCheck={false} placeholder="e.g. DeepSeek" autoFocus />
+        <label htmlFor="custom-provider-url">Base URL</label>
+        <input id="custom-provider-url" value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} autoComplete="off" inputMode="url" spellCheck={false} placeholder="https://api.example.com/v1" />
+        <label htmlFor="custom-provider-adapter">API format</label>
+        <select
+          id="custom-provider-adapter"
+          value={adapter}
+          onChange={(event) => setAdapter(event.target.value === "openai-responses" ? "openai-responses" : "openai-chat")}
+        >
+          {CUSTOM_PROVIDER_FORMATS.map((format) => (
+            <option key={format.value} value={format.value}>{format.label}</option>
+          ))}
+        </select>
+        <label htmlFor="custom-provider-key">API key (optional)</label>
+        <input id="custom-provider-key" type="password" value={credential} onChange={(event) => setCredential(event.target.value)} autoComplete="off" spellCheck={false} placeholder="Leave empty for keyless endpoints" />
+        {localNote ? <p className="pm-custom-provider-note">{localNote}</p> : null}
+        <p><Link2 aria-hidden size={13} strokeWidth={1.7} /> The key is sent once to the router's standard input. It is never added to logs, command arguments, or saved renderer state.</p>
+        <div className="dialog-actions">
+          <Button type="button" variant="secondary" onClick={close}>Cancel</Button>
+          <Button type="submit" variant="primary" disabled={disabled || !ready}>
+            {submitting ? "Adding…" : "Add provider"}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
 function CredentialDialog({ provider, onSave, onClose }: { provider: ProviderSetup | null; onSave: (provider: ProviderSetup, secret: string) => Promise<void>; onClose: () => void }) {
   const [credential, setCredential] = useState("");
   async function submit(event: FormEvent) {
@@ -1764,6 +1958,10 @@ function providerConnected(entry: ProviderDirectoryEntry, enabledProviders: Set<
   // the bulk "connected" request. Its explicit provider selection is the
   // connection boundary instead.
   if (entry.setup?.kind === "anonymous") return enabledProviders.has(entry.id);
+  // A custom endpoint is connected when its descriptor is on and its key (if
+  // it wants one) is present. Generic providers never appear in provider
+  // selection, so `enabledProviders` cannot speak for them.
+  if (entry.setup?.generic) return Boolean(entry.setup.genericEnabled && entry.setup.configured);
   if (entry.setup) return entry.setup.configured || entry.setup.signedIn === true;
   return entry.models.some((model) => model.native) || enabledProviders.has(entry.id);
 }
@@ -1775,6 +1973,7 @@ function providerDisplayName(providerId: string): string {
 function connectionMethod(entry: ProviderDirectoryEntry): string {
   if (entry.id === "openai") return "ChatGPT session";
   if (entry.id === "local") return "Local runtime";
+  if (entry.setup?.generic) return entry.setup.configured ? "Custom endpoint" : "API key";
   if (!entry.setup) return "Managed catalog";
   if (entry.setup.action === "probe") return "Live test required";
   if (entry.setup.action === "blocked") return "Disconnect required";

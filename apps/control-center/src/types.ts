@@ -355,6 +355,12 @@ export interface ProviderSetup {
   kind: "oauth" | "api" | "anonymous" | "per-model";
   configured: boolean;
   action: string;
+  /** A runtime-registered custom endpoint (OpenAI-compatible). */
+  generic?: boolean;
+  /** The descriptor's own on/off; generic providers have no provider selection. */
+  genericEnabled?: boolean;
+  baseUrl?: string;
+  adapter?: string;
   planNote?: string;
   catalogSources?: Array<{
     id: string;
@@ -748,6 +754,13 @@ export interface RouterControlApi {
   refreshAll(): Promise<unknown>;
   setProviderEnabled(provider: string, enabled: boolean): Promise<unknown>;
   addProviderModels(provider: string, modelIds: string[]): Promise<unknown>;
+  addCustomProvider(input: {
+    name: string;
+    baseUrl: string;
+    adapter: "openai-chat" | "openai-responses";
+    credential?: string;
+  }): Promise<{ providerId?: string; providers?: ProviderSetupSnapshot }>;
+  removeCustomProvider(provider: string): Promise<unknown>;
   connectProvider(provider: string): Promise<unknown>;
   saveProviderCredential(provider: string, credential: string): Promise<unknown>;
   removeProviderCredential(provider: string): Promise<unknown>;
