@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-repository_url=${CODEX_ROUTER_REPOSITORY_URL:-https://github.com/duolahypercho/codex-router.git}
+repository_url=${CODEX_ROUTER_REPOSITORY_URL:-https://github.com/arafatshuvo07/ProviderOS.git}
 default_data_dir=${XDG_DATA_HOME:-$HOME/.local/share}
 install_dir=$default_data_dir/codex-router
 prepare_only=false
@@ -256,7 +256,8 @@ case "$0" in
     if [ -n "$candidate_dir" ] &&
       [ -x "$candidate_dir/bin/install" ] &&
       [ -f "$candidate_dir/package.json" ] &&
-      grep -q '"name": "codex-model-router"' "$candidate_dir/package.json"; then
+      (grep -q '"name": "provideros"' "$candidate_dir/package.json" ||
+        grep -q '"name": "codex-model-router"' "$candidate_dir/package.json"); then
       repo_dir=$candidate_dir
     fi
     ;;
@@ -268,7 +269,7 @@ if [ -z "$repo_dir" ]; then
   if [ -d "$install_dir/.git" ]; then
     origin_url=$(git -C "$install_dir" remote get-url origin 2>/dev/null || true)
     case "$origin_url" in
-      "$repository_url"|https://github.com/duolahypercho/codex-router|https://github.com/duolahypercho/codex-router.git|git@github.com:duolahypercho/codex-router.git)
+      "$repository_url"|https://github.com/arafatshuvo07/ProviderOS|https://github.com/arafatshuvo07/ProviderOS.git|https://github.com/duolahypercho/codex-router|https://github.com/duolahypercho/codex-router.git|git@github.com:duolahypercho/codex-router.git)
         ;;
       *)
         die "$install_dir already contains a different Git repository"
@@ -364,22 +365,22 @@ fi
 
 case "$target" in
   dsh)
-    printf '\nCodex Router is installed for DeepSeek Harness. Its route is live on the next request; no restart is needed.\n'
+    printf '\nProviderOS is installed for DeepSeek Harness. Its route is live on the next request; no restart is needed.\n'
     ;;
   gemini)
-    printf '\nCodex Router is installed for Gemini CLI. The next gemini invocation reads the new route.\n'
+    printf '\nProviderOS is installed for Gemini CLI. The next gemini invocation reads the new route.\n'
     ;;
   cursor)
-    printf '\nCodex Router is installed for Cursor. Run cursor-router-agent for the CLI; fully quit and reopen Cursor App for its router/... models.\n'
+    printf '\nProviderOS is installed for Cursor. Run cursor-router-agent for the CLI; fully quit and reopen Cursor App for its router/... models.\n'
     ;;
   claude)
-    printf '\nCodex Router is installed for Claude Code. Run claude-router and choose a codex_router/anthropic/... model.\n'
+    printf '\nProviderOS is installed for Claude Code. Run claude-router and choose a codex_router/anthropic/... model.\n'
     ;;
   openclaw)
-    printf '\nCodex Router installed OpenClaw and published every routed model under its codex-router provider. Run openclaw to start.\n'
+    printf '\nProviderOS installed OpenClaw and published every routed model under its codex-router provider. Run openclaw to start.\n'
     ;;
   *)
-    printf '\nCodex Router is installed. Fully quit Codex, reopen it, and start a new task.\n'
+    printf '\nProviderOS is installed. Fully quit Codex, reopen it, and start a new task.\n'
     printf 'The model picker will show only the providers you enabled while preserving native GPT models.\n'
     ;;
 esac

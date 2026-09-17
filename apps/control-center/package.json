@@ -1,8 +1,8 @@
 {
-  "name": "@codex-router/control-center",
+  "name": "@provideros/control-center",
   "version": "0.5.1",
-  "description": "Electron control center for Codex Router",
-  "author": "Codex Router contributors",
+  "description": "Electron control center for ProviderOS",
+  "author": "ProviderOS contributors",
   "private": true,
   "type": "module",
   "main": "electron/main.mjs",

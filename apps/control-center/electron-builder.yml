@@ -1,5 +1,5 @@
-appId: io.github.codex-router.control-center
-productName: Switchboard
+appId: io.github.provideros.control-center
+productName: ProviderOS
 directories:
   output: release
 files:

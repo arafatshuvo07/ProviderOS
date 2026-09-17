@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+# ProviderOS is the public product name. Keep the established codex-router
+# dispatcher as the implementation entrypoint so existing scripts and state
+# remain compatible while new installations can use the branded command.
+bin_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+exec "$bin_dir/codex-router" "$@"

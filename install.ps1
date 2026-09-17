@@ -72,7 +72,7 @@ $PreviousRevision = $null
 $RepositoryUrl = if ($env:CODEX_ROUTER_REPOSITORY_URL) {
   $env:CODEX_ROUTER_REPOSITORY_URL
 } else {
-  "https://github.com/duolahypercho/codex-router.git"
+  "https://github.com/arafatshuvo07/ProviderOS.git"
 }
 
 function Assert-Command([string]$Name, [string]$Help) {
@@ -85,7 +85,8 @@ function Test-RouterCheckout([string]$Directory) {
   $Package = Join-Path $Directory "package.json"
   if (-not (Test-Path $Package)) { return $false }
   try {
-    return (Get-Content $Package -Raw | ConvertFrom-Json).name -eq "codex-model-router"
+    $Name = (Get-Content $Package -Raw | ConvertFrom-Json).name
+    return $Name -in @("provideros", "codex-model-router")
   } catch {
     return $false
   }
@@ -149,6 +150,8 @@ if (-not $CheckoutInstall) {
       $Origin = (& git -C $InstallDir remote get-url origin).Trim()
       $AllowedOrigins = @(
         $RepositoryUrl,
+        "https://github.com/arafatshuvo07/ProviderOS",
+        "https://github.com/arafatshuvo07/ProviderOS.git",
         "https://github.com/duolahypercho/codex-router",
         "https://github.com/duolahypercho/codex-router.git",
         "git@github.com:duolahypercho/codex-router.git"

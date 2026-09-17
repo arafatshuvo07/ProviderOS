@@ -238,7 +238,7 @@ export function renderFormula({
   include Language::Python::Virtualenv
 
   desc "Use external coding models inside the Codex App and CLI"
-  homepage "https://github.com/duolahypercho/codex-router"
+  homepage "https://github.com/arafatshuvo07/ProviderOS"
   url ${rubyString(sourceUrl)}
   sha256 ${rubyString(sourceSha256)}
   license "MIT"

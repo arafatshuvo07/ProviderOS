@@ -150,7 +150,7 @@ function incomplete(message) {
 if (args.includes("--help")) {
   process.stdout.write(`Usage: setup [options]
 
-Guided, credential-safe Codex Router setup.
+Guided, credential-safe ProviderOS setup.
 
 Options:
   --guided             Ask provider and migration questions interactively
@@ -433,7 +433,7 @@ function installTray() {
       // running embedded Control Center, swaps atomically, stamps the build,
       // and hands the native host to launchd.
       run(path.join(SOURCE_ROOT, "bin", "model-router-tray"), []);
-      process.stdout.write("Codex Router installed with its native menu-bar tray and Control Center.\n");
+      process.stdout.write("ProviderOS installed with its native menu-bar tray and Control Center.\n");
     } else if (process.platform === "win32") {
       // Windows had no path through here at all: the tray was built by hand or
       // not at all, and nothing brought it back after a reboot. `tray install`
@@ -731,7 +731,7 @@ async function main() {
         : openclawTarget
           ? `\nOpenClaw is ready with: ${providerSummary}\n` +
             `Run \`openclaw\`; every routed model is available under the \`codex-router\` provider.\n`
-        : `\nCodex Router is ready with: ${providerSummary}\nFully quit Codex, reopen it, and start a new task.\n`,
+        : `\nProviderOS is ready with: ${providerSummary}\nFully quit Codex, reopen it, and start a new task.\n`,
   );
   if (visionBridge?.enabled && visionBridge.engine) {
     process.stdout.write(

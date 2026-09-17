@@ -501,6 +501,7 @@ function companionSourceRoots() {
   }
   if (process.platform === "darwin") {
     candidates.push(
+      path.join(os.homedir(), "Applications", "ProviderOS.app", "Contents", "Resources", "router-root"),
       path.join(os.homedir(), "Applications", "Switchboard.app", "Contents", "Resources", "router-root"),
       path.join(os.homedir(), "Applications", "Codex Router.app", "Contents", "Resources", "router-root"),
       path.join(os.homedir(), "Applications", "Model Router.app", "Contents", "Resources", "router-root"),
@@ -551,7 +552,7 @@ export function discoverSourceRoot() {
     const root = validSourceRoot(candidate);
     if (root) return root;
   }
-  throw new Error("Switchboard source root could not be located.");
+  throw new Error("ProviderOS source root could not be located.");
 }
 
 function appControlContract(packagePath, { trustedCheckout = false } = {}) {
@@ -595,7 +596,7 @@ export function assertMutationCompatibility(sourceRoot = discoverSourceRoot()) {
     && bundled.controlProtocol === installed.controlProtocol
   ) return { bundled, installed };
   throw new Error(
-    "This Control Center does not match the installed Switchboard control protocol. "
+    "This Control Center does not match the installed ProviderOS control protocol. "
       + "Install or update the router and desktop app from the same build, then reopen the app.",
   );
 }

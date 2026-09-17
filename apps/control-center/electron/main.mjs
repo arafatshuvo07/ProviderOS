@@ -48,7 +48,7 @@ const lifecycleFile = lifecycleStatePath();
 function embeddedInNativeHost() {
   if (process.platform !== "darwin" || !process.resourcesPath) return false;
   const resourcePath = path.resolve(process.resourcesPath);
-  return ["Switchboard.app", "Codex Router.app", "Model Router.app"].some((outerBundle) =>
+  return ["ProviderOS.app", "Switchboard.app", "Codex Router.app", "Model Router.app"].some((outerBundle) =>
     resourcePath.endsWith([
       outerBundle,
       "Contents",
@@ -118,7 +118,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 640,
     show: false,
-    title: "Switchboard",
+    title: "ProviderOS",
     icon: appIconPath(),
     // macOS keeps native traffic lights. Windows/Linux are frameless with
     // no overlay so the renderer can place left-side lights like macOS.
@@ -268,11 +268,11 @@ function createTray() {
   if (image.isEmpty()) throw new Error(`The tray icon could not be loaded from ${appIconPath()}.`);
   const createdTray = new Tray(image);
   try {
-    createdTray.setToolTip("Switchboard");
+    createdTray.setToolTip("ProviderOS");
     createdTray.setContextMenu(Menu.buildFromTemplate([
       { label: "Open Control Center", click: showWindow },
       { type: "separator" },
-      { label: "Quit Switchboard", click: () => app.quit() },
+      { label: "Quit ProviderOS", click: () => app.quit() },
     ]));
     createdTray.on("click", showWindow);
   } catch (error) {

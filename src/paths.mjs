@@ -31,7 +31,7 @@ const TARGET_DISPLAY_NAMES = Object.freeze({
   cursor: "Cursor Router",
   claude: "Claude Code Router",
   openclaw: "OpenClaw Router",
-  codex: "Codex Router",
+  codex: "ProviderOS",
 });
 export const TARGET_DISPLAY_NAME = TARGET_DISPLAY_NAMES[TARGET] || TARGET_DISPLAY_NAMES.codex;
 const configuredSourceRoot = process.env.CODEX_ROUTER_SOURCE_ROOT;

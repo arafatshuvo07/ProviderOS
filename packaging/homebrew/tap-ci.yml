@@ -9,7 +9,7 @@ name: CI
   push:
     branches: [main]
   pull_request:
-  # The release workflow in duolahypercho/codex-router pushes a formula bump here,
+  # The release workflow in arafatshuvo07/ProviderOS pushes a formula bump here,
   # and a scheduled run catches the case where an upstream dependency (node@24,
   # python@3.12) moved underneath a formula nobody has touched.
   schedule:

@@ -1,4 +1,4 @@
-/* Switchboard UI typeface: Geist (Vercel), self-hosted so the packaged app
+/* ProviderOS UI typeface: Geist (Vercel), self-hosted so the packaged app
    never depends on the network. Geist Mono carries every numeric readout so
    token counts align and read at a glance. Inter stays as the fallback face. */
 @font-face {
@@ -2521,7 +2521,7 @@ progress::-webkit-progress-value { border-radius: 999px; background: var(--accen
 }
 
 /* ------------------------------------------------------------------ */
-/* Switchboard design polish: typography scale, elevation, controls.   */
+/* ProviderOS design polish: typography scale, elevation, controls.   */
 /* Layered canvas (gray app bg) with white cards, one indigo accent,   */
 /* and quiet shadows. Overrides above defaults; keep additions here.   */
 /* ------------------------------------------------------------------ */

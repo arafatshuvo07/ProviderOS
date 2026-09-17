@@ -2,8 +2,8 @@ class CodexRouter < Formula
   include Language::Python::Virtualenv
 
   desc "Use external coding models inside the Codex App and CLI"
-  homepage "https://github.com/duolahypercho/codex-router"
-  url "https://github.com/duolahypercho/codex-router/releases/download/v0.5.1/codex-router-0.5.1.tar.gz"
+  homepage "https://github.com/arafatshuvo07/ProviderOS"
+  url "https://github.com/arafatshuvo07/ProviderOS/releases/download/v0.5.1/codex-router-0.5.1.tar.gz"
   sha256 "c0bdfbc2573431cb5847c318ffa539d3d2e745876e63944b4713931c4389df15"
   license "MIT"
 

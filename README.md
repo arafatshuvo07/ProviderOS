@@ -1,4 +1,10 @@
-# Codex Router
+# ProviderOS
+
+ProviderOS is a local, extensible model-provider router for Codex, Cursor,
+DeepSeek Harness, Gemini CLI, Claude Code, OpenClaw, and other compatible
+clients. This repository is a maintained fork of the original Codex Router;
+the internal `codex-router` environment and state identifiers remain as
+backwards-compatible implementation names.
 
 ## Install everything (recommended)
 
@@ -10,7 +16,7 @@ tray/menu-bar app + macOS desktop widget**.
 Copy and paste this into Terminal:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/duolahypercho/codex-router/main/install.sh \
+curl -fsSL https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.sh \
   | sh -s -- --target codex --guided --with-tray
 ```
 
@@ -19,8 +25,8 @@ curl -fsSL https://raw.githubusercontent.com/duolahypercho/codex-router/main/ins
 Copy and paste this into PowerShell:
 
 ```powershell
-$installer = Join-Path $env:TEMP "codex-router-install.ps1"
-Invoke-WebRequest https://raw.githubusercontent.com/duolahypercho/codex-router/main/install.ps1 -OutFile $installer
+$installer = Join-Path $env:TEMP "provideros-install.ps1"
+Invoke-WebRequest https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.ps1 -OutFile $installer
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -Target codex -Guided -WithTray
 ```
 
@@ -31,9 +37,9 @@ When it finishes:
 
 1. Fully quit and reopen Codex.
 2. Start a new task and choose a routed model.
-3. Open **Codex Router** to use the Control Center.
+3. Open **ProviderOS** to use the Control Center.
 
-On macOS, open **Codex Router** from Spotlight or `~/Applications`; its icon
+On macOS, open **ProviderOS** from Spotlight or `~/Applications`; its icon
 stays in the menu bar when the Control Center is closed. The desktop widget is
 already included: choose **Settings → Dynamic Island → Desktop** from the
 menu-bar app to show it. It is a movable Codex Router panel rather than an item
@@ -53,7 +59,7 @@ env DEVELOPER_DIR="/path/to/Xcode.app/Contents/Developer" \
   ~/.local/share/codex-router/bin/model-router-tray
 ```
 
-## What Codex Router does
+## What ProviderOS does
 
 Use Anthropic, Kimi, DeepSeek, xAI, GitHub Copilot, and other external models
 inside the Codex App and CLI. One local installation can also serve
@@ -110,7 +116,7 @@ contracts. Direct reuse of Gemini CLI OAuth tokens in third-party software is
 not implemented; Google's published [Gemini CLI terms](https://github.com/google-gemini/gemini-cli/blob/main/docs/resources/tos-privacy.md)
 explicitly prohibit that access pattern.
 
-Codex Router is an independent community project. It is not affiliated with or
+ProviderOS is an independent community project. It is not affiliated with or
 endorsed by OpenAI, GitHub, Anthropic, Moonshot AI, DeepSeek, OpenRouter,
 opencode, Google, or the referenced opencodex project.
 
@@ -120,7 +126,7 @@ Paste this into a Codex task:
 
 ```text
 Install the router from this public repository:
-https://github.com/duolahypercho/codex-router
+https://github.com/arafatshuvo07/ProviderOS
 
 Follow AGENTS.md. Preserve my existing Codex models, profiles, settings, and
 ChatGPT login. Use only the provider authentication I choose, safely migrate
@@ -136,11 +142,11 @@ hidden local terminal prompt.
 
 ### Homebrew (macOS or Linux)
 
-Codex Router is not in `homebrew/core` yet, so `brew install codex-router` by
+ProviderOS is not in `homebrew/core` yet, so `brew install codex-router` by
 itself does not work. For now, add this repository as a tap once:
 
 ```sh
-brew tap duolahypercho/codex-router https://github.com/duolahypercho/codex-router
+brew tap arafatshuvo07/ProviderOS https://github.com/arafatshuvo07/ProviderOS
 brew install codex-router
 codex-router setup --guided
 ```
@@ -210,14 +216,15 @@ Maintainers preparing the eventual `homebrew/core` submission should follow
 This project does not publish an npm-installable CLI yet. Do not use
 `npm install codex-router` for this project. Use the recommended installer or
 Homebrew above; a future npm package should use the scoped name
-`@duolahypercho/codex-router` so it cannot be confused with existing packages.
+an explicitly ProviderOS-scoped name so it cannot be confused with existing
+packages.
 
 ### Guided installer
 
 macOS or Linux:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/duolahypercho/codex-router/main/install.sh \
+curl -fsSL https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.sh \
   | sh -s -- --target codex --guided
 ```
 
@@ -225,7 +232,7 @@ Windows PowerShell:
 
 ```powershell
 $installer = Join-Path $env:TEMP "codex-router-install.ps1"
-Invoke-WebRequest https://raw.githubusercontent.com/duolahypercho/codex-router/main/install.ps1 -OutFile $installer
+Invoke-WebRequest https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.ps1 -OutFile $installer
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -Target codex -Guided
 ```
 
@@ -428,7 +435,7 @@ grok login --oauth
 > `PERMISSION_DENIED` / `SERVICE_DISABLED`. If your project is not allowlisted,
 > **this provider cannot currently be used** — there is no operator-side
 > workaround, and no configuration in this repository changes it. See
-> [#566](https://github.com/duolahypercho/codex-router/issues/566).
+> [#566](https://github.com/arafatshuvo07/ProviderOS/issues/566).
 
 Create a Google OAuth **Desktop app** client in a Google Cloud project you own:
 
@@ -2112,7 +2119,7 @@ the window.
 .\codex-router.ps1 tray install
 ```
 
-[Download the latest Windows or Linux desktop package](https://github.com/duolahypercho/codex-router/releases/latest).
+[Download the latest Windows or Linux desktop package](https://github.com/arafatshuvo07/ProviderOS/releases/latest).
 Tagged releases provide unsigned tester packages for this unified application
 family: `model-router-<version>-windows-x64.exe` and
 `model-router-<version>-linux-x64.tar.gz` (containing the executable AppImage).

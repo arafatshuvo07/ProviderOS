@@ -1,6 +1,6 @@
 class CodexRouter < Formula
   desc "Route Codex to non-OpenAI models through a local gateway"
-  homepage "https://github.com/duolahypercho/codex-router"
+  homepage "https://github.com/arafatshuvo07/ProviderOS"
   # NOT YET INSTALLABLE. v0.4.0-beta.2 was tagged on 2026-08-06 and the
   # hash-verified `requirements/` lock landed on 2026-08-08, so the only
   # published release does not contain the file this formula installs the Python
@@ -11,7 +11,7 @@ class CodexRouter < Formula
   # workflow bumps package.json, tags it, and rewrites both lines in the tap
   # through scripts/update-homebrew-formula.mjs. Verified working against a
   # local archive of main, which is what a new release would contain.
-  url "https://github.com/duolahypercho/codex-router/releases/download/v0.4.0-beta.2/codex-router-0.4.0-beta.2.tar.gz"
+  url "https://github.com/arafatshuvo07/ProviderOS/releases/download/v0.4.0-beta.2/codex-router-0.4.0-beta.2.tar.gz"
   sha256 "665511833fe4681c6e2c9e930f4561710ad3d265622ed1fb4fa1df8d24307482"
   license "MIT"
 

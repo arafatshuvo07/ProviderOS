@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const REPOSITORY = "duolahypercho/codex-router";
+export const REPOSITORY = "arafatshuvo07/ProviderOS";
 
 // The release workflow builds `codex-router-<version>.tar.gz` with `git archive`
 // and uploads it to the tag's release; this has to name the same asset.

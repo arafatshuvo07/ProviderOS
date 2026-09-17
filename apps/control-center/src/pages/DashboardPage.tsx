@@ -338,7 +338,7 @@ export function DashboardPage({
 
       {!api ? (
         <InlineNotice tone="warning" title="Desktop bridge unavailable">
-          Open this window through the Switchboard desktop app to read live router data.
+          Open this window through the ProviderOS desktop app to read live router data.
         </InlineNotice>
       ) : health && !health.ok && health.error ? (
         <InlineNotice tone="danger" title="Router health check failed">{health.error}</InlineNotice>
