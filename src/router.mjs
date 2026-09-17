@@ -2055,6 +2055,29 @@ function carryReasoningThroughInput(input, { nativeThinking = false } = {}) {
   }
 }
 
+// A model may call a tool that takes no arguments with an empty `arguments`
+// string. Codex reads the empty string as "no arguments", runs the tool, and
+// then replays the very same item back in the follow-up turn's history -- where
+// a strict upstream refuses the whole request because `""` is not valid JSON.
+// Meta Responses is the verified case: every later turn of that session died
+// with HTTP 400 "`arguments` must be valid JSON" until the item aged out of
+// the window. `"{}"` is the same call semantically and is what every endpoint
+// accepts, so rewrite it in place. Only the empty string is unambiguous; an
+// arguments string that merely fails to parse stays untouched, because the
+// right repair for it is unknowable here.
+function normalizeEmptyToolArguments(input) {
+  if (!Array.isArray(input)) return;
+  for (const item of input) {
+    if (
+      item?.type === "function_call" &&
+      typeof item.arguments === "string" &&
+      item.arguments.trim() === ""
+    ) {
+      item.arguments = "{}";
+    }
+  }
+}
+
 // A trailing model turn is a destructive rewrite: it discards part of the
 // caller's conversation. Only Google's own provider gets that behavior from
 // identity. Resellers and custom endpoints must opt in per model after their
@@ -3079,6 +3102,9 @@ async function buildRoutedRequest({ request, payload, route, agedInput }) {
   carryReasoningThroughInput(input, {
     nativeThinking: chatCompletionsProvider && route.requestProfile === "glm-thinking",
   });
+  // Strict upstreams refuse a history that carries a model's no-argument tool
+  // call replayed as an empty `arguments` string; heal it before forwarding.
+  normalizeEmptyToolArguments(input);
   // Models marked requiresTrailingUserTurn reject requests ending with a model
   // turn. Pop trailing assistant messages, reasoning, or subagent outputs.
   if (requiresTrailingUserTurn(route)) {

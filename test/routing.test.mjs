@@ -11249,3 +11249,82 @@ test("an oversize zstd body is refused with 413 before decoding and the router s
     await closeServer(gateway.server);
   }
 });
+
+test("a model's no-argument tool call is replayed with JSON arguments", async () => {
+  const gatewayBodies = [];
+  const gateway = await mockServer(async (request, response) => {
+    if (request.method === "POST" && request.url?.includes("/responses")) {
+      gatewayBodies.push(await bodyJson(request));
+      const completed = {
+        type: "response.completed",
+        response: {
+          id: "resp_empty_args",
+          usage: { input_tokens: 0, output_tokens: 1, total_tokens: 1 },
+        },
+      };
+      response.writeHead(200, { "Content-Type": "text/event-stream" });
+      response.end(
+        `event: response.output_text.delta\ndata: ${JSON.stringify({ type: "response.output_text.delta", delta: "ok" })}\n\n` +
+          `event: response.completed\ndata: ${JSON.stringify(completed)}\n\ndata: [DONE]\n\n`,
+      );
+    } else {
+      json(response, 200, {});
+    }
+  });
+
+  const stateDir = mkdtempSync(path.join(os.tmpdir(), "routing-empty-args-"));
+  const routerPort = await openPort();
+  const router = run("router.mjs", {
+    CODEX_ROUTER_PORT: String(routerPort),
+    CODEX_ROUTER_GATEWAY_BASE_URL: `http://127.0.0.1:${gateway.port}/v1`,
+    MODEL_ROUTER_STATE_DIR: stateDir,
+  });
+  const headers = {
+    Authorization: "Bearer CODEX_CALLER_SECRET",
+    "Content-Type": "application/json",
+  };
+  // Muse Spark 1.3 Contributor answered a no-argument tool call with an empty
+  // `arguments` string. Codex ran the tool and replayed the item verbatim, and
+  // Meta Responses then refused every later turn of that session with HTTP 400
+  // "`arguments` must be valid JSON" — the router, not the client, is where a
+  // wire-shape repair belongs. `"{}"` is the same call; a non-JSON string that
+  // says something must stay untouched, because its repair is unknowable here.
+  const body = JSON.stringify({
+    model: "opencode-go/deepseek-v4-flash",
+    input: [
+      { type: "message", role: "user", content: [{ type: "input_text", text: "list files" }] },
+      { type: "function_call", call_id: "call_empty", name: "shell", arguments: "" },
+      { type: "function_call_output", call_id: "call_empty", output: "ok" },
+      { type: "function_call", call_id: "call_broken", name: "shell", arguments: "not-json" },
+      { type: "function_call_output", call_id: "call_broken", output: "ok" },
+      { type: "message", role: "user", content: [{ type: "input_text", text: "thanks" }] },
+    ],
+  });
+  try {
+    await waitFor(`${routerBase(routerPort)}/models`, router);
+    const response = await fetch(`${routerBase(routerPort)}/responses`, {
+      method: "POST",
+      headers,
+      body,
+    });
+    assert.equal(response.status, 200, router.testErrors());
+    assert.ok(gatewayBodies.length >= 1, "the turn never reached the gateway");
+    const forwarded = JSON.stringify(gatewayBodies[0]);
+    assert.ok(
+      forwarded.includes('"arguments":"{}"'),
+      "the empty arguments string was not healed before forwarding",
+    );
+    assert.ok(
+      !forwarded.includes('"arguments":""'),
+      "the empty arguments string reached the upstream verbatim",
+    );
+    assert.ok(
+      forwarded.includes('"arguments":"not-json"'),
+      "an unparseable-but-nonempty arguments string must not be rewritten",
+    );
+  } finally {
+    await stopChild(router);
+    await closeServer(gateway.server);
+    rmSync(stateDir, { recursive: true, force: true });
+  }
+});
