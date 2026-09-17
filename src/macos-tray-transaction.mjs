@@ -231,7 +231,6 @@ export async function inspectMacosTrayCommittedBundle(
   const requiredFiles = [
     ["Contents/Info.plist", false],
     ["Contents/MacOS/ModelRouterTray", true],
-    ["Contents/Resources/Control Center.app/Contents/MacOS/Codex Router", true],
     ["Contents/Resources/Control Center.app/Contents/Resources/app.asar", false],
   ];
   if (requireWidget) {
@@ -248,6 +247,17 @@ export async function inspectMacosTrayCommittedBundle(
     if (!stats) return false;
     requireNonemptyRegularFile(stats, uid, `live bundle ${relative}`, { executable });
   }
+  const embeddedCandidates = ["ProviderOS", "Codex Router", "Switchboard", "codex-router-control-center"];
+  let embeddedFound = false;
+  for (const executableName of embeddedCandidates) {
+    const relative = `Contents/Resources/Control Center.app/Contents/MacOS/${executableName}`;
+    const stats = await statOrNull(path.join(bundleDirectory, relative));
+    if (!stats) continue;
+    requireNonemptyRegularFile(stats, uid, `live bundle ${relative}`, { executable: true });
+    embeddedFound = true;
+    break;
+  }
+  if (!embeddedFound) return false;
   return true;
 }
 

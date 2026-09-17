@@ -1,6 +1,7 @@
 # macOS native tray and Control Center
 
-`Codex Router.app` is one installed macOS app with two coordinated surfaces.
+ProviderOS is one installed macOS app with two coordinated surfaces. Existing
+installs may retain the legacy `Codex Router.app` bundle path for migration.
 Its Swift host owns the native menu-bar item and optional Dynamic-Island-style
 overlay; its embedded Electron app supplies the full Control Center window.
 The top-center island follows the provider handling the latest request, reveals
@@ -14,11 +15,11 @@ existing router configuration.
 
 ## Desktop widget
 
-On macOS 14 or newer, add **Codex Router Usage** or **Codex Router Reset** from
+On macOS 14 or newer, add **ProviderOS Usage** or **ProviderOS Reset** from
 the system widget gallery. The Usage widget shows today's tokens and a true
 seven-day cumulative line graph; Medium also shows up to two quota windows.
 The Reset widget gives the next reset a large countdown and keeps the relevant
-quota windows beside it. Both use the same text-only **Codex Router** header.
+quota windows beside it. Both use the same text-only **ProviderOS** header.
 
 Clicking Usage opens that source on the Control Center Usage page. Clicking
 Reset opens the same page and focuses the selected account's allowance and
@@ -49,7 +50,7 @@ the same Apple team with that App Group provisioned for both bundle identifiers.
 
 ## Opening it like an app
 
-`./bin/model-router-tray` installs **Codex Router.app** into `~/Applications`,
+`./bin/model-router-tray` installs the companion into `~/Applications`,
 where Finder, Spotlight, and Launchpad can all find it by name and icon. Every
 desktop icon is built from
 `apps/macos/ModelRouterTray/Resources/AppIcon.svg`; edit the SVG and run
@@ -59,7 +60,7 @@ Linux. That script needs `sips` and `iconutil`, which is why the generated
 assets are committed rather than rasterized during a normal tray build.
 
 The Swift host stays `LSUIElement`, so it does not add a Dock icon. A person
-opening `Codex Router.app` gets the embedded Control Center as a normal window;
+opening the companion app gets the embedded Control Center as a normal window;
 that process supplies the product's Dock and Command-Tab entry while Control
 Center is running, including after the window is closed or you switch away.
 Closing the window hides it rather than quitting, so Cmd+Tab and the Dock can

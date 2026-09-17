@@ -1,24 +1,24 @@
 # Desktop tray and Control Center
 
-The desktop app combines the Codex Router tray and full Electron Control Center
+The desktop app combines the ProviderOS tray and full Electron Control Center
 in one visible installation. It uses the same local control plane and health
 endpoint as the command line, so provider selection, quota data, and token
 history stay consistent across surfaces. macOS retains its Swift-native tray
-and embeds the Control Center in `Codex Router.app`; Windows and Linux use the
+and embeds the Control Center in `ProviderOS.app`; Windows and Linux use the
 Control Center's native Electron tray.
 
 ## Platform behavior
 
 | Platform | Native tray | Full Control Center | Open behavior |
 | --- | --- | --- | --- |
-| macOS 13+ | Swift `NSStatusItem` | Embedded Electron | Open `Codex Router.app` or use **Control Center** in the menu-bar panel |
+| macOS 13+ | Swift `NSStatusItem` | Embedded Electron | Open `ProviderOS.app` or use **Control Center** in the menu-bar panel |
 | Windows 10/11 | Electron `Tray` | Electron window | Left-click the tray icon or use **Open Control Center** |
 | Linux | Electron `Tray` | Electron window | Left-click the tray icon or use **Open Control Center** |
 
 Closing the full Control Center window never quits a proven tray owner. On
 Windows, and on Linux while a registered StatusNotifier host is available,
 clicking the Electron tray item restores the window in the same process. On
-macOS, reopen `Codex Router.app` or choose **Control Center** from the native
+macOS, reopen `ProviderOS.app` or choose **Control Center** from the native
 menu-bar panel. Use the tray menu's **Quit** action to end the complete
 Windows/Linux app; quitting the native macOS host also terminates its embedded
 Control Center.
@@ -130,7 +130,7 @@ only additional build runtime; Rust is not required.
 Windows and Linux Control Center packages, checksummed in `SHA256SUMS` and
 covered by the same build provenance attestation as the source archives. These
 packages are unsigned frontends, not standalone router installers: install the
-same Codex Router version first, then run the matching desktop package.
+same ProviderOS version first, then run the matching desktop package.
 
 | Asset | Platform |
 | --- | --- |
@@ -155,7 +155,7 @@ child.
 ## Build prerequisites
 
 - Node.js 22.19 or newer
-- The normal Codex Router checkout and its installed npm dependencies
+- The normal ProviderOS checkout and its installed npm dependencies
 
 The build scripts only report missing prerequisites; they do not install a
 system runtime or package manager.

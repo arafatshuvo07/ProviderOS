@@ -1,18 +1,19 @@
-# How Codex Router works
+# How ProviderOS works
 
-The provider core has one app frontend: Codex uses the Responses API and a
-merged native catalog.
+ProviderOS has one local router plane shared by its client integrations. Codex
+uses the Responses API and a merged native catalogue; other clients publish the
+same tested provider routes through their own configuration format.
 
 ## Why a router is needed
 
-The Codex App expects the Responses API and a Codex-shaped model catalog.
+The Codex App expects the Responses API and a Codex-shaped model catalogue.
 Kimi and DeepSeek expose OpenAI-compatible Chat Completions APIs with different
-authentication and request details. Codex Router bridges those contracts while
+authentication and request details. ProviderOS bridges those contracts while
 leaving native GPT traffic on the normal ChatGPT Codex backend.
 
 Four pieces make the integration work:
 
-- A generated catalog places external models beside native GPT models.
+- A generated catalogue places external models beside native GPT models.
 - A dispatcher chooses native or external routing by namespaced model ID.
 - LiteLLM translates Responses requests, streams, and tool calls.
 - Credential forwarders inject only the selected provider's authentication.

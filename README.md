@@ -39,10 +39,12 @@ When it finishes:
 2. Start a new task and choose a routed model.
 3. Open **ProviderOS** to use the Control Center.
 
-On macOS, open **ProviderOS** from Spotlight or `~/Applications`; its icon
-stays in the menu bar when the Control Center is closed. The desktop widget is
+On macOS, open **ProviderOS** from Spotlight or `~/Applications`; existing
+installs may still show the legacy `Codex Router.app` outer host while the
+Control Center itself is branded ProviderOS. Its icon stays in the menu bar
+when the Control Center is closed. The desktop widget is
 already included: choose **Settings → Dynamic Island → Desktop** from the
-menu-bar app to show it. It is a movable Codex Router panel rather than an item
+menu-bar app to show it. It is a movable ProviderOS panel rather than an item
 in macOS's **Edit Widgets** gallery.
 
 macOS does not have a public `.dmg` yet; the command above builds and installs
@@ -119,6 +121,92 @@ explicitly prohibit that access pattern.
 ProviderOS is an independent community project. It is not affiliated with or
 endorsed by OpenAI, GitHub, Anthropic, Moonshot AI, DeepSeek, OpenRouter,
 opencode, Google, or the referenced opencodex project.
+
+## How ProviderOS works
+
+ProviderOS is a local routing layer. The client still talks to a normal
+OpenAI-compatible endpoint on this computer; ProviderOS decides whether a
+request is native Codex traffic or an external-provider route, then translates
+the request at the last responsible moment.
+
+```mermaid
+flowchart LR
+  C["Codex / Cursor / CLI"] --> R["ProviderOS router\n127.0.0.1:4202"]
+  R -->|native GPT| O["OpenAI Codex backend"]
+  R -->|external model| G["LiteLLM gateway\n127.0.0.1:4200"]
+  G --> K["Kimi OAuth\n127.0.0.1:4201"]
+  G --> A["API forwarder\n127.0.0.1:4203"]
+  G --> X["Optional OAuth/edge forwarders\n4208 / 4210 / 4212 / 4214"]
+  K --> P["Selected provider"]
+  A --> P
+  X --> P
+```
+
+The normal request path is:
+
+1. The installer creates a private state directory, two random local
+   capabilities, provider selection files, and a managed client configuration.
+2. `src/catalog.mjs` combines the installed client's native model catalogue
+   with only the enabled and authenticated ProviderOS routes. The resulting
+   catalogue is written to `merged-models.json` and published to the client.
+3. The client sends a Responses request to port `4202`. ProviderOS validates
+   the caller capability before reading the body or contacting another process.
+4. Native models keep their normal OpenAI path. A namespaced external model is
+   normalized and sent to LiteLLM on `4200`; LiteLLM handles protocol shape,
+   streaming, tool calls, and provider-specific request details.
+5. The final forwarder removes the local service key and attaches only the
+   selected provider credential. The response is converted back to the
+   client's expected Responses stream and usage is recorded locally.
+
+Every listener binds to `127.0.0.1`. Optional listeners are started only when
+their route is configured: Kimi OAuth uses `4201`, API-key providers share
+`4203`, Grok OAuth uses `4208`, Devin CLI uses `4210`, Antigravity OAuth uses
+`4212`, and the Cursor public edge uses `4214`. The service starts these
+independent children in parallel, waits for each health check, and supervises
+the gateway separately so one provider failure does not silently turn into a
+dead local router.
+
+Codex remains the owner of the agent loop, tools, permissions, files, plugins,
+skills, MCP servers, and conversation history. ProviderOS owns model selection,
+provider authentication, protocol translation, catalog publication, local
+health, usage accounting, and safe client integration. It cannot grant a tool
+or capability that the selected provider does not implement.
+
+## Repository layout
+
+| Path | Responsibility |
+| --- | --- |
+| `src/` | Router engine, request adapters, credential boundaries, catalogue publication, service lifecycle, migrations, and diagnostics |
+| `config/` | Checked-in provider/model registry; `config/custom/` contains user-facing generic provider examples and custom endpoints |
+| `apps/control-center/` | Electron + React ProviderOS desktop app and its fixed local control API |
+| `apps/macos/` | Swift menu-bar host and usage widget for the macOS companion |
+| `bin/` | Operator commands; `bin/provideros` is the branded alias while `bin/codex-router` remains the compatibility entrypoint |
+| `install.sh`, `install.ps1` | Guided installers for macOS/Linux and Windows |
+| `docs/` | Installation, architecture, provider development, desktop, and troubleshooting guides |
+| `test/` | Node, installer, routing, catalogue, Electron, and platform contract tests |
+| `Formula/`, `packaging/` | Homebrew formula and release packaging support |
+
+## State, upgrades, and compatibility
+
+The source checkout lives separately from runtime state. By default the
+checkout is under `~/.local/share/codex-router`; runtime state is under
+`~/.codex/codex-router`. The state directory contains the merged model
+catalogue, provider selection, generated gateway routes, health/usage records,
+rollback journals, and owner-only credential files. It is never committed to
+Git and is not included in a package or support bundle by default.
+
+ProviderOS deliberately keeps the established `codex-router` environment
+variables, state path, service labels, IPC protocol, provider IDs, and executable
+names. Existing installations can therefore be upgraded without losing their
+catalogue or credentials. The public product name, repository, installer URLs,
+desktop UI, and new `provideros` command are ProviderOS; the old identifiers are
+compatibility plumbing, not a second product.
+
+Updates are Git-based and rollback-aware. A managed update requires a recognized
+origin and a clean tracked worktree, keeps the previous revision as a rollback
+reference, and restores the previous source/configuration when a transaction
+fails. Provider selection and model visibility are explicit, so merely enabling
+a provider or refreshing its catalogue does not publish every upstream model.
 
 ## Give the link to your agent
 
@@ -215,9 +303,8 @@ Maintainers preparing the eventual `homebrew/core` submission should follow
 
 This project does not publish an npm-installable CLI yet. Do not use
 `npm install codex-router` for this project. Use the recommended installer or
-Homebrew above; a future npm package should use the scoped name
-an explicitly ProviderOS-scoped name so it cannot be confused with existing
-packages.
+Homebrew above. If an npm package is published later, it will use an explicit
+ProviderOS-scoped name so it cannot be confused with existing packages.
 
 ### Guided installer
 

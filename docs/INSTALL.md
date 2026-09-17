@@ -31,8 +31,8 @@ the same command.
 ## Ask Codex to install it
 
 ```text
-Install Codex Router from:
-https://github.com/duolahypercho/codex-router
+Install ProviderOS from:
+https://github.com/arafatshuvo07/ProviderOS
 
 Follow AGENTS.md. Preserve all of my existing Codex settings and ChatGPT login.
 Use only the provider authentication I choose, safely migrate recognized older
@@ -48,7 +48,7 @@ definition stores the checkout's absolute path.
 macOS or Linux:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/duolahypercho/codex-router/main/install.sh \
+curl -fsSL https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.sh \
   | sh -s -- --target codex --guided --with-tray
 ```
 
@@ -56,21 +56,21 @@ Windows PowerShell:
 
 ```powershell
 $installer = Join-Path $env:TEMP "codex-router-install.ps1"
-Invoke-WebRequest https://raw.githubusercontent.com/duolahypercho/codex-router/main/install.ps1 -OutFile $installer
+Invoke-WebRequest https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.ps1 -OutFile $installer
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer -Target codex -Guided -WithTray
 ```
 
 Clone-and-review installation is also supported:
 
 ```sh
-git clone https://github.com/duolahypercho/codex-router.git
-cd codex-router
+git clone https://github.com/arafatshuvo07/ProviderOS.git
+cd ProviderOS
 ./install.sh --target codex --guided --with-tray
 ```
 
 ```powershell
-git clone https://github.com/duolahypercho/codex-router.git
-Set-Location codex-router
+git clone https://github.com/arafatshuvo07/ProviderOS.git
+Set-Location ProviderOS
 ./install.ps1 -Target codex -Guided -WithTray
 ```
 
@@ -80,7 +80,9 @@ desktop widget, or the Windows/Linux Electron Control Center and tray.
 `--no-tray` omits it; leaving out both tray flags makes guided setup ask. On
 Windows the matching options are `-WithTray` and `-NoTray`.
 
-On macOS one `Codex Router.app` bundle is placed in `~/Applications`. It keeps
+On macOS the companion bundle is placed in `~/Applications`. Existing
+installations may retain the legacy `Codex Router.app` outer host while new
+Control Center builds use the ProviderOS product name. It keeps
 the Swift-native menu-bar tray and embeds the Electron Control Center, so the
 build needs the full Xcode app plus the Node runtime the router already
 requires. The standalone Command Line Tools are insufficient for the SwiftUI
@@ -167,7 +169,7 @@ macOS/Linux:
 
 Create a Google OAuth **Desktop app** client in a Google Cloud project you own.
 In Google Cloud Console, configure **APIs & Services > OAuth consent screen**
-for your account with a truthful name such as **Codex Router**, not Antigravity
+for your account with a truthful name such as **ProviderOS**, not Antigravity
 (including a test user when applicable), then choose **APIs & Services >
 Credentials > Create credentials > OAuth client ID > Desktop app**.
 Keep the resulting pair in that private browser tab. The login command binds
@@ -201,7 +203,7 @@ definition. The live probe sends a small prompt and uses provider quota; add
 `--provision-project` only if you explicitly authorize project creation. It
 creates nothing unless a successful, schema-valid bootstrap response explicitly
 advertises the tier to provision; auth errors, server errors, malformed
-responses, and missing tiers fail closed. It identifies itself as Codex Router,
+responses, and missing tiers fail closed. It identifies itself as ProviderOS,
 and the provider remains disabled unless
 Google accepts that truthful identity. This is an unofficial compatibility
 path over Google's internal Antigravity service, so model availability and wire
@@ -323,7 +325,7 @@ the background service definition.
 Setup performs these operations in order:
 
 1. Validates provider selection and credential presence.
-2. Detects other model-catalog owners and earlier Codex Router variants.
+2. Detects other model-catalog owners and earlier ProviderOS/Codex Router variants.
 3. With approval, snapshots and stops only recognized older variants.
 4. Installs locked Node dependencies and pinned LiteLLM in `.venv`.
 5. Generates separate random Codex caller and internal-service keys.
@@ -431,7 +433,7 @@ An unknown catalog owner requires a manual decision; automatic setup stops
 without changing it.
 
 If `model_catalog_json` points to a user-owned native Codex catalog rather than
-another router, you can explicitly keep it as Codex Router's merge base:
+another router, you can explicitly keep it as ProviderOS's merge base:
 
 ```sh
 ./install.sh --auto --providers configured --adopt-native-catalog
@@ -442,10 +444,10 @@ another router, you can explicitly keep it as Codex Router's merge base:
 ```
 
 Adoption is accepted only when the path is absolute, the JSON contains at
-least one native model, none of its slugs are already routed by Codex Router,
+least one native model, none of its slugs are already routed by ProviderOS,
 and no custom `openai_base_url` is configured. The file stays user-owned and
 is read in place on every catalog rebuild, so moving, deleting, or making it
-invalid stops the rebuild with an explicit error. Disabling Codex Router
+invalid stops the rebuild with an explicit error. Disabling ProviderOS
 restores that exact catalog path. A failed install clears a pending adoption
 and leaves the original Codex config intact.
 
@@ -596,7 +598,7 @@ Uninstall removes the marked integration config and current background service.
 It intentionally retains the checkout, native catalog cache, logs, backups,
 migration snapshots, internal key, and provider credentials. This prevents a
 routine uninstall from silently destroying authentication or recovery data.
-Existing Codex Router installs that used the former 4100–4103/4108 defaults are
+Existing ProviderOS/Codex Router installs that used the former 4100–4103/4108 defaults are
 migrated on the next install or update: the managed Codex URL and generated
 systemd/launchd/task service are rewritten as one install transaction, and the
 old service is stopped before the new unit is started. Explicit

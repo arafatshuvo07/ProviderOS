@@ -100,9 +100,20 @@ case $(uname -s) in
       /usr/bin/env -u ELECTRON_RUN_AS_NODE \
         CODEX_ROUTER_EMBEDDED_CONTROL_CENTER=1 "$@"
     }
+    embedded_control_center_binary() {
+      embedded_root=$1
+      for executable_name in ProviderOS "Codex Router" Switchboard codex-router-control-center; do
+        embedded_candidate="$embedded_root/Contents/MacOS/$executable_name"
+        if [ -x "$embedded_candidate" ]; then
+          printf '%s\n' "$embedded_candidate"
+          return 0
+        fi
+      done
+      printf '%s\n' "$embedded_root/Contents/MacOS/ProviderOS"
+    }
     stop_uncommitted_tray() {
       recovery_bundle=$1
-      recovery_embedded_binary="$recovery_bundle/Contents/Resources/Control Center.app/Contents/MacOS/Codex Router"
+      recovery_embedded_binary=$(embedded_control_center_binary "$recovery_bundle/Contents/Resources/Control Center.app")
       # The renderer probe is launched directly, outside launchd. Ask that exact
       # embedded child to quit as well as booting out the outer Swift host; the
       # latter cannot be assumed to own a child whose renderer failed mid-boot.
@@ -439,7 +450,7 @@ RESTORE_MACOS_SUPERVISION
 
     # A tray opened by hand is outside launchd's reach, so ask every indexed
     # GUI instance to quit after the staged replacement passes verification.
-    staged_embedded_binary="$staged_bundle/Contents/Resources/Control Center.app/Contents/MacOS/Codex Router"
+    staged_embedded_binary=$(embedded_control_center_binary "$staged_bundle/Contents/Resources/Control Center.app")
     if [ "$launch_mode" = interactive ]; then
       reopen_control_center=1
     elif [ "$launch_mode" = --preserve-window ]; then
@@ -573,7 +584,7 @@ RESTORE_MACOS_SUPERVISION
     # lifecycle record points to the one AppKit instance inside this exact live
     # bundle. The previous bundle remains available throughout this probe.
     embedded_app="$bundle_dir/Contents/Resources/Control Center.app"
-    embedded_binary="$embedded_app/Contents/MacOS/Codex Router"
+    embedded_binary=$(embedded_control_center_binary "$embedded_app")
     if [ ! -x "$embedded_binary" ]; then
       printf 'codex-router: the rebuilt Codex Router has no executable embedded Control Center; the previous app will be restored.\n' >&2
       exit 1

@@ -94,7 +94,7 @@ trap 'exit 143' TERM
     --publish never \
     "--config.directories.output=$electron_output" 1>&2
 )
-control_center_bundle=$(find "$electron_output" -maxdepth 3 -type d -name 'Codex Router.app' -print -quit)
+control_center_bundle=$(find "$electron_output" -maxdepth 3 -type d \( -name 'ProviderOS.app' -o -name 'Codex Router.app' -o -name 'Switchboard.app' \) -print -quit)
 if [ -z "$control_center_bundle" ] || [ ! -d "$control_center_bundle" ]; then
   printf 'The packaged Electron Control Center was not produced.\n' >&2
   exit 1

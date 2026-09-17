@@ -387,7 +387,7 @@ test("Windows and Linux never trust linked package ancestors or resources", () =
         `${platform} must not certify a linked package root`,
       );
 
-      rmSync(packageRoot, { force: true });
+      rmSync(packageRoot, { recursive: true, force: true });
       mkdirSync(packageRoot, { recursive: true });
       writeFileSync(path.join(packageRoot, executable), "binary");
       writeFileSync(path.join(externalResources, "app.asar"), "archive");
@@ -952,7 +952,7 @@ test("a broken embedded renderer remains journaled and rolls back the exact live
   assert.ok(recovery >= 0 && recoveryStop > recovery && failedMove > recoveryStop && restoreMove > failedMove);
   assert.match(
     mac.slice(mac.indexOf("stop_uncommitted_tray()"), mac.indexOf("schedule_macos_supervision_restore()")),
-    /recovery_embedded_binary="\$recovery_bundle[\s\S]*run_embedded_control_center "\$recovery_embedded_binary" --quit-for-update[\s\S]*tray-service\.mjs" stop[\s\S]*router_app_count/,
+    /recovery_embedded_binary=.*recovery_bundle[\s\S]*run_embedded_control_center "\$recovery_embedded_binary" --quit-for-update[\s\S]*tray-service\.mjs" stop[\s\S]*router_app_count/,
   );
   assert.match(
     mac,
