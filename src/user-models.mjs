@@ -52,7 +52,11 @@ export function hasDefaultUserModelReasoning(entry) {
 
 // Curation may adjust presentation, sizing, and effort metadata only;
 // identity and routing fields always come from the provider id and the
-// discovered model id.
+// discovered model id. The apply-patch opt-out is a wire contract, not
+// identity: it names whether the upstream accepts OpenAI custom tools, a
+// provider family may document it (every checked-in Meta route declares the
+// opt-out), and without it in this set a curated entry cannot carry the one
+// flag that keeps the catalog from advertising a tool the endpoint 400s on.
 const METADATA_FIELDS = new Set([
   "displayName",
   "description",
@@ -65,6 +69,7 @@ const METADATA_FIELDS = new Set([
   "supportsSearchHistory",
   "supportsReasoningSummaries",
   "defaultReasoningSummary",
+  "supportsApplyPatchTool",
   "availabilityNux",
   "upgradeTo",
   "requiresTrailingUserTurn",

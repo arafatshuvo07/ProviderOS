@@ -96,6 +96,26 @@ test("curation metadata can expose provider-verified reasoning summaries", () =>
   assert.equal(entry.defaultReasoningSummary, "auto");
 });
 
+test("curation metadata can carry the apply-patch opt-out", () => {
+  const entry = userModelEntry({
+    providerId: "meta",
+    upstreamId: "muse-spark-1.3-contributor",
+    priority: 100,
+    metadata: { supportsApplyPatchTool: false },
+  });
+  assert.equal(entry.supportsApplyPatchTool, false);
+  // Identity and routing stay provider-owned even when a capability rides in.
+  assert.equal(entry.slug, "meta/muse-spark-1.3-contributor");
+  assert.equal(entry.provider, "meta");
+  // Absent metadata keeps the catalog's conservative freeform default.
+  const bare = userModelEntry({
+    providerId: "meta",
+    upstreamId: "muse-spark-1.4",
+    priority: 100,
+  });
+  assert.equal(bare.supportsApplyPatchTool, undefined);
+});
+
 test("curation metadata preserves only explicit endpoint capabilities", () => {
   const entry = userModelEntry({
     providerId: "openrouter",

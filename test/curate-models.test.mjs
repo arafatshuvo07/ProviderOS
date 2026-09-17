@@ -22,6 +22,7 @@ const {
   parseRequestProfile,
   planCuration,
   renderRows,
+  uniformProviderFamilyApplyPatchOptOut,
   uniformProviderFamilyRequestProfile,
 } =
   await import("../src/curate-models.mjs");
@@ -138,6 +139,28 @@ test("OpenCode Free Muse curation carries its model-specific tool-choice repair"
     "auto-tool-choice",
   );
   assert.equal(curatedModelRequestProfile("opencode-free", "nemotron-3-ultra-free"), undefined);
+});
+
+test("the Meta family lends its apply-patch opt-out to curated routes", () => {
+  // Every checked-in meta route declares the opt-out, so a curated meta model
+  // must inherit it: without the flag the catalog advertises the freeform
+  // apply-patch tool and Meta Responses 400s the first turn with "`custom`
+  // tools are not supported on this endpoint".
+  assert.equal(uniformProviderFamilyApplyPatchOptOut(CHECKED_IN_MODELS, curationProviderIds("meta")), false);
+  assert.deepEqual(curationProviderIds("meta"), ["meta"]);
+  // A family with any route that does not declare the opt-out lends nothing.
+  assert.equal(
+    uniformProviderFamilyApplyPatchOptOut(
+      [
+        { provider: "mixed", supportsApplyPatchTool: false },
+        { provider: "mixed" },
+      ],
+      ["mixed"],
+    ),
+    undefined,
+  );
+  // A family with no checked-in routes lends nothing.
+  assert.equal(uniformProviderFamilyApplyPatchOptOut(CHECKED_IN_MODELS, ["unheard-of"]), undefined);
 });
 
 test("Command Code curation keeps certified routes and settles new ids by family", () => {

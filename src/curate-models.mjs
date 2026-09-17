@@ -171,6 +171,27 @@ export function uniformProviderFamilyRequestProfile(models, providerIds) {
   return observed ? inherited : undefined;
 }
 
+// The apply-patch opt-out is the other wire contract a family can lend. An
+// upstream that rejects OpenAI custom tools rejects them for every model it
+// serves, so a curated route into that family must not let the catalog's
+// conservative freeform default advertise a tool the endpoint will 400 on
+// (Meta Responses is the verified case: every checked-in meta route declares
+// the opt-out, and a curated meta model without it failed its first turn).
+// Lend the opt-out only when every checked-in route in the family declares
+// `supportsApplyPatchTool: false` — a mixed family still falls back to the
+// default, and a family that declares nothing lends nothing. Only the opt-out
+// travels: "true" is the catalog default anyway, never a repair.
+export function uniformProviderFamilyApplyPatchOptOut(models, providerIds) {
+  const family = new Set(providerIds);
+  let observed = false;
+  for (const model of models) {
+    if (!family.has(model.provider)) continue;
+    observed = true;
+    if (model.supportsApplyPatchTool !== false) return undefined;
+  }
+  return observed ? false : undefined;
+}
+
 export function planCuration({ mine, chosen, removals, interactive }) {
   const removalSet = new Set(removals);
   const kept = mine.filter((model) => !removalSet.has(model.upstreamModel));
@@ -466,6 +487,10 @@ async function main() {
   const inheritedProfile = providerId === "opencode-free"
     ? undefined
     : uniformProviderFamilyRequestProfile(CHECKED_IN_MODELS, familyProviderIds);
+  const inheritedApplyPatchOptOut = uniformProviderFamilyApplyPatchOptOut(
+    CHECKED_IN_MODELS,
+    familyProviderIds,
+  );
 
   // Which models exist is decided by the provider's own /v1/models endpoint.
   // Metadata comes from that catalog, the interactive user, or the narrow
@@ -605,7 +630,12 @@ async function main() {
         upstreamId: id,
         requestProfile: requestProfileFor(id),
         priority: 100 + mine.length + index,
-        metadata,
+        // The family's checked-in apply-patch contract fills the one gap
+        // discovery metadata cannot name; an explicit metadata value wins.
+        metadata:
+          metadata?.supportsApplyPatchTool === undefined && inheritedApplyPatchOptOut === false
+            ? { ...metadata, supportsApplyPatchTool: false }
+            : metadata,
       });
     }),
   ].map((model) => {
