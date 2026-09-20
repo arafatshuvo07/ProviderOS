@@ -52,7 +52,7 @@ test("a Homebrew install is told to use brew reinstall", () => {
   // a path the user cannot write and no command that would fix it.
   const result = runRefusal("homebrew", "LiteLLM");
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /brew reinstall codex-router/);
+  assert.match(result.stderr, /brew reinstall provideros/);
   assert.match(result.stderr, /LiteLLM/);
   assert.equal(result.stdout, "", "the refusal belongs on stderr");
 });
@@ -62,7 +62,7 @@ test("an unrecognized package manager still gets an actionable refusal", () => {
   // sets its own name -- so the fallback has to say something useful.
   const result = runRefusal("scoop", "Node");
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /Reinstall the codex-router package/);
+  assert.match(result.stderr, /Reinstall the ProviderOS package/);
   assert.match(result.stderr, /scoop/);
 });
 
@@ -147,6 +147,8 @@ function runFix(env) {
       encoding: "utf8",
       env: {
         ...process.env,
+        HOME: dir,
+        CODEX_ROUTER_SKIP_LAUNCHCTL: "1",
         CODEX_ROUTER_SOURCE_ROOT: fake,
         CODEX_HOME: path.join(dir, "codex home"),
         MODEL_ROUTER_STATE_DIR: path.join(dir, "state"),
@@ -188,7 +190,7 @@ test("doctor --fix repairs a packaged install without rebuilding dependencies", 
     argv,
     process.platform === "win32" ? ["-CheckoutInstall", "-Target", "codex"] : [],
   );
-  assert.match(result.stdout, /brew reinstall codex-router/);
+  assert.match(result.stdout, /brew reinstall provideros/);
 });
 
 test("the packaged repair note stays out of --json output", () => {
@@ -203,6 +205,8 @@ test("the packaged repair note stays out of --json output", () => {
         encoding: "utf8",
         env: {
           ...process.env,
+          HOME: dir,
+          CODEX_ROUTER_SKIP_LAUNCHCTL: "1",
           CODEX_ROUTER_SOURCE_ROOT: fake,
           CODEX_ROUTER_PACKAGE_MANAGER: "homebrew",
           CODEX_HOME: path.join(dir, "codex home"),

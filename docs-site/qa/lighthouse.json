@@ -7046,8 +7046,8 @@
               "width": 380,
               "height": 238
             },
-            "snippet": "<img src=\"/app/control-center-models.png\" alt=\"Codex Router Control Center showing provider connections and routed models\" width=\"1440\" height=\"900\" loading=\"eager\" fetchpriority=\"high\">",
-            "nodeLabel": "Codex Router Control Center showing provider connections and routed models"
+            "snippet": "<img src=\"/app/control-center-models.png\" alt=\"ProviderOS Control Center showing provider connections and routed models\" width=\"1440\" height=\"900\" loading=\"eager\" fetchpriority=\"high\">",
+            "nodeLabel": "ProviderOS Control Center showing provider connections and routed models"
           }
         ]
       },
@@ -7095,8 +7095,8 @@
               "width": 380,
               "height": 238
             },
-            "snippet": "<img src=\"/app/control-center-models.png\" alt=\"Codex Router Control Center showing provider connections and routed models\" width=\"1440\" height=\"900\" loading=\"eager\" fetchpriority=\"high\">",
-            "nodeLabel": "Codex Router Control Center showing provider connections and routed models"
+            "snippet": "<img src=\"/app/control-center-models.png\" alt=\"ProviderOS Control Center showing provider connections and routed models\" width=\"1440\" height=\"900\" loading=\"eager\" fetchpriority=\"high\">",
+            "nodeLabel": "ProviderOS Control Center showing provider connections and routed models"
           }
         ]
       },

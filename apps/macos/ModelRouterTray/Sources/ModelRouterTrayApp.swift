@@ -756,7 +756,8 @@ enum ControlCenterDestination: String, Equatable {
 }
 
 struct ControlCenterNavigationRequest: Equatable {
-  static let scheme = "codex-router"
+  static let scheme = "provideros"
+  static let legacyScheme = "codex-router"
   static let host = "control-center"
   static let sourcePattern = try! NSRegularExpression(pattern: "^[a-z0-9][a-z0-9-]{0,63}$")
 
@@ -764,7 +765,7 @@ struct ControlCenterNavigationRequest: Equatable {
   let sourceID: String?
 
   init?(url: URL) {
-    guard url.scheme == Self.scheme,
+    guard url.scheme == Self.scheme || url.scheme == Self.legacyScheme,
           url.host == Self.host,
           url.user == nil,
           url.password == nil,
@@ -810,7 +811,10 @@ struct ControlCenterNavigationRequest: Equatable {
 @MainActor
 enum ControlCenterLauncher {
   private static let bundleName = "Control Center.app"
-  private static let bundleIdentifier = "io.github.codex-router.control-center"
+  private static let bundleIdentifiers = [
+    "io.github.provideros.control-center",
+    "io.github.codex-router.control-center",
+  ]
 
   static var bundledApplicationURL: URL? {
     guard let resources = Bundle.main.resourceURL else { return nil }
@@ -821,7 +825,7 @@ enum ControlCenterLauncher {
   static func open(navigation: ControlCenterNavigationRequest? = nil) {
     guard let application = bundledApplicationURL else {
       RouterStore.shared.reportControlCenterLaunchFailure(
-        "The embedded Control Center is missing. Rebuild Codex Router."
+        "The embedded Control Center is missing. Rebuild ProviderOS."
       )
       return
     }
@@ -845,7 +849,8 @@ enum ControlCenterLauncher {
   }
 
   private static func retireSupersededControlCenters(except embedded: URL) async throws {
-    let superseded = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier)
+    let superseded = bundleIdentifiers
+      .flatMap { NSRunningApplication.runningApplications(withBundleIdentifier: $0) }
       .filter { shouldRetireControlCenter(at: $0.bundleURL, embeddedApplication: embedded) }
     guard !superseded.isEmpty else { return }
     for application in superseded where !application.isTerminated {
@@ -856,7 +861,7 @@ enum ControlCenterLauncher {
       try await Task.sleep(for: .milliseconds(100))
     }
     throw RouterError(
-      "A superseded Codex Router Control Center is still running. Quit it, then reopen Codex Router."
+      "A superseded ProviderOS Control Center is still running. Quit it, then reopen ProviderOS."
     )
   }
 
@@ -1144,9 +1149,9 @@ final class RouterStore: ObservableObject {
 
   nonisolated static func menuBarTooltip(provider: String, state: String, usage: String?) -> String {
     if let usage {
-      return routerFormat("Codex Router · %@ (%@) · %@", provider, state, usage)
+      return routerFormat("ProviderOS · %@ (%@) · %@", provider, state, usage)
     }
-    return routerFormat("Codex Router · %@ (%@)", provider, state)
+    return routerFormat("ProviderOS · %@ (%@)", provider, state)
   }
 
   init() {
@@ -1423,7 +1428,7 @@ final class RouterStore: ObservableObject {
     surfacesVisible = next
   }
 
-  // Opening Codex Router from Finder, Spotlight, Launchpad, or the Dock has to
+  // Opening ProviderOS from Finder, Spotlight, Launchpad, or the Dock has to
   // produce a menu bar item and a live router even in follow mode with Codex
   // closed. Without this the app looked broken on exactly the launch that
   // motivates having an icon at all: double-click, nothing appears, because
@@ -3659,12 +3664,12 @@ final class RouterStore: ObservableObject {
       }
       if watchdog.didTimeOut {
         throw RouterError(
-          "Codex Router control command exceeded its absolute deadline and was stopped."
+          "ProviderOS control command exceeded its absolute deadline and was stopped."
         )
       }
       guard task.terminationStatus == 0 else {
         let detail = String(data: stderr, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        throw RouterError(detail?.isEmpty == false ? detail! : "Codex Router control command failed.")
+        throw RouterError(detail?.isEmpty == false ? detail! : "ProviderOS control command failed.")
       }
       return stdout
     }.value
@@ -3680,7 +3685,7 @@ final class RouterStore: ObservableObject {
     timeout: TimeInterval
   ) async throws -> Data {
     guard ["model-discovery.mjs", "curate-models.mjs"].contains(script) else {
-      throw RouterError("Unsupported Codex Router script.")
+      throw RouterError("Unsupported ProviderOS script.")
     }
     let root = try sourceRoot()
     if script == "curate-models.mjs" {
@@ -3747,7 +3752,7 @@ final class RouterStore: ObservableObject {
       }
       guard task.terminationStatus == 0 else {
         let detail = String(data: stderr, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        throw RouterError(detail?.isEmpty == false ? detail! : "Codex Router command failed.")
+      throw RouterError(detail?.isEmpty == false ? detail! : "ProviderOS command failed.")
       }
       return stdout
     }.value
@@ -3788,7 +3793,7 @@ final class RouterStore: ObservableObject {
       if let root = try? validatedSourceRoot(candidate) { return root }
     }
     throw RouterError(
-      "Cannot find the installed Codex Router checkout. Install the router or rebuild this app from its checkout."
+      "Cannot find the installed ProviderOS checkout. Install ProviderOS or rebuild this app from its checkout."
     )
   }
 
@@ -3806,7 +3811,7 @@ final class RouterStore: ObservableObject {
       expectedProtocol: expectedProtocol
     ) else {
       throw RouterError(
-        "This Codex Router app does not match the installed router control protocol. "
+        "This ProviderOS app does not match the installed router control protocol. "
           + "Install or update the router and desktop app from the same build, then reopen the app."
       )
     }
@@ -3827,7 +3832,7 @@ final class RouterStore: ObservableObject {
         trustedOwnerAndMode(attributes),
         !executable || FileManager.default.isExecutableFile(atPath: url.path)
       else {
-        throw RouterError("The Codex Router checkout is missing or has unsafe ownership or permissions.")
+        throw RouterError("The ProviderOS checkout is missing or has unsafe ownership or permissions.")
       }
     }
     return resolvedRoot
@@ -5778,7 +5783,7 @@ private struct TrayView: View {
   private var header: some View {
     HStack(alignment: .center, spacing: 12) {
       VStack(alignment: .leading, spacing: 3) {
-        Text(routerLocalized("Codex Router"))
+        Text(routerLocalized("ProviderOS"))
           .font(.system(size: 15, weight: .semibold))
         Text(accountLabel)
           .font(.system(size: 10, weight: .regular))
@@ -6528,7 +6533,7 @@ private struct TrayView: View {
         Text(routerLocalized("Enable ChatGPT session sharing?"))
           .font(.system(size: 10, weight: .semibold))
           .foregroundStyle(routerYellow)
-        Text(routerLocalized("Enabling lets other local Codex Router clients spend this user's ChatGPT subscription. Only continue for clients you trust on this Mac."))
+        Text(routerLocalized("Enabling lets other local ProviderOS clients spend this user's ChatGPT subscription. Only continue for clients you trust on this Mac."))
           .font(.system(size: 9))
           .foregroundStyle(routerMutedStrong)
           .fixedSize(horizontal: false, vertical: true)
@@ -7246,7 +7251,7 @@ private struct TrayView: View {
           .disabled(unsupported || busy || store.localDownload?.isRunning == true || store.localModelOperation != nil)
           .help(unsupported
             ? (mlx?.host?.reason ?? "This MLX model requires an Apple silicon Mac.")
-            : "Installs official local prerequisites when missing, downloads the curated 4-bit model, and publishes it through Codex Router.")
+            : "Installs official local prerequisites when missing, downloads the curated 4-bit model, and publishes it through ProviderOS.")
         }
       }
       .padding(8)
@@ -9064,7 +9069,7 @@ private struct TrayView: View {
             .controlSize(.small)
             .tint(routerAccent)
             .frame(width: 94)
-            .accessibilityLabel(routerLocalized("Running Codex Router maintenance"))
+            .accessibilityLabel(routerLocalized("Running ProviderOS maintenance"))
         } else {
           Button {
             Task { await store.updateAndVerify() }
@@ -9075,7 +9080,7 @@ private struct TrayView: View {
           .disabled(store.providerOperation != nil)
           .opacity(store.providerOperation == nil ? 1 : 0.5)
           .help(routerLocalized("Apply the checked-out router revision, then run the Codex doctor"))
-          .accessibilityLabel(routerLocalized("Update and verify Codex Router"))
+          .accessibilityLabel(routerLocalized("Update and verify ProviderOS"))
           Button {
             Task { await store.fixAndVerify() }
           } label: {
@@ -9085,7 +9090,7 @@ private struct TrayView: View {
           .disabled(store.providerOperation != nil)
           .opacity(store.providerOperation == nil ? 1 : 0.5)
           .help(routerLocalized("Run the Codex doctor and repair managed router files"))
-          .accessibilityLabel(routerLocalized("Fix Codex Router installation"))
+          .accessibilityLabel(routerLocalized("Fix ProviderOS installation"))
         }
       }
       if maintenanceFailed {

@@ -3,7 +3,7 @@
 Start with:
 
 ```sh
-./bin/model-router codex doctor
+./bin/provideros codex doctor
 ```
 
 Every `FAIL` includes a targeted fix. To rebuild only repository-managed files,
@@ -57,7 +57,7 @@ CODEX_BIN=/path/to/the/codex/you/run ./bin/refresh-catalog
 Check which binary and version the router resolves:
 
 ```sh
-./bin/model-router codex doctor
+./bin/provideros codex doctor
 ```
 
 ## State directory belongs to another checkout
@@ -67,7 +67,7 @@ that did not perform the install. The safe fix is to repair through the
 checkout that owns the installed state:
 
 ```sh
-./bin/model-router codex doctor --fix
+./bin/provideros codex doctor --fix
 ```
 
 When the recorded owner still exists, this command runs the repair there and
@@ -86,7 +86,7 @@ cat "$STATE_DIR/install-manifest.json" | sed -n '1,80p'
 To deliberately switch ownership to the checkout you are running from:
 
 ```sh
-MODEL_ROUTER_ALLOW_FOREIGN_STATE=1 ./bin/model-router codex doctor --fix
+MODEL_ROUTER_ALLOW_FOREIGN_STATE=1 ./bin/provideros codex doctor --fix
 ```
 
 ## External models are missing from the picker
@@ -115,14 +115,14 @@ Pulling `main` updates only the source checkout. Apply that revision to the
 per-user Codex installation and verify the generated custom agents:
 
 ```sh
-./bin/model-router codex update
-./bin/model-router codex doctor
+./bin/provideros codex update
+./bin/provideros codex doctor
 ```
 
 The doctor should report `OK` for `Routed model agents`. If it does not:
 
 ```sh
-./bin/model-router codex doctor --fix
+./bin/provideros codex doctor --fix
 ```
 
 Then fully quit Codex, reopen it, and create a new task. The generated personal
@@ -144,7 +144,7 @@ kimi login
 ./bin/doctor
 ```
 
-Codex Router reads the official Kimi CLI credential under `$KIMI_CODE_HOME` or
+ProviderOS reads the official Kimi CLI credential under `$KIMI_CODE_HOME` or
 `~/.kimi-code` and refreshes it under a cross-process lock. Do not copy the OAuth
 token into Codex config, an API-key file, or an environment variable.
 
@@ -169,9 +169,9 @@ not offer a safe per-app bypass for this failure. Until xAI publishes an
 official CLI build that Windows allows, use the API-key provider instead:
 
 ```powershell
-./model-router.ps1 codex provider-key grok-api set
-./model-router.ps1 codex providers enable grok-api
-./model-router.ps1 codex doctor
+./provideros.ps1 codex provider-key grok-api set
+./provideros.ps1 codex providers enable grok-api
+./provideros.ps1 codex doctor
 ```
 
 An OAuth session created while the executable was allowed is not a durable
@@ -340,7 +340,7 @@ Restart the router service so the inject path is loaded, then start a new
 parent turn (or nudge the stuck parent so it issues another request):
 
 ```sh
-./bin/model-router codex doctor --fix
+./bin/provideros codex doctor --fix
 ```
 
 Already-stuck badges in an old San Francisco turn settle on the next parent
@@ -500,8 +500,8 @@ journalctl --user -u codex-router.service --since today
 Windows PowerShell:
 
 ```powershell
-Get-ScheduledTask -TaskName "Codex Router"
-./codex-router.ps1 doctor --fix
+Get-ScheduledTask -TaskName "ProviderOS"
+./provideros.ps1 doctor --fix
 ```
 
 The task runs `start-codex-router-hidden.vbs` from the state directory under
@@ -549,7 +549,7 @@ safe. The tool never uploads a bundle automatically.
 
 ## Responses WebSocket does not connect
 
-Current Codex Router releases accept the Responses WebSocket v2 upgrade on the
+Current ProviderOS releases accept the Responses WebSocket v2 upgrade on the
 managed caller-capability URL. A 401 means Codex is using a stale managed URL;
 run `./bin/doctor --fix`, then fully quit and reopen Codex. A 426 carrying the
 supported `OpenAI-Beta: responses_websockets=2026-02-06` hint means Codex will

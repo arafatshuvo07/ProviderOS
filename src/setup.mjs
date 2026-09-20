@@ -158,7 +158,7 @@ Options:
   --providers LIST     Comma-separated provider ids
   --hostname HOST      Public hostname for a managed Cloudflare named tunnel
   --public-url URL     Existing stable HTTPS tunnel origin for Cursor App
-  --migrate-known      Safely migrate recognized earlier Codex Router installs
+  --migrate-known      Safely migrate recognized earlier ProviderOS installs
   --adopt-native-catalog  Use an existing user-owned native Codex catalog as the merge base
   --smoke-test         Make one small live request per enabled provider
   --selection-only     Save provider selection without installing (development)

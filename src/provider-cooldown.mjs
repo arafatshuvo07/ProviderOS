@@ -122,8 +122,8 @@ export function cooldownErrorPayload({ cooldown, modelName, providerName }) {
   return {
     error: {
       message: quota
-        ? `${providerName} usage is exhausted for ${modelName}. Codex Router will not contact this subscription again until ${reset}; switch models or wait for the allowance to reset.`
-        : `${providerName} is rate-limiting ${modelName}. Codex Router will not contact it again for about ${cooldown.retryAfterSeconds}s.`,
+        ? `${providerName} usage is exhausted for ${modelName}. ProviderOS will not contact this subscription again until ${reset}; switch models or wait for the allowance to reset.`
+        : `${providerName} is rate-limiting ${modelName}. ProviderOS will not contact it again for about ${cooldown.retryAfterSeconds}s.`,
       type: quota ? "billing_error" : "rate_limit_error",
       param: null,
       code: quota ? "402" : "429",

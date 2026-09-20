@@ -18,7 +18,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const dispatcher = path.join(root, "bin", "codex-router");
+const dispatcher = path.join(root, "bin", "provideros");
 const posixOnly = process.platform === "win32" ? "the POSIX dispatcher is not the Windows entry point" : false;
 
 function run(args, options = {}) {
@@ -37,17 +37,17 @@ function linkedCopy(target) {
   return { dir, link };
 }
 
-test("bin/codex-router is valid POSIX shell", () => {
+test("bin/provideros is valid POSIX shell", () => {
   const result = spawnSync("sh", ["-n", dispatcher], { encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
 });
 
-test("bin/codex-router is executable", { skip: posixOnly }, () => {
-  assert.ok(statSync(dispatcher).mode & 0o111, "bin/codex-router must be executable");
+test("bin/provideros is executable", { skip: posixOnly }, () => {
+  assert.ok(statSync(dispatcher).mode & 0o111, "bin/provideros must be executable");
 });
 
 test("the dispatcher resolves its root through a symlink", { skip: posixOnly }, () => {
-  const { dir, link } = linkedCopy("codex-router");
+  const { dir, link } = linkedCopy("provideros");
   try {
     const result = spawnSync(link, ["--version"], { encoding: "utf8" });
     assert.equal(result.status, 0, result.stderr);
@@ -60,7 +60,7 @@ test("the dispatcher resolves its root through a symlink", { skip: posixOnly }, 
 test("the dispatcher resolves a chain of symlinks", { skip: posixOnly }, () => {
   // Homebrew stacks two: `bin/codex-router` points at `opt/<name>/...`, which is
   // itself a symlink into the versioned Cellar directory.
-  const { dir, link } = linkedCopy("codex-router");
+  const { dir, link } = linkedCopy("provideros");
   try {
     const chained = path.join(dir, "chained");
     symlinkSync(link, chained);
@@ -75,9 +75,15 @@ test("the dispatcher resolves a chain of symlinks", { skip: posixOnly }, () => {
 test("a bare invocation and --help print the usage", { skip: posixOnly }, () => {
   for (const args of [[], ["help"], ["--help"], ["-h"]]) {
     const result = run(args);
-    assert.equal(result.status, 0, `codex-router ${args.join(" ")}: ${result.stderr}`);
-    assert.match(result.stdout, /^Usage: codex-router <command>/);
+    assert.equal(result.status, 0, `provideros ${args.join(" ")}: ${result.stderr}`);
+    assert.match(result.stdout, /^Usage: provideros \[target\] <command>/);
   }
+});
+
+test("the branded dispatcher accepts a client target before the command", { skip: posixOnly }, () => {
+  const result = run(["codex", "--version"]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), JSON.parse(readFileSync(path.join(root, "package.json"), "utf8")).version);
 });
 
 test("a command name may not reach outside bin/", { skip: posixOnly }, () => {
@@ -93,7 +99,7 @@ test("a command name may not reach outside bin/", { skip: posixOnly }, () => {
 test("an unknown command names the way to the list", { skip: posixOnly }, () => {
   const result = run(["definitely-not-a-command"]);
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /codex-router help/);
+  assert.match(result.stderr, /provideros help/);
 });
 
 test("the dispatcher refuses install", { skip: posixOnly }, () => {
@@ -108,17 +114,20 @@ test("the dispatcher refuses install", { skip: posixOnly }, () => {
 test("the dispatcher forwards arguments verbatim", { skip: posixOnly }, () => {
   // A wrapper that drops flags still runs the command, just not the one the
   // caller asked for -- the defect `rollback --force` hit on Windows.
-  const dir = mkdtempSync(path.join(realpathSync(os.tmpdir()), "codex-router-args-"));
+  const dir = mkdtempSync(path.join(realpathSync(os.tmpdir()), "provideros-args-"));
   try {
     const fakeRoot = path.join(dir, "root");
     const fakeBin = path.join(fakeRoot, "bin");
     mkdirSync(fakeBin, { recursive: true });
-    writeFileSync(path.join(fakeBin, "codex-router"), readFileSync(dispatcher, "utf8"));
-    chmodSync(path.join(fakeBin, "codex-router"), 0o755);
+    writeFileSync(
+      path.join(fakeBin, "provideros"),
+      readFileSync(path.join(root, "bin", "provideros-dispatcher"), "utf8"),
+    );
+    chmodSync(path.join(fakeBin, "provideros"), 0o755);
     const probe = path.join(fakeBin, "probe");
     writeFileSync(probe, '#!/bin/sh\nfor a in "$@"; do printf "[%s]" "$a"; done\n');
     chmodSync(probe, 0o755);
-    const result = spawnSync(path.join(fakeBin, "codex-router"), ["probe", "--force", "a b", "--", "-x"], {
+    const result = spawnSync(path.join(fakeBin, "provideros"), ["probe", "--force", "a b", "--", "-x"], {
       encoding: "utf8",
     });
     assert.equal(result.status, 0, result.stderr);
@@ -184,7 +193,7 @@ test("the dispatcher is the only bin/ entry that is not a plain command", { skip
   // *executable* helper becomes a command whether or not it was meant to be.
   const entries = readdirSync(path.join(root, "bin"))
     .filter((entry) => statSync(path.join(root, "bin", entry)).mode & 0o111)
-    .filter((entry) => entry !== "codex-router");
+    .filter((entry) => entry !== "provideros" && entry !== "codex-router");
   for (const entry of entries) {
     assert.doesNotMatch(entry, /\.(mjs|js)$/, `bin/${entry} is executable but is a module, not a command`);
   }

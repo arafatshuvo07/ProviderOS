@@ -118,7 +118,7 @@ function main() {
   }
   if (readLoginFreeRefreshJournal()) {
     throw new Error(
-      "A login-free catalog refresh is pending; rerun bin/refresh-catalog before installing or repairing Codex Router.",
+      "A login-free catalog refresh is pending; rerun bin/refresh-catalog before installing or repairing ProviderOS.",
     );
   }
 }

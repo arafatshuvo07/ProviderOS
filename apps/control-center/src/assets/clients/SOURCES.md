@@ -1,6 +1,6 @@
 # Coding client logo sources
 
-These local assets identify supported coding clients in the Codex Router control
+These local assets identify supported coding clients in the ProviderOS control
 center. They are bundled with the app and are never hotlinked at runtime.
 Research was refreshed on 2026-08-30.
 

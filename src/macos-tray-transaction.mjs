@@ -48,7 +48,7 @@ const ALLOWED_ENTRIES = new Set([
 ]);
 
 function refusal(message) {
-  return new Error(`refusing ambiguous macOS Codex Router transaction: ${message}`);
+  return new Error(`refusing ambiguous macOS ProviderOS transaction: ${message}`);
 }
 
 async function statOrNull(candidate) {

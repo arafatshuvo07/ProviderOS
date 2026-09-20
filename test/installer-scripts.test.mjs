@@ -277,7 +277,7 @@ test("Homebrew force-deps fails early with the package-manager repair command", 
     env: { ...process.env, CODEX_ROUTER_PACKAGE_MANAGER: "homebrew" },
   });
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /brew reinstall codex-router/);
+  assert.match(result.stderr, /brew reinstall provideros/);
   assert.doesNotMatch(result.stdout, /npm ci|LiteLLM|service|catalog/i);
 });
 
@@ -499,7 +499,7 @@ test("the kept-update message names the way back", () => {
   const posix = readFileSync(path.join(root, "install.sh"), "utf8");
   const windows = readFileSync(path.join(root, "install.ps1"), "utf8");
   assert.match(posix, /\.\/bin\/rollback/);
-  assert.match(windows, /codex-router\.ps1 rollback/);
+  assert.match(windows, /provideros\.ps1 rollback/);
 });
 
 test("the Windows wrapper hands every command its own arguments", () => {

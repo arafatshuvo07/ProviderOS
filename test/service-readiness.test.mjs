@@ -357,7 +357,7 @@ test("an impossible service deadline is refused before the platform renderer mut
     assert.equal(result.status, 1);
     assert.match(result.stderr, /cannot preserve its platform and 300-second readiness allowances/);
     assert.equal(
-      existsSync(path.join(config, "systemd", "user", "codex-router.service")),
+      existsSync(path.join(config, "systemd", "user", "provideros.service")),
       false,
     );
   } finally {

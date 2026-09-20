@@ -231,6 +231,7 @@ function withFreshGuidedSetup(
         encoding: "utf8",
         env: {
           ...process.env,
+          CODEX_ROUTER_SKIP_LAUNCHCTL: "1",
           PATH: `${fakeBin}:${process.env.PATH || "/usr/local/bin:/usr/bin:/bin"}`,
           CODEX_ROUTER_NPM_LOG: npmLog,
           CODEX_ROUTER_TEST_NODE_MODULES: path.join(root, "node_modules"),
@@ -322,6 +323,7 @@ test(
           encoding: "utf8",
           env: {
             ...process.env,
+            CODEX_ROUTER_SKIP_LAUNCHCTL: "1",
             PATH: `${fakeBin}:${process.env.PATH || "/usr/local/bin:/usr/bin:/bin"}`,
             CODEX_ROUTER_NPM_LOG: npmLog,
             CODEX_ROUTER_TEST_NODE_MODULES: path.join(root, "node_modules"),

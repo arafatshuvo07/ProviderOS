@@ -347,7 +347,7 @@ function curatedModelRouteSelection(providerId, upstreamModel, { existingProvide
     return {
       blockedReason:
         `The provider catalog lists ${upstreamModel}. `
-        + `This Codex Router version has not verified whether the model uses ${protocolList}, `
+        + `This ProviderOS version has not verified whether the model uses ${protocolList}, `
         + `so it cannot be added safely. This is a router compatibility limitation; `
         + `a future update can enable it after testing.`,
     };

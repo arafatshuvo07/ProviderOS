@@ -165,7 +165,7 @@ struct RouterWidgetSnapshotTests {
         registeredContainer: group,
         localHomeDirectory: home
       )?.path
-        == "/Users/example/Library/Application Support/Codex Router Widget/usage-widget.json"
+        == "/Users/example/Library/Application Support/ProviderOS Widget/usage-widget.json"
     )
     #expect(
       RouterWidgetSnapshotStore.snapshotURL(

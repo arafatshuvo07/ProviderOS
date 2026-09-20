@@ -118,7 +118,7 @@ struct ControlContractTests {
 
   @Test("only superseded Control Center bundles are retired before launch")
   func selectsSupersededControlCenters() {
-    let embedded = URL(fileURLWithPath: "/Applications/Codex Router.app/Contents/Resources/Control Center.app")
+    let embedded = URL(fileURLWithPath: "/Applications/ProviderOS.app/Contents/Resources/Control Center.app")
     #expect(
       !ControlCenterLauncher.shouldRetireControlCenter(
         at: embedded,
@@ -127,7 +127,7 @@ struct ControlContractTests {
     )
     #expect(
       ControlCenterLauncher.shouldRetireControlCenter(
-        at: URL(fileURLWithPath: "/Applications/Codex Router.app"),
+        at: URL(fileURLWithPath: "/Applications/ProviderOS.app"),
         embeddedApplication: embedded
       )
     )

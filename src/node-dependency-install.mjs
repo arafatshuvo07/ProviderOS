@@ -50,7 +50,7 @@ export async function ensureNodeDependencies({
   if (manager === "homebrew") return "managed";
   if (manager) {
     throw dependencyFailure(
-      `Reinstall the codex-router package managed by ${manager} to rebuild Node dependencies.`,
+      `Reinstall the ProviderOS package managed by ${manager} to rebuild Node dependencies.`,
     );
   }
   if (stepStatus("node-deps", { root, platform }) === "skip") return "skip";

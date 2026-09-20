@@ -1,6 +1,6 @@
 # Local LLMs through Ollama
 
-Codex Router treats Ollama as a managed, headless local runtime. The model
+ProviderOS treats Ollama as a managed, headless local runtime. The model
 files remain in Ollama's store; the router only keeps selection, download
 progress, benchmark, and catalog state under `~/.codex/codex-router`.
 
@@ -91,7 +91,7 @@ Start LM Studio's local server, enable the provider, and curate the models
 reported by its `/v1/models` endpoint:
 
 ```text
-./bin/model-router codex providers enable lmstudio
+./bin/provideros codex providers enable lmstudio
 ./bin/curate-models lmstudio
 ```
 
@@ -125,7 +125,7 @@ publishes `lmstudio/qwen38-27b-uncensored-mlx` to Codex:
 ./bin/control local-models mlx-status
 ./bin/control local-models mlx-cancel
 
-./bin/model-router codex local-mlx install --yes
+./bin/provideros codex local-mlx install --yes
 ./bin/local-mlx status
 ```
 
@@ -141,7 +141,7 @@ enforces the same restriction before it downloads or executes anything.
 You can also supply the repository URL explicitly:
 
 ```text
-./bin/model-router codex local-mlx install \
+./bin/provideros codex local-mlx install \
   https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-MLX --yes
 ```
 

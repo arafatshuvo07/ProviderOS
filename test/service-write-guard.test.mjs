@@ -173,7 +173,7 @@ test("a redirected install is still able to write its fixture", () => {
       },
     );
     assert.doesNotMatch(result.stderr || "", /Refusing to write the LaunchAgent/);
-    assert.equal(existsSync(path.join(agents, "io.github.codex-router.plist")), true);
+    assert.equal(existsSync(path.join(agents, "io.github.provideros.router.plist")), true);
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
@@ -194,7 +194,7 @@ test(
   { skip: process.platform !== "darwin" && "launchctl is not this host's service manager" },
   () => {
     const registration = () =>
-      spawnSync("/bin/launchctl", ["print", `gui/${process.getuid()}/io.github.codex-router`], {
+      spawnSync("/bin/launchctl", ["print", `gui/${process.getuid()}/io.github.provideros.router`], {
         encoding: "utf8",
       }).stdout || "";
     const before = registration();
@@ -225,7 +225,7 @@ test(
       assert.equal(result.status, 0, result.stderr);
       // The fixture still gets its definition: the skip is of the service
       // manager, not of the install.
-      assert.equal(existsSync(path.join(agents, "io.github.codex-router.plist")), true);
+      assert.equal(existsSync(path.join(agents, "io.github.provideros.router.plist")), true);
       // And the machine's own registration is exactly as it was -- this is the
       // assertion the old behaviour failed, silently.
       assert.equal(registration(), before);
@@ -262,14 +262,14 @@ function linuxInstall(fixture, extraEnv = {}) {
 }
 
 const unitIn = (fixture) =>
-  path.join(fixture, "xdg", "systemd", "user", "codex-router.service");
+  path.join(fixture, "xdg", "systemd", "user", "provideros.service");
 
 test(
   "an install from a test leaves the machine's own systemd unit alone",
   { skip: process.platform !== "linux" && "systemd is not this host's service manager" },
   () => {
     const enablement = () =>
-      spawnSync("systemctl", ["--user", "is-enabled", "codex-router.service"], {
+      spawnSync("systemctl", ["--user", "is-enabled", "provideros.service"], {
         encoding: "utf8",
       }).stdout || "";
     const before = enablement();
@@ -355,8 +355,8 @@ test(
       assert.equal(result.status, 0, result.stderr);
       assert.deepEqual(recorder.calls(), [
         "daemon-reload",
-        "stop codex-router.service",
-        "enable --now codex-router.service",
+        "stop provideros.service",
+        "enable --now provideros.service",
       ]);
     } finally {
       rmSync(fixture, { recursive: true, force: true });

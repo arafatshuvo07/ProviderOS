@@ -47,7 +47,7 @@ mac:
 linux:
   icon: assets/icon.png
   category: Development
-  executableName: codex-router-control-center
+  executableName: provideros-control-center
   target: [AppImage]
 win:
   icon: assets/icon.ico

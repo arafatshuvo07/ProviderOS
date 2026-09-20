@@ -433,7 +433,7 @@ export async function handleClaudeRequest(request, response, route, { responsesU
     writeJson(response, 200, {
       data: publishedModels(routedModels).map((model) => ({
         id: claudeModelId(model.slug),
-        display_name: `${model.displayName} (Codex Router)`,
+        display_name: `${model.displayName} (ProviderOS)`,
         type: "model",
         created_at: "1970-01-01T00:00:00Z",
       })),

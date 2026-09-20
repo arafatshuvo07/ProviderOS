@@ -9,7 +9,7 @@ import { execFile as execFileCallback } from "node:child_process";
 // query failure is deliberately inconclusive so a restricted shell cannot
 // turn a slow-but-valid startup into a false failure.
 export async function windowsScheduledTaskState({
-  taskName = "Codex Router",
+  taskName = "ProviderOS",
   execFile = execFileCallback,
   platform = process.platform,
   timeoutMs = 10_000,

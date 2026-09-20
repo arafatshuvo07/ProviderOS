@@ -571,7 +571,7 @@ export async function discoverGenericProviderModels(
   const discoveredSet = new Set(discovered);
   const unregistered = discovered.filter((id) => !registeredSet.has(id));
   const publicationBlocked = descriptor.adapter === "openai-completions"
-    ? "This endpoint exposes legacy OpenAI Completions. Codex Router can inspect its catalog, but has no completions caller surface and will not publish an unusable route."
+    ? "This endpoint exposes legacy OpenAI Completions. ProviderOS can inspect its catalog, but has no completions caller surface and will not publish an unusable route."
     : undefined;
   const blocked = publicationBlocked
     ? Object.fromEntries(unregistered.map((id) => [id, publicationBlocked]))

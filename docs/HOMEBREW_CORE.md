@@ -1,8 +1,8 @@
 # Homebrew core submission
 
-Codex Router is eligible to be proposed to `Homebrew/homebrew-core`. There is
+ProviderOS is eligible to be proposed to `Homebrew/homebrew-core`. There is
 no application form: the submission is a pull request adding
-`Formula/c/codex-router.rb` to `homebrew-core`. It has **not** been accepted
+`Formula/provideros.rb` to `homebrew-core`. It has **not** been accepted
 yet, so the public install remains the explicit tap until that pull request is
 merged.
 
@@ -50,9 +50,9 @@ regenerate the formula URL and checksum before copying it into `homebrew-core`.
   ```
 
   The install check intentionally refuses to replace an existing
-  `codex-router` formula.
+  `provideros` formula.
 - Verify the stable release through the normal release workflow. It must
-  regenerate `Formula/codex-router.rb` without drift.
+  regenerate `Formula/provideros.rb` without drift.
 
 ## Prepare the Homebrew contribution
 
@@ -63,30 +63,30 @@ branch:
 brew update
 brew tap --force homebrew/core
 cd "$(brew --repository homebrew/core)"
-git switch -c codex-router-new-formula origin/HEAD
+git switch -c provideros-new-formula origin/HEAD
 git remote add YOUR_USERNAME https://github.com/YOUR_USERNAME/homebrew-core.git
 ```
 
 Copy the stable generated formula from this repository to
-`Formula/c/codex-router.rb`. Do not copy a beta formula or add a `bottle` block;
+`Formula/provideros.rb`. Do not copy a beta formula or add a `bottle` block;
 Homebrew creates the bottle block after its builders pass.
 
 Run Homebrew's submission checks from the `homebrew-core` checkout:
 
 ```sh
-HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source codex-router
-brew test codex-router
-brew audit --strict --new --online codex-router
-brew style --fix --formula codex-router
+HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source provideros
+brew test provideros
+brew audit --strict --new --online provideros
+brew style --fix --formula provideros
 brew lgtm --online
 ```
 
 Commit the single formula and push it to the fork:
 
 ```sh
-git add Formula/c/codex-router.rb
-git commit -m "codex-router VERSION (new formula)"
-git push -u YOUR_USERNAME codex-router-new-formula
+git add Formula/provideros.rb
+git commit -m "provideros VERSION (new formula)"
+git push -u YOUR_USERNAME provideros-new-formula
 ```
 
 Open a pull request from that branch to `Homebrew/homebrew-core:main` and

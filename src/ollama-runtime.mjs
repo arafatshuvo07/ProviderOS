@@ -493,7 +493,7 @@ export async function ensureOllamaHeadless({
   const identity = processIdentity(child?.pid);
   if (!identity) {
     child?.kill?.("SIGTERM");
-    throw new Error("Ollama started, but Codex Router could not verify ownership of its process.");
+    throw new Error("Ollama started, but ProviderOS could not verify ownership of its process.");
   }
   try {
     writePrivateJson(OLLAMA_RUNTIME_STATE_PATH, {

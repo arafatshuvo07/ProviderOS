@@ -49,7 +49,7 @@ function Remove-TargetIntegration {
 }
 
 function Open-ControlCenterWindow {
-  $Binary = Join-Path $Root "apps\control-center\release\win-unpacked\Codex Router.exe"
+  $Binary = Join-Path $Root "apps\control-center\release\win-unpacked\ProviderOS.exe"
   if (-not (Test-Path -LiteralPath $Binary -PathType Leaf)) {
     throw "The unified Control Center is not built at $Binary."
   }
@@ -327,7 +327,7 @@ function Assert-ControlCenterPackageComplete($Transaction) {
   Assert-ControlCenterTransactionPath $Transaction.TargetDirectory "live package" "Directory"
   $Resources = Join-Path $Transaction.TargetDirectory "resources"
   Assert-ControlCenterTransactionPath $Resources "packaged resources directory" "Directory"
-  $Binary = Join-Path $Transaction.TargetDirectory "Codex Router.exe"
+  $Binary = Join-Path $Transaction.TargetDirectory "ProviderOS.exe"
   $Archive = Join-Path $Resources "app.asar"
   foreach ($Artifact in @(
     [pscustomobject]@{ Path = $Binary; Label = "packaged executable" },
@@ -362,7 +362,7 @@ function Restore-ControlCenterReplacement($Transaction) {
 }
 
 function Restore-ControlCenterTaskSnapshot($TaskSnapshot) {
-  $TaskName = "Codex Router Tray"
+  $TaskName = "ProviderOS Tray"
   if (-not $TaskSnapshot.Installed) {
     try {
       Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction Stop
@@ -448,7 +448,7 @@ function Recover-ControlCenterUpdateTransaction {
   # exact pre-transaction export below.
   $CurrentTask = Get-ControlCenterTaskSnapshot
   if ($CurrentTask.Installed) {
-    $CanonicalExecute = Join-Path $Transaction.TargetDirectory "Codex Router.exe"
+    $CanonicalExecute = Join-Path $Transaction.TargetDirectory "ProviderOS.exe"
     $MatchesReplacement = Test-SameControlCenterTaskAction `
       $CurrentTask.Execute $CurrentTask.Argument $CanonicalExecute "--tray-only"
     $MatchesPrior = $false
@@ -619,7 +619,7 @@ function Test-RecognizedControlCenterTaskAction([string]$Execute, [string]$Argum
     )
   )
   $ControlCenterAction = $ExpandedExecute.EndsWith(
-    "apps\control-center\release\win-unpacked\Codex Router.exe",
+    "apps\control-center\release\win-unpacked\ProviderOS.exe",
     [StringComparison]::OrdinalIgnoreCase
   ) -and $Argument.Trim() -eq "--tray-only"
   return $ControlCenterAction -or $TauriAction -or $ElectronAction
@@ -682,7 +682,7 @@ function Read-ControlCenterTaskIdentityFromXml([string]$TaskXml) {
       throw "the export principal is not the current user"
     }
     if (-not (Test-RecognizedControlCenterTaskAction $Execute $Argument)) {
-      throw "the export action is not a recognized Codex Router Control Center"
+      throw "the export action is not a recognized ProviderOS Control Center"
     }
     return [pscustomobject]@{
       Execute = $Execute
@@ -695,7 +695,7 @@ function Read-ControlCenterTaskIdentityFromXml([string]$TaskXml) {
 }
 
 function Get-ValidatedTrayTask {
-  $TaskName = "Codex Router Tray"
+  $TaskName = "ProviderOS Tray"
   $Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop
   $CurrentSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
   $PrincipalSid = Resolve-AccountSid ([string]$Task.Principal.UserId)
@@ -722,7 +722,7 @@ function Get-ValidatedTrayTask {
   # The principal/interactive/single-action checks above still stop repair of an
   # arbitrary scheduled task.
   if (-not (Test-RecognizedControlCenterTaskAction ([string]$TaskAction.Execute) $Argument)) {
-    throw "Refusing to repair '$TaskName': its action is not a recognized Codex Router Control Center."
+    throw "Refusing to repair '$TaskName': its action is not a recognized ProviderOS Control Center."
   }
 
   return [pscustomobject]@{

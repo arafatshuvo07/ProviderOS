@@ -1,5 +1,6 @@
 import os from "node:os";
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { trayBundleDir } from "./tray-install.mjs";
@@ -107,7 +108,10 @@ function managedStateDir() {
   return (
     process.env.CODEX_ROUTER_STATE_DIR ||
     process.env.KIMI_CODEX_STATE_DIR ||
-    path.join(CODEX_HOME, "codex-router")
+    (existsSync(path.join(CODEX_HOME, "provideros")) ||
+    !existsSync(path.join(CODEX_HOME, "codex-router"))
+      ? path.join(CODEX_HOME, "provideros")
+      : path.join(CODEX_HOME, "codex-router"))
   );
 }
 
@@ -209,9 +213,16 @@ export const SEARCH_SIDECARS_PATH =
 export const SUPPORT_DIR = path.join(STATE_DIR, "support");
 export const LOG_PATH = path.join(STATE_DIR, "router.log");
 export const SERVICE_PROCESS_STATE_PATH = path.join(STATE_DIR, "service-process.json");
-export const BACKUP_PATH = path.join(CODEX_HOME, "config.toml.pre-codex-router");
-export const SERVICE_LABEL = "io.github.codex-router";
+const providerosBackupPath = path.join(CODEX_HOME, "config.toml.pre-provideros");
+const legacyBackupPath = path.join(CODEX_HOME, "config.toml.pre-codex-router");
+export const BACKUP_PATH = existsSync(providerosBackupPath) || !existsSync(legacyBackupPath)
+  ? providerosBackupPath
+  : legacyBackupPath;
+export const PROVIDEROS_SERVICE_LABEL = "io.github.provideros.router";
+// Keep both historical labels: early releases used the kimi-prefixed label,
+// while the currently installed compatibility service is codex-router.
 export const LEGACY_SERVICE_LABEL = "io.github.kimi-codex-router";
+export const HISTORIC_SERVICE_LABEL = "io.github.codex-router";
 export const PROTOTYPE_SERVICE_LABEL = "com.ziwenxu.kimi-codex-proxy";
 export const LEGACY_STATE_DIRS = Object.freeze([
   LEGACY_STATE_DIR,
@@ -221,6 +232,14 @@ export const LAUNCH_AGENTS_DIR =
   process.env.MODEL_ROUTER_LAUNCH_AGENTS_DIR ||
   process.env.CODEX_ROUTER_LAUNCH_AGENTS_DIR ||
   path.join(os.homedir(), "Library", "LaunchAgents");
+export const SERVICE_LABEL =
+  !existsSync(path.join(LAUNCH_AGENTS_DIR, `${PROVIDEROS_SERVICE_LABEL}.plist`)) &&
+  existsSync(path.join(LAUNCH_AGENTS_DIR, `${HISTORIC_SERVICE_LABEL}.plist`))
+    ? HISTORIC_SERVICE_LABEL
+    : !existsSync(path.join(LAUNCH_AGENTS_DIR, `${PROVIDEROS_SERVICE_LABEL}.plist`)) &&
+      existsSync(path.join(LAUNCH_AGENTS_DIR, `${LEGACY_SERVICE_LABEL}.plist`))
+      ? LEGACY_SERVICE_LABEL
+    : PROVIDEROS_SERVICE_LABEL;
 export const LAUNCH_AGENT_PATH = path.join(LAUNCH_AGENTS_DIR, `${SERVICE_LABEL}.plist`);
 // The tray runs under its own agent rather than a login item: launchd is the
 // only thing that brings it back when it exits, and a login item only fires at
@@ -243,13 +262,13 @@ export const TRAY_APP_PATH =
 export const LEGACY_USER_TRAY_APP_PATH = path.join(
   os.homedir(),
   "Applications",
-  "Model Router.app",
+  "Codex Router.app",
 );
-export const LEGACY_TRAY_APP_PATH = path.join(SOURCE_ROOT, "dist", "Model Router.app");
+export const LEGACY_TRAY_APP_PATH = path.join(SOURCE_ROOT, "dist", "Codex Router.app");
 export const TRAY_APP_BINARY = path.join(TRAY_APP_PATH, "Contents", "MacOS", "ModelRouterTray");
 // Task Scheduler names the tray separately from the router's own task so
 // stopping one never takes the other down.
-export const TRAY_TASK_NAME = "Codex Router Tray";
+export const TRAY_TASK_NAME = "ProviderOS Tray";
 
 function port(name, fallback) {
   const value = Number(process.env[name] || fallback);

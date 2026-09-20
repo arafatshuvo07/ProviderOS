@@ -119,7 +119,7 @@ struct LocalizationTests {
       "login usable",
       "login expired",
       "Enable ChatGPT session sharing?",
-      "Enabling lets other local Codex Router clients spend this user's ChatGPT subscription. Only continue for clients you trust on this Mac.",
+      "Enabling lets other local ProviderOS clients spend this user's ChatGPT subscription. Only continue for clients you trust on this Mac.",
       "A usable ChatGPT login is required before sharing can be enabled. Run codex login first.",
       "ChatGPT session sharing disabled. Installed client catalogs were refreshed.",
     ] {

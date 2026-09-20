@@ -21,7 +21,7 @@ import { yamlScalar } from "./yaml-structure.mjs";
 // under that key belongs to the user (or to the harness's own Models page) and
 // is never read, rewritten, or removed.
 export const DSH_ROUTE_ID = "codex-router";
-export const DSH_ROUTE_DISPLAY_NAME = "Codex Router";
+export const DSH_ROUTE_DISPLAY_NAME = "ProviderOS";
 // The credential *reference* stored in the settings document. Its value lives
 // in `.credentials.yaml`, which is what keeps the caller key out of a document
 // the harness also renders into its Models page.

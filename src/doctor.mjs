@@ -220,7 +220,7 @@ function repair() {
     // The recorded owner still exists, so run the same repair from there; only
     // an explicit override or a fresh install transfers ownership.
     process.stderr.write(
-      `codex-router: repairing from the owning checkout ${ownership.owner}\n`,
+      `ProviderOS: repairing from the owning checkout ${ownership.owner}\n`,
     );
     const result = spawnSync(
       process.execPath,
@@ -248,7 +248,7 @@ function repair() {
   }
   if (homebrewManaged && !jsonOutput) {
     process.stdout.write(
-      "Homebrew manages the dependency files; run `brew reinstall codex-router` to rebuild them if needed.\n",
+      "Homebrew manages the dependency files; run `brew reinstall provideros` to rebuild them if needed.\n",
     );
   }
 
@@ -305,7 +305,7 @@ function repair() {
 if (process.argv.includes("--help")) {
   process.stdout.write(`Usage: doctor [--json] [--fix [--migrate-known]]
 
-Checks the complete Codex Router installation without printing credentials.
+Checks the complete ProviderOS installation without printing credentials.
 --fix reinstalls generated files, configuration, and the background service.
 Known older routers are migrated only with the explicit --migrate-known flag.
 `);
@@ -317,7 +317,7 @@ if (process.argv.includes("--fix")) {
     repair();
     if (!jsonOutput) process.stdout.write("Repair completed; verifying the result.\n\n");
   } catch (error) {
-    console.error(`codex-router repair: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`ProviderOS repair: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   }
 }
@@ -1281,7 +1281,7 @@ if (TARGET === "gemini") {
           ? tunnel.ready
             ? `${tunnel.hostname}; app-only edge on 127.0.0.1:${PORTS.cursorPublic}`
             : `managed tunnel is incomplete; next action: ${tunnel.nextAction}`
-          : "stable public endpoint is managed outside Codex Router",
+          : "stable public endpoint is managed outside ProviderOS",
         "Use Harness > Cursor to install cloudflared, sign in once, and reconnect the hostname.",
       );
       const drift = childJson("cursor-config-manager.mjs", ["drift"]);
@@ -1436,7 +1436,7 @@ add(
       : "no conflicting router detected",
   legacy.installations.length
     ? "Run ./bin/doctor --fix --migrate-known."
-    : "Disable the other router manually; Codex Router will not overwrite it.",
+    : "Disable the other router manually; ProviderOS will not overwrite it.",
 );
 
 // When the tray follows the desktop apps it stops the service as soon as Codex

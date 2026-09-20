@@ -218,7 +218,7 @@ struct ProviderCatalogTests {
 
   @Test("unsupported candidates decode as visible but non-addable")
   func decodesBlockedCandidates() throws {
-    let reason = "The provider catalog lists future-model. This Codex Router version has not verified whether the model uses Chat, Messages, or Responses, so it cannot be added safely. This is a router compatibility limitation; a future update can enable it after testing."
+    let reason = "The provider catalog lists future-model. This ProviderOS version has not verified whether the model uses Chat, Messages, or Responses, so it cannot be added safely. This is a router compatibility limitation; a future update can enable it after testing."
     let catalog = try JSONDecoder().decode(
       ProviderModelCatalog.self,
       from: Data("""

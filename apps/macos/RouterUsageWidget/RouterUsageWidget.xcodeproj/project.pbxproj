@@ -245,7 +245,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "io.github.codex-router.tray.widget.tests";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.provideros.tray.widget.tests";
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -266,7 +266,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.github.codex-router.tray.widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.provideros.tray.widget";
 				PRODUCT_NAME = RouterUsageWidget;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -289,7 +289,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.github.codex-router.tray.widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.provideros.tray.widget";
 				PRODUCT_NAME = RouterUsageWidget;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -308,7 +308,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "io.github.codex-router.tray.widget.tests";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.provideros.tray.widget.tests";
 				SDKROOT = macosx;
 			};
 			name = Debug;

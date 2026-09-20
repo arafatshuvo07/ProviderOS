@@ -57,10 +57,12 @@ export function lifecycleStatePath(environment = process.env, home = os.homedir(
     return path.resolve(environment.MODEL_ROUTER_CONTROL_CENTER_STATE);
   }
   const codexHome = environment.CODEX_HOME || path.join(home, ".codex");
+  const providerosState = path.join(codexHome, "provideros");
+  const legacyState = path.join(codexHome, "codex-router");
   const stateDirectory = environment.MODEL_ROUTER_STATE_DIR
     || environment.CODEX_ROUTER_STATE_DIR
     || environment.KIMI_CODEX_STATE_DIR
-    || path.join(codexHome, "codex-router");
+    || (existsSync(providerosState) || !existsSync(legacyState) ? providerosState : legacyState);
   return path.join(stateDirectory, "control-center-lifecycle.json");
 }
 

@@ -171,7 +171,7 @@ function runCodex(args, { codexBin, codexHome, timeoutMs, cwd }) {
 function routerConfigArgs({ baseUrl, catalogPath }) {
   const args = [
     "--config",
-    'model_providers.codex-router.name="Codex Router"',
+    'model_providers.codex-router.name="ProviderOS"',
     "--config",
     `model_providers.codex-router.base_url=${JSON.stringify(baseUrl)}`,
     "--config",

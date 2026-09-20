@@ -192,12 +192,12 @@ approval_policy = "never"
     assert.match(configured, /\[profiles\.work\]/);
     assert.match(configured, /approval_policy = "never"/);
     assert.equal(
-      readFileSync(path.join(codexHome, "config.toml.pre-codex-router"), "utf8"),
+      readFileSync(path.join(codexHome, "config.toml.pre-provideros"), "utf8"),
       original,
     );
     assert.equal(privateFileIsProtected(configPath), true);
     assert.equal(
-      privateFileIsProtected(path.join(codexHome, "config.toml.pre-codex-router")),
+      privateFileIsProtected(path.join(codexHome, "config.toml.pre-provideros")),
       true,
     );
 
@@ -269,7 +269,7 @@ standalone_web_search = true
 
 # BEGIN codex-router-provider-managed
 [model_providers.codex-router]
-name = "Codex Router (external models)"
+name = "ProviderOS (external models)"
 base_url = "http://127.0.0.1:46192/_codex-router/${CALLER_KEY}/v1"
 wire_api = "responses"
 supports_standalone_web_search = true
@@ -624,7 +624,7 @@ approval_policy = "never"
 
     const loginFreeConfig = readFileSync(configPath, "utf8");
     assert.match(loginFreeConfig, /^model_provider = "custom"$/m);
-    assert.match(loginFreeConfig, /name = "Codex Router \(external models\)"/);
+    assert.match(loginFreeConfig, /name = "ProviderOS \(external models\)"/);
     assert.match(loginFreeConfig, /requires_openai_auth = false/);
     assert.match(loginFreeConfig, /\[model_providers\.custom\.auth\]/);
     assert.match(loginFreeConfig, /caller-key-auth-command\.mjs/);
@@ -1187,8 +1187,8 @@ test("config manager adopts the exact legacy router-owned provider table", () =>
       .replace("# BEGIN codex-router-provider-managed\n", "")
       .replace("\n# END codex-router-provider-managed", "")
       .replace(
-        'name = "Codex Router (external models)"',
-        'name = "Codex Router (extra providers)"',
+        'name = "ProviderOS (external models)"',
+        'name = "ProviderOS (extra providers)"',
       )
       ;
     writeFileSync(configPath, legacy, { mode: 0o600 });

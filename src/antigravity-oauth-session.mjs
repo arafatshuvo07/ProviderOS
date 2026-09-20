@@ -317,7 +317,7 @@ function validateOwnedAntigravityRecord(value) {
     value?.managed_by !== ANTIGRAVITY_CREDENTIAL_OWNER
   ) {
     throw unauthorizedError(
-      "Antigravity OAuth will use only a credential created by this Codex Router sign-in flow. " +
+      "Antigravity OAuth will use only a credential created by this ProviderOS sign-in flow. " +
         "Disconnect the existing incompatible record before signing in.",
     );
   }
@@ -868,7 +868,7 @@ export async function removeAntigravityToken() {
             throw oauthError(
               "The incompatible Antigravity OAuth record path is a nonempty directory. " +
                 "Review and remove its contents and the directory manually, then disconnect again; " +
-                "Codex Router will not delete it recursively.",
+                "ProviderOS will not delete it recursively.",
               { code: "oauth_credential_recovery_required", status: 409, cause: error },
             );
           }

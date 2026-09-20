@@ -1,0 +1,91 @@
+#!/bin/sh
+set -eu
+
+# Single ProviderOS entry point for the maintenance commands that already live
+# beside it in `bin/`.
+self=$0
+while [ -L "$self" ]; do
+  link=$(readlink "$self")
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname -- "$self")/$link ;;
+  esac
+done
+bin_dir=$(CDPATH= cd -- "$(dirname -- "$self")" && pwd)
+repo_dir=$(CDPATH= cd -- "$bin_dir/.." && pwd)
+
+usage() {
+  cat <<'EOF'
+Usage: provideros [target] <command> [options]
+
+Targets (optional; use `codex` for the Codex App/CLI):
+  codex dsh gemini cursor claude openclaw
+
+Setup and status
+  setup             Configure Codex integration and provider credentials
+  doctor            Diagnose the installation and report what is wrong
+  status            Show the background service and routing state
+  start             Run the router in the foreground (debugging)
+
+Providers and models
+  providers         List providers and their authentication state
+  provider-key      Store or clear a provider API key
+  key-pool          Inspect or manage credential IDs in an API-key pool
+  search-sidecar    Manage explicit per-model search-provider bindings
+  chatgpt-session   Authorize or revoke shared native GPT access
+  curate-models     Add, edit, or remove locally curated models
+  discover-models   Probe a provider for the models it exposes
+  refresh-catalog   Rebuild the merged model catalog
+  test-model        Send one small billed request to a model
+  local-mlx         Install or inspect the supported local MLX model
+
+Maintenance
+  update            Update the installation (Git checkouts only)
+  rollback          Restore the previously installed revision
+  enable            Re-apply the Codex configuration
+  disable           Remove the Codex configuration, keeping the install
+  uninstall         Remove the Codex integration and background service
+  support-bundle    Collect logs and configuration for a bug report
+
+Run `provideros <command> --help` where a command supports it.
+EOF
+}
+
+target=""
+case ${1:-} in
+  codex|dsh|gemini|cursor|claude|openclaw)
+    target=$1
+    shift
+    ;;
+esac
+
+command=${1:-}
+case $command in
+  "" | -h | --help | help)
+    usage
+    exit 0
+    ;;
+  -V | --version | version)
+    exec node -p "require('$repo_dir/package.json').version"
+    ;;
+esac
+
+if [ -n "$target" ]; then
+  export MODEL_ROUTER_TARGET=$target
+fi
+shift
+
+case $command in
+  *[/\\]* | .*)
+    echo "provideros: unknown command: $command" >&2
+    exit 2
+    ;;
+esac
+
+if [ "$command" = install ] || [ ! -x "$bin_dir/$command" ]; then
+  echo "provideros: unknown command: $command" >&2
+  echo "Run 'provideros help' for the available commands." >&2
+  exit 2
+fi
+
+exec "$bin_dir/$command" "$@"

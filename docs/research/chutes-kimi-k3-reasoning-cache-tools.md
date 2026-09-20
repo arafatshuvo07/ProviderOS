@@ -175,7 +175,7 @@ that the client does not surface.
 
 ## Prompt caching and billing
 
-Chutes owns the inference KV/prefix cache. Codex Router does not cache Kimi's
+Chutes owns the inference KV/prefix cache. ProviderOS does not cache Kimi's
 model state. Chutes' public source shows the mechanism:
 
 - It hashes progressively larger prompt/message prefixes for prefix-aware

@@ -2,9 +2,12 @@
 
 ProviderOS is a local, extensible model-provider router for Codex, Cursor,
 DeepSeek Harness, Gemini CLI, Claude Code, OpenClaw, and other compatible
-clients. This repository is a maintained fork of the original Codex Router;
-the internal `codex-router` environment and state identifiers remain as
-backwards-compatible implementation names.
+clients. ProviderOS is the product and repository name. A small set of
+legacy, non-user-facing identifiers remain internally so existing installations
+can upgrade without losing their configuration.
+
+For a self-contained prompt that any coding assistant can follow, see
+[AI-INSTALL.md](docs/AI-INSTALL.md).
 
 ## Install everything (recommended)
 
@@ -40,7 +43,7 @@ When it finishes:
 3. Open **ProviderOS** to use the Control Center.
 
 On macOS, open **ProviderOS** from Spotlight or `~/Applications`; existing
-installs may still show the legacy `Codex Router.app` outer host while the
+installs may still have an older compatibility bundle on disk while the
 Control Center itself is branded ProviderOS. Its icon stays in the menu bar
 when the Control Center is closed. The desktop widget is
 already included: choose **Settings → Dynamic Island → Desktop** from the
@@ -58,7 +61,7 @@ selection. For an Xcode app in another location, retry the companion with:
 
 ```sh
 env DEVELOPER_DIR="/path/to/Xcode.app/Contents/Developer" \
-  ~/.local/share/codex-router/bin/model-router-tray
+  ~/.local/share/provideros/bin/provideros-tray
 ```
 
 ## What ProviderOS does
@@ -98,10 +101,10 @@ fake Claude, Cursor, or Gemini subscription models to another client's picker.
 Inspect the optional bridges without spending a model request:
 
 ```sh
-./bin/model-router codex agents status
-./bin/model-router codex agents probe anthropic
-./bin/model-router codex agents probe cursor
-./bin/model-router codex agents probe gemini
+./bin/provideros codex agents status
+./bin/provideros codex agents probe anthropic
+./bin/provideros codex agents probe cursor
+./bin/provideros codex agents probe gemini
 ```
 
 Run a prompt only when you intend to spend the owning client's quota. Prompt
@@ -109,7 +112,7 @@ text is read from stdin so it is absent from the process list:
 
 ```sh
 printf '%s' 'Explain this repository.' |
-  ./bin/model-router codex agents prompt anthropic --cwd "$PWD"
+  ./bin/provideros codex agents prompt anthropic --cwd "$PWD"
 ```
 
 The ACP integrations follow the official [Cursor ACP](https://prod.cursor.com/docs/cli/acp)
@@ -188,9 +191,11 @@ or capability that the selected provider does not implement.
 
 ## State, upgrades, and compatibility
 
-The source checkout lives separately from runtime state. By default the
-checkout is under `~/.local/share/codex-router`; runtime state is under
-`~/.codex/codex-router`. The state directory contains the merged model
+The source checkout lives separately from runtime state. New installations use
+`~/.local/share/provideros` for the checkout and `~/.codex/provideros` for
+runtime state. Existing installations may continue using the older
+`~/.local/share/codex-router` and `~/.codex/codex-router` locations during
+upgrade. The state directory contains the merged model
 catalogue, provider selection, generated gateway routes, health/usage records,
 rollback journals, and owner-only credential files. It is never committed to
 Git and is not included in a package or support bundle by default.
@@ -230,17 +235,17 @@ hidden local terminal prompt.
 
 ### Homebrew (macOS or Linux)
 
-ProviderOS is not in `homebrew/core` yet, so `brew install codex-router` by
+ProviderOS is not in `homebrew/core` yet, so `brew install provideros` by
 itself does not work. For now, add this repository as a tap once:
 
 ```sh
-brew tap arafatshuvo07/ProviderOS https://github.com/arafatshuvo07/ProviderOS
-brew install codex-router
-codex-router setup --guided
+brew tap arafatshuvo07/provideros https://github.com/arafatshuvo07/ProviderOS
+brew install provideros
+provideros setup --guided
 ```
 
 The tap URL is needed only once. Homebrew installs the formula's Node.js,
-Python, and build dependencies; `codex-router setup --guided` performs the
+Python, and build dependencies; `provideros setup --guided` performs the
 one-time provider selection, credential-safe authentication, background
 service installation, and Codex integration. When setup finishes, fully quit
 and reopen Codex, create a new task, and choose a routed model from the picker.
@@ -253,47 +258,47 @@ at the top of this README instead.
 Upgrade an existing Homebrew installation with:
 
 ```sh
-brew upgrade codex-router
+brew upgrade provideros
 ```
 
 #### Homebrew command equivalents
 
-A Homebrew install puts a single `codex-router` command on your PATH instead
+A Homebrew install puts a single `provideros` command on your PATH instead
 of this repository's `bin/` directory. Wherever the rest of this README shows
-`./bin/model-router codex <command>` or `./bin/<command>`, run:
+`./bin/provideros codex <command>` or `./bin/<command>`, run:
 
 ```sh
-codex-router <command>
+provideros <command>
 ```
 
 List everything the packaged build exposes with:
 
 ```sh
-codex-router help
+provideros help
 ```
 
 To add a custom provider's models — the packaged equivalent of
 `./bin/curate-models <provider>` — run:
 
 ```sh
-codex-router curate-models <provider>
+provideros curate-models <provider>
 ```
 
-`codex-router install` is deliberately unavailable: a Homebrew install has no
-writable checkout to rewrite, and `brew upgrade codex-router` performs that
+`provideros install` is deliberately unavailable: a Homebrew install has no
+writable checkout to rewrite, and `brew upgrade provideros` performs that
 step itself.
 
 Before removing the formula, remove the per-user service and managed Codex
 configuration that Homebrew does not own:
 
 ```sh
-codex-router uninstall
-brew uninstall codex-router
+provideros uninstall
+brew uninstall provideros
 ```
 
 The first Homebrew install can take considerably longer than the guided
 installer below because the formula builds the locked Python dependencies from
-source. The release workflow generates `Formula/codex-router.rb` from
+source. The release workflow generates `Formula/provideros.rb` from
 `requirements/python.txt` and refreshes it for each release.
 
 Maintainers preparing the eventual `homebrew/core` submission should follow
@@ -302,7 +307,7 @@ Maintainers preparing the eventual `homebrew/core` submission should follow
 ### npm
 
 This project does not publish an npm-installable CLI yet. Do not use
-`npm install codex-router` for this project. Use the recommended installer or
+`npm install provideros` for this project. Use the recommended installer or
 Homebrew above. If an npm package is published later, it will use an explicit
 ProviderOS-scoped name so it cannot be confused with existing packages.
 
@@ -431,7 +436,7 @@ ClinePass uses Cline's OpenAI-compatible API at
 `https://api.cline.bot/api/v1`. An API key alone does not grant access to the
 `cline-pass/*` models: the account also needs an active ClinePass subscription.
 Create the key under Cline Settings > API Keys, then store it with
-`./bin/model-router codex provider-key clinepass set`.
+`./bin/provideros codex provider-key clinepass set`.
 
 Grok OAuth reuses the official CLI credential at `~/.grok/auth.json` and sends
 it only to xAI's documented Grok CLI inference proxy. On that path the router
@@ -467,13 +472,13 @@ Create the trusted provider descriptor, enter the key at the hidden terminal
 prompt, and bind the model:
 
 ```sh
-./bin/model-router codex providers generic add perplexity-search \
+./bin/provideros codex providers generic add perplexity-search \
   --name "Perplexity Search" \
   --base-url https://api.perplexity.ai \
   --adapter openai-chat
-./bin/model-router codex providers generic credential perplexity-search set
-./bin/model-router codex search-sidecar set PROVIDER/MODEL perplexity-search
-./bin/model-router codex search-sidecar status PROVIDER/MODEL
+./bin/provideros codex providers generic credential perplexity-search set
+./bin/provideros codex search-sidecar set PROVIDER/MODEL perplexity-search
+./bin/provideros codex search-sidecar status PROVIDER/MODEL
 ```
 
 The credential command never accepts the key as an argument. The descriptor,
@@ -487,12 +492,12 @@ the generic provider also removes its credential and every dependent sidecar
 binding. Fully quit and reopen Codex after changing a binding so its model
 catalog refreshes.
 
-On Windows, the same commands are available through `codex-router.ps1`:
+On Windows, the same commands are available through `provideros.ps1`:
 
 ```powershell
-.\codex-router.ps1 providers generic add perplexity-search --name "Perplexity Search" --base-url https://api.perplexity.ai --adapter openai-chat
-.\codex-router.ps1 providers generic credential perplexity-search set
-.\codex-router.ps1 search-sidecar set PROVIDER/MODEL perplexity-search
+.\provideros.ps1 providers generic add perplexity-search --name "Perplexity Search" --base-url https://api.perplexity.ai --adapter openai-chat
+.\provideros.ps1 providers generic credential perplexity-search set
+.\provideros.ps1 search-sidecar set PROVIDER/MODEL perplexity-search
 ```
 
 ```sh
@@ -549,17 +554,17 @@ preserves it and asks you to run `providers disconnect antigravity-oauth`
 before sign-in; it never silently upgrades, reuses, or overwrites that record.
 
 ```sh
-./bin/model-router codex providers login antigravity-oauth
-./bin/model-router codex providers probe antigravity-oauth --live --yes
-./bin/model-router codex providers enable antigravity-oauth
+./bin/provideros codex providers login antigravity-oauth
+./bin/provideros codex providers probe antigravity-oauth --live --yes
+./bin/provideros codex providers enable antigravity-oauth
 ```
 
 On Windows PowerShell, use the matching wrapper:
 
 ```powershell
-.\model-router.ps1 codex providers login antigravity-oauth
-.\model-router.ps1 codex providers probe antigravity-oauth --live --yes
-.\model-router.ps1 codex providers enable antigravity-oauth
+.\provideros.ps1 codex providers login antigravity-oauth
+.\provideros.ps1 codex providers probe antigravity-oauth --live --yes
+.\provideros.ps1 codex providers enable antigravity-oauth
 ```
 
 The probe sends a small real prompt and consumes provider quota. It uses the
@@ -589,7 +594,7 @@ serves `mimo-v2.5` and `mimo-v2.5-pro` through the standard
 `/chat/completions` surface, so requests never touch the Responses gateway.
 `mimo-v2.5` is verified for text/image input and Codex standalone web search;
 `mimo-v2.5-pro` is text-only. Store the key with
-`./bin/model-router codex provider-key xiaomi-mimo set`.
+`./bin/provideros codex provider-key xiaomi-mimo set`.
 
 Native GPT models continue to use Codex directly. There is no separate GPT or
 ChatGPT OAuth provider in the router.
@@ -604,7 +609,7 @@ from the live catalog. This initial integration targets GitHub.com; GitHub
 Enterprise Cloud data-residency hosts are not yet configured by the router.
 
 ```sh
-./bin/model-router codex provider-key github-copilot set
+./bin/provideros codex provider-key github-copilot set
 ./bin/curate-models github-copilot
 ```
 
@@ -732,8 +737,8 @@ endpoint and by the protocol each model speaks upstream. Set the key once and
 enable the family:
 
 ```sh
-./bin/model-router codex provider-key opencode-go set
-./bin/model-router codex providers enable opencode-go
+./bin/provideros codex provider-key opencode-go set
+./bin/provideros codex providers enable opencode-go
 ```
 
 An optional API-key pool can rotate between the two registry-declared
@@ -846,10 +851,10 @@ its window came from. Every other free ID keeps the conservative default, and
 any window is editable in `user-models.json`.
 
 ```sh
-./bin/model-router codex providers enable opencode-free
+./bin/provideros codex providers enable opencode-free
 ./bin/curate-models opencode-free
 
-./bin/model-router codex providers enable kilo-free
+./bin/provideros codex providers enable kilo-free
 ./bin/curate-models kilo-free
 ```
 
@@ -874,7 +879,7 @@ entry can hold a free community endpoint, a friend's self-hosted server, and a
 paid API you have a key for, all at once.
 
 ```sh
-./bin/model-router codex providers enable custom
+./bin/provideros codex providers enable custom
 ```
 
 Enabling it costs nothing and asks for nothing: a model that needs a key says so
@@ -940,8 +945,8 @@ Provider API. Both paths use the same stored key and provider family.
 **Store an API key.** Create one in Command Code Studio and save it here:
 
 ```sh
-./bin/model-router codex provider-key commandcode set
-./bin/model-router codex providers enable commandcode
+./bin/provideros codex provider-key commandcode set
+./bin/provideros codex providers enable commandcode
 ```
 
 When multiple API-key sources exist, the exported environment variable wins,
@@ -1065,8 +1070,8 @@ Meta's Muse Spark models speak the Responses protocol at
 once):
 
 ```sh
-./bin/model-router codex provider-key meta set
-./bin/model-router codex providers enable meta
+./bin/provideros codex provider-key meta set
+./bin/provideros codex providers enable meta
 ```
 
 Three Muse Spark models ship in the registry: 1.2 and its cheaper
@@ -1123,7 +1128,7 @@ keys and authenticate the same endpoint the Hermes agent uses.
 Add a key, then pick the models you want from the provider's live catalog:
 
 ```sh
-./bin/model-router codex provider-key groq set
+./bin/provideros codex provider-key groq set
 ./bin/curate-models groq
 ```
 
@@ -1135,7 +1140,7 @@ add every currently advertised free OpenAI-compatible model without pinning
 that changing list in the repository:
 
 ```sh
-./bin/model-router codex provider-key orca set
+./bin/provideros codex provider-key orca set
 ./bin/curate-models orca --free-only --apply
 ```
 
@@ -1174,13 +1179,13 @@ installed client pickers. Adding a model during curation selects it for the
 picker; merely enabling a provider does not flood the list:
 
 ```sh
-./bin/model-router codex providers
-./bin/model-router codex providers enable deepseek
-./bin/model-router codex provider-key deepseek set
-./bin/model-router codex provider-key anthropic-api set
+./bin/provideros codex providers
+./bin/provideros codex providers enable deepseek
+./bin/provideros codex provider-key deepseek set
+./bin/provideros codex provider-key anthropic-api set
 ```
 
-On Windows, use `./model-router.ps1 codex` with the same commands.
+On Windows, use `./provideros.ps1 codex` with the same commands.
 
 ### Router-owned default model (optional)
 
@@ -1205,7 +1210,7 @@ report credential presence and source, never the value.
 
 After setup:
 
-1. Run `./bin/model-router codex doctor` and resolve any `FAIL` line.
+1. Run `./bin/provideros codex doctor` and resolve any `FAIL` line.
 2. Confirm `providers` says `SHOW` and `ready` for the intended provider.
 3. Fully quit Codex, reopen it, and create a new task.
 4. Open the normal model picker.
@@ -1338,7 +1343,7 @@ model_catalog_json = "/absolute/path/to/.codex/codex-router/merged-models.json"
 
 # BEGIN codex-router-provider-managed
 [model_providers.codex-router]
-name = "Codex Router (external models)"
+name = "ProviderOS (external models)"
 base_url = "http://127.0.0.1:4202/_codex-router/<generated-capability>/v1"
 wire_api = "responses"
 # END codex-router-provider-managed
@@ -1349,10 +1354,10 @@ managed URL into an issue. If that capability may have been exposed, rotate it
 through the supported transaction instead of deleting state files by hand:
 
 ```sh
-./bin/model-router codex caller-key rotate
+./bin/provideros codex caller-key rotate
 ```
 
-On Windows use `./codex-router.ps1 caller-key rotate`. Rotation acquires the
+On Windows use `./provideros.ps1 caller-key rotate`. Rotation acquires the
 router's mutation locks, refuses partial managed client state, and refreshes only
 the caller URL/key fields of integrations that are already installed. A running
 router is stopped before the key swap, restarted afterward, and accepted only
@@ -1486,7 +1491,7 @@ command directly, restart Codex yourself.
 
 ### Native ChatGPT account switching
 
-Codex Router can keep multiple ChatGPT subscription logins in isolated
+ProviderOS can keep multiple ChatGPT subscription logins in isolated
 profiles. Select an account in Control Center; the selection is
 applied to native Codex after Codex is closed and restarted. The previous
 login remains saved, and switching never removes another account's session.
@@ -1505,7 +1510,7 @@ the stable `lmstudio/<model-id>` namespace, so identical model IDs loaded in
 the two backends never collide:
 
 ```sh
-./bin/model-router codex providers enable lmstudio
+./bin/provideros codex providers enable lmstudio
 ./bin/curate-models lmstudio
 ```
 
@@ -1889,7 +1894,7 @@ you are in. To give failover a free first stop:
 
 ```sh
 ./bin/providers enable opencode-free
-./bin/model-router codex curate-models opencode-free
+./bin/provideros codex curate-models opencode-free
 ```
 
 A model served from your own machine is never chosen automatically, for the same
@@ -1939,7 +1944,7 @@ change.
 ```sh
 ./install.sh --target dsh --auto --providers configured
 # or, on an install that already serves Codex:
-./bin/model-router dsh enable
+./bin/provideros dsh enable
 ```
 
 That writes one route, `llm-pi-ai.providers.codex-router`, and one credential
@@ -1949,7 +1954,7 @@ reference, `CODEX_ROUTER_CALLER_KEY`, into `$DSH_HOME/.credentials.yaml`:
 llm-pi-ai:
   providers:
     codex-router:
-      displayName: "Codex Router"
+      displayName: "ProviderOS"
       api: "openai-responses"
       baseURL: "http://127.0.0.1:4202/_codex-router/…/v1"
       apiKeyEnv: "CODEX_ROUTER_CALLER_KEY"
@@ -1973,13 +1978,13 @@ harness turn goes through the same routed request path and gets the same
 router capabilities: tool-result ageing, the vision bridge for text-only
 models, the substituted prompt-token count that keeps compaction working
 against providers that report zero, bounded upstream retries, and the usage
-and tokens-per-second accounting behind `./bin/model-router codex control
+and tokens-per-second accounting behind `./bin/provideros codex control
 provider-usage --json`.
 
 **What is preserved.** The router owns that one route and that one credential
 and nothing else. Other provider routes, other settings sections, your
 comments, and your other stored keys are left exactly as they were —
-`./bin/model-router dsh disable` removes the route and restores the document.
+`./bin/provideros dsh disable` removes the route and restores the document.
 A settings file this build cannot read unambiguously is refused with the file
 untouched rather than rewritten on a guess.
 
@@ -1990,7 +1995,7 @@ router plane once:
 
 ```sh
 codex login
-./bin/model-router codex chatgpt-session enable
+./bin/provideros codex chatgpt-session enable
 ```
 
 DeepSeek Harness, Gemini CLI, OpenClaw, and future clients installed for this same OS
@@ -2004,7 +2009,7 @@ It is a fallback and never an override: a request that presents its own
 credential is relayed untouched, so nothing about a Codex turn changes. The
 authorization widens what the local caller key reaches, from API-key providers
 to your ChatGPT subscription as well. Revoke it everywhere with
-`./bin/model-router codex chatgpt-session disable`; Codex stays signed in and
+`./bin/provideros codex chatgpt-session disable`; Codex stays signed in and
 keeps its own native models. Headless operators may set
 `CODEX_ROUTER_NATIVE_SESSION_FALLBACK=1` as an explicit opt-in (`0` always
 forces it off).
@@ -2012,7 +2017,7 @@ forces it off).
 **Subagents.** A child spawned by `dsh-tool-subagent` with no model of its own
 inherits the default model selection, so it is already routed once this route
 is the default. To put children on a *different* routed model, paste the block
-from `./bin/model-router dsh subagent-preset` into your preset's
+from `./bin/provideros dsh subagent-preset` into your preset's
 `agent.cordis.yml` — the router will not edit a preset it does not own.
 
 ## Make models appear in Gemini CLI
@@ -2027,7 +2032,7 @@ environment — which is the whole integration.
 ```sh
 ./install.sh --target gemini --auto --providers configured
 # or, on an install that already serves Codex:
-./bin/model-router gemini enable
+./bin/provideros gemini enable
 ```
 
 That writes one marker block into `~/.gemini/.env`:
@@ -2048,7 +2053,7 @@ machine.
 **What is preserved.** Your `settings.json` is never opened for writing: it is
 JSONC and carries your comments, and this integration does not need it. Every
 other line of `~/.gemini/.env` is left exactly as it was, and
-`./bin/model-router gemini disable` removes the block and restores the file. An
+`./bin/provideros gemini disable` removes the block and restores the file. An
 assignment of one of those three keys *outside* the block stops the publish with
 the line named rather than being silently overwritten — `dotenv` lets the last
 assignment win, so a duplicate would quietly decide which endpoint is in force.
@@ -2109,7 +2114,7 @@ running with the router service:
   --cursor-hostname cursor-router.example.com
 
 # Or add Cursor to an existing router. Fully quit Cursor first.
-./bin/model-router cursor enable \
+./bin/provideros cursor enable \
   --hostname cursor-router.example.com
 ```
 
@@ -2147,7 +2152,7 @@ then the router resumes the selected model with the typed result. Cursor MCP
 tools use a separate exec shape and are not advertised yet. Cursor App Agent
 requests continue through Cursor's own orchestration.
 
-`./bin/model-router cursor disable` removes router-owned aliases and restores
+`./bin/provideros cursor disable` removes router-owned aliases and restores
 the prior base URL and BYOK toggle when they still match the published values.
 Cursor must be fully stopped for enable, repair, or disable because it owns its
 SQLite settings database while running.
@@ -2157,10 +2162,10 @@ SQLite settings database while running.
 On macOS, build and install the unified app with:
 
 ```sh
-./bin/model-router-tray
+./bin/provideros-tray
 ```
 
-`Codex Router.app` contains the Swift-native menu-bar host and the embedded
+`ProviderOS.app` contains the Swift-native menu-bar host and the embedded
 Electron Control Center window. Opening the app shows the Control Center;
 closing that window leaves the native tray running so it can be reopened. A
 per-user launchd agent starts the host at login and restarts abnormal exits.
@@ -2185,7 +2190,7 @@ available whether or not either optional surface is on.
 
 ## Unified desktop app
 
-`Codex Router.app` on macOS combines the Swift-native menu-bar host with an
+`ProviderOS.app` on macOS combines the Swift-native menu-bar host with an
 embedded Electron Control Center. launchd supervises the host, and opening the
 app or choosing **Control Center** shows the embedded window. Windows and Linux
 package that same Control Center as one Electron process with the native OS
@@ -2194,7 +2199,7 @@ the window.
 
 ```sh
 # Linux
-./bin/model-router-tray
+./bin/provideros-tray
 ```
 
 ```powershell
@@ -2203,14 +2208,14 @@ the window.
 
 # or build and register it by hand
 .\scripts\build-electron-companion.ps1
-.\codex-router.ps1 tray install
+.\provideros.ps1 tray install
 ```
 
 [Download the latest Windows or Linux desktop package](https://github.com/arafatshuvo07/ProviderOS/releases/latest).
 Tagged releases provide unsigned tester packages for this unified application
-family: `model-router-<version>-windows-x64.exe` and
-`model-router-<version>-linux-x64.tar.gz` (containing the executable AppImage).
-They are frontends, so install the matching Codex Router version first. The
+family: `provideros-<version>-windows-x64.exe` and
+`provideros-<version>-linux-x64.tar.gz` (containing the executable AppImage).
+They are frontends, so install the matching ProviderOS version first. The
 universal macOS bundle remains an ad-hoc-signed CI artifact until Developer ID
 signing and notarization are available; it is not attached to public releases.
 
@@ -2225,7 +2230,7 @@ packaging, and the platform behavior matrix.
 
 ## Skills for custom models
 
-Custom models (anything routed through codex-router instead of the built-in
+Custom models (anything routed through ProviderOS instead of the built-in
 OpenAI backend) get the Codex app's full native toolset — threads,
 automations, the in-app browser, computer use — in the flattened form the
 provider accepts. Weaker models sometimes need guidance to call those tools
@@ -2246,8 +2251,8 @@ name collision with an existing skill of your own is skipped, not
 overwritten. To install or remove them by hand:
 
 ```sh
-./bin/model-router codex skills install
-./bin/model-router codex skills uninstall
+./bin/provideros codex skills install
+./bin/provideros codex skills uninstall
 ```
 
 If another manager owns a skill with the same name, review that complete
@@ -2255,8 +2260,8 @@ directory and explicitly approve its exact contents instead of transferring
 ownership to codex-router:
 
 ```sh
-./bin/model-router codex skills approve-external codex-router
-./bin/model-router codex skills revoke-external codex-router
+./bin/provideros codex skills approve-external codex-router
+./bin/provideros codex skills revoke-external codex-router
 ```
 
 Approval records digests of both the external directory and this checkout's
@@ -2265,7 +2270,7 @@ Symlinks, special files, unreadable trees, and oversized trees are refused.
 Approval never authorizes codex-router to replace or remove the external
 directory; uninstall preserves it.
 
-`./bin/model-router codex doctor` checks the pack: installed, current
+`./bin/provideros codex doctor` checks the pack: installed, current
 against the checkout, free of name collisions, and matching the app
 toolset snapshot the router relays.
 
@@ -2287,14 +2292,14 @@ specific bytes. Browser and computer-use execution remains live-only.
 ## Common commands
 
 ```sh
-./bin/model-router codex setup --guided
-./bin/model-router codex doctor
-./bin/model-router codex status
-./bin/model-router codex start
-./bin/model-router codex stop
-./bin/model-router codex disable
-./bin/model-router codex enable
-./bin/model-router codex uninstall
+./bin/provideros codex setup --guided
+./bin/provideros codex doctor
+./bin/provideros codex status
+./bin/provideros codex start
+./bin/provideros codex stop
+./bin/provideros codex disable
+./bin/provideros codex enable
+./bin/provideros codex uninstall
 ./bin/control vision-bridge status
 ./bin/control failover status
 ```
@@ -2303,11 +2308,11 @@ Every command takes `dsh` in place of `codex` to act on the DeepSeek Harness
 integration instead:
 
 ```sh
-./bin/model-router dsh enable            # publish the routed models
-./bin/model-router dsh doctor
-./bin/model-router dsh status
-./bin/model-router dsh subagent-preset   # block to paste for a routed child model
-./bin/model-router dsh disable           # remove the route, keep everything else
+./bin/provideros dsh enable            # publish the routed models
+./bin/provideros dsh doctor
+./bin/provideros dsh status
+./bin/provideros dsh subagent-preset   # block to paste for a routed child model
+./bin/provideros dsh disable           # remove the route, keep everything else
 ```
 
 ## Make models appear in Claude Code
@@ -2320,7 +2325,7 @@ model discovery:
 ```sh
 ./install.sh --target claude --auto --providers configured
 # or add Claude Code to an existing router
-./bin/model-router claude enable
+./bin/provideros claude enable
 
 claude-router
 # then use /model and choose codex_router/anthropic/<provider>/<model>
@@ -2334,35 +2339,35 @@ apply. Anthropic documents gateways for Claude models; non-Claude routed models
 work through this compatibility layer but are not an Anthropic-supported Claude
 Code configuration.
 
-Claude models in Codex Router remain the other direction: enable
+Claude models in ProviderOS remain the other direction: enable
 `anthropic-api` and store an Anthropic API key through the hidden prompt. A
 Claude.ai subscription login is not converted into a reusable API credential.
 
 …or `gemini` to act on the Gemini CLI integration:
 
 ```sh
-./bin/model-router gemini enable         # publish the routed models
-./bin/model-router gemini doctor
-./bin/model-router gemini status
-./bin/model-router gemini disable        # remove the managed block, keep the rest
+./bin/provideros gemini enable         # publish the routed models
+./bin/provideros gemini doctor
+./bin/provideros gemini status
+./bin/provideros gemini disable        # remove the managed block, keep the rest
 ```
 
 …or `cursor` for Cursor Agent and Cursor App (quit Cursor before mutations):
 
 ```sh
-./bin/model-router cursor enable --hostname cursor-router.example.com
-./bin/model-router cursor doctor
-./bin/model-router cursor status
-./bin/model-router cursor disable
+./bin/provideros cursor enable --hostname cursor-router.example.com
+./bin/provideros cursor doctor
+./bin/provideros cursor status
+./bin/provideros cursor disable
 ```
 
 …or `claude` for Claude Code:
 
 ```sh
-./bin/model-router claude enable
-./bin/model-router claude doctor
-./bin/model-router claude status
-./bin/model-router claude disable
+./bin/provideros claude enable
+./bin/provideros claude doctor
+./bin/provideros claude status
+./bin/provideros claude disable
 ```
 
 ## Make models appear in OpenClaw
@@ -2375,7 +2380,7 @@ OpenClaw provider:
 ```sh
 ./install.sh --target openclaw --auto --providers configured
 # or add OpenClaw to an existing router
-./bin/model-router openclaw enable
+./bin/provideros openclaw enable
 
 openclaw
 ```
@@ -2395,9 +2400,9 @@ provider and removes the default only when it is still the value the router
 set:
 
 ```sh
-./bin/model-router openclaw doctor
-./bin/model-router openclaw status
-./bin/model-router openclaw disable
+./bin/provideros openclaw doctor
+./bin/provideros openclaw status
+./bin/provideros openclaw disable
 ```
 
 OpenClaw's AgentHarnessV2 API is a native runtime-plugin boundary, not a new
@@ -2409,7 +2414,7 @@ The optional live check makes one small request per selected provider and may
 consume paid quota:
 
 ```sh
-./bin/model-router codex smoke-test --yes
+./bin/provideros codex smoke-test --yes
 ```
 
 `disable` removes only the selected client integration and retires the shared
@@ -2423,8 +2428,8 @@ recovery data.
 For a managed Git checkout:
 
 ```sh
-./bin/model-router codex update
-./bin/model-router codex rollback
+./bin/provideros codex update
+./bin/provideros codex rollback
 ```
 
 Updates require a `main` checkout with no edits to tracked files, plus a

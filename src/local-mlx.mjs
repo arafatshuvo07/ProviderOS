@@ -439,7 +439,7 @@ export async function installLocalMlx({
   }
 
   signal?.throwIfAborted();
-  onPhase("publishing", "Publishing the model through Codex Router", 95);
+  onPhase("publishing", "Publishing the model through ProviderOS", 95);
   await checkedRun(
     run,
     path.join(REPO_ROOT, "bin", "control"),

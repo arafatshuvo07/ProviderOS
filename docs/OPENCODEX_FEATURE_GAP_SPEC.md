@@ -1,17 +1,17 @@
-# OpenCodex feature gap specification for Codex Router
+# OpenCodex feature gap specification for ProviderOS
 
 Status: proposed design; not a record of shipped features
 
 Implementation tracking: [OpenCodex parity roadmap](./OPENCODEX_IMPLEMENTATION_ROADMAP.md)
 
 This document describes possible parity work after comparing OpenCodex with the
-current Codex Router `main` branch. It is an implementation handoff, not a
+current ProviderOS `main` branch. It is an implementation handoff, not a
 claim that any item is already available. The current `README.md`, source, and
 tests are authoritative for shipped behavior. An implementation must re-check
 those sources and the upstream provider contract before changing code.
 
 The comparison reference is the public [OpenCodex repository](https://github.com/lidge-jun/opencodex).
-OpenCodex behavior is a comparison input, not a claim about Codex Router. Re-check
+OpenCodex behavior is a comparison input, not a claim about ProviderOS. Re-check
 the referenced project and its current contracts before implementing a proposal.
 
 ## 1. Verified current baseline

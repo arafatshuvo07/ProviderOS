@@ -1,7 +1,9 @@
 #!/bin/sh
 set -eu
 
-# Compatibility alias. New installs and documentation use `provideros`.
+# ProviderOS-branded tray entrypoint. The implementation remains in the
+# historical file so existing scripts and installed launch agents can migrate
+# without losing their service state.
 self=$0
 while [ -L "$self" ]; do
   link=$(readlink "$self")
@@ -11,4 +13,4 @@ while [ -L "$self" ]; do
   esac
 done
 bin_dir=$(CDPATH='' cd -- "$(dirname -- "$self")" && pwd)
-exec "$bin_dir/provideros-dispatcher" "$@"
+exec "$bin_dir/model-router-tray" "$@"

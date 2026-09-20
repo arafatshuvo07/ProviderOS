@@ -19,13 +19,13 @@ esac
 
 case $(uname -s) in
   Darwin)
-    bundle_dir="$HOME/Applications/Codex Router.app"
+    bundle_dir="$HOME/Applications/ProviderOS.app"
     legacy_user_bundle="$HOME/Applications/Model Router.app"
     bundle_parent="$HOME/Applications"
     mkdir -p "$bundle_parent"
     transaction_dir="$bundle_parent/.model-router-tray-transaction"
     staging_dir="$transaction_dir/staged"
-    staged_bundle="$staging_dir/Codex Router.app"
+    staged_bundle="$staging_dir/ProviderOS.app"
     previous_bundle="$transaction_dir/previous"
     failed_bundle="$transaction_dir/failed"
     phase_file="$transaction_dir/phase"
@@ -34,7 +34,7 @@ case $(uname -s) in
     target_name_file="$transaction_dir/target-name"
     artifact_set_file="$transaction_dir/artifact-set"
     embedded_app="$bundle_dir/Contents/Resources/Control Center.app"
-    embedded_binary="$embedded_app/Contents/MacOS/Codex Router"
+    embedded_binary="$embedded_app/Contents/MacOS/ProviderOS"
     transaction_committed=0
     reopen_control_center=0
     legacy_user_bundle_present=0
@@ -102,7 +102,7 @@ case $(uname -s) in
     }
     embedded_control_center_binary() {
       embedded_root=$1
-      for executable_name in ProviderOS "Codex Router" Switchboard codex-router-control-center; do
+      for executable_name in ProviderOS "ProviderOS" Switchboard codex-router-control-center; do
         embedded_candidate="$embedded_root/Contents/MacOS/$executable_name"
         if [ -x "$embedded_candidate" ]; then
           printf '%s\n' "$embedded_candidate"
@@ -189,14 +189,14 @@ RESTORE_MACOS_SUPERVISION
       recovery_service_action=install
       # Journals written before the visible app rename have no target marker.
       # Finish those against Model Router.app and its existing launchd plist;
-      # every new journal identifies the Codex Router.app target explicitly.
+      # every new journal identifies the ProviderOS.app target explicitly.
       if [ ! -e "$target_name_file" ]; then
         recovery_bundle_dir=$legacy_user_bundle
         recovery_service_action=restart
       fi
       if ! recovery_fields=$(node "$repo_dir/src/macos-tray-transaction.mjs" \
         plan "$transaction_dir" "$recovery_bundle_dir"); then
-        printf 'codex-router: refusing ambiguous macOS Codex Router recovery data at %s.\n' "$transaction_dir" >&2
+        printf 'codex-router: refusing ambiguous macOS ProviderOS recovery data at %s.\n' "$transaction_dir" >&2
         return 1
       fi
       # The validator emits exactly two fixed enum fields and rejects every
@@ -253,7 +253,7 @@ RESTORE_MACOS_SUPERVISION
           ;;
         replace-live-with-previous)
           if ! stop_uncommitted_tray "$recovery_bundle_dir"; then
-            printf 'codex-router: the uncommitted Codex Router could not be stopped; recovery files were preserved.\n' >&2
+            printf 'codex-router: the uncommitted ProviderOS could not be stopped; recovery files were preserved.\n' >&2
             return 1
           fi
           [ ! -e "$failed_bundle" ] || return 1
@@ -289,18 +289,18 @@ RESTORE_MACOS_SUPERVISION
       trap - EXIT HUP INT TERM
       if [ "$transaction_committed" -eq 0 ] && [ -e "$transaction_dir" ]; then
         recover_macos_transaction \
-          || printf 'codex-router: macOS Codex Router recovery remains at %s.\n' "$transaction_dir" >&2
+          || printf 'codex-router: macOS ProviderOS recovery remains at %s.\n' "$transaction_dir" >&2
       fi
       exit "$cleanup_status"
     }
 
     if [ -L "$bundle_dir" ] || { [ -e "$bundle_dir" ] && [ ! -d "$bundle_dir" ]; }; then
-      printf 'codex-router: refusing a non-directory Codex Router target at %s.\n' "$bundle_dir" >&2
+      printf 'codex-router: refusing a non-directory ProviderOS target at %s.\n' "$bundle_dir" >&2
       exit 1
     fi
     recover_macos_transaction
     if [ -e "$transaction_dir" ]; then
-      printf 'codex-router: refusing to overwrite a stale macOS Codex Router transaction.\n' >&2
+      printf 'codex-router: refusing to overwrite a stale macOS ProviderOS transaction.\n' >&2
       exit 1
     fi
     if [ -e "$legacy_user_bundle" ]; then
@@ -311,7 +311,7 @@ RESTORE_MACOS_SUPERVISION
       legacy_user_bundle_present=1
     fi
     if [ -d "$bundle_dir" ] && [ "$legacy_user_bundle_present" -eq 1 ]; then
-      printf 'codex-router: both Codex Router.app and the legacy Model Router.app exist; refusing an ambiguous replacement.\n' >&2
+      printf 'codex-router: both ProviderOS.app and the legacy Model Router.app exist; refusing an ambiguous replacement.\n' >&2
       exit 1
     fi
     mkdir -m 700 "$transaction_dir"
@@ -465,7 +465,7 @@ RESTORE_MACOS_SUPERVISION
     fi
     write_macos_phase draining
     if ! terminate_router_apps; then
-      printf 'codex-router: the running Codex Router apps could not be asked to quit; the app was not replaced.\n' >&2
+      printf 'codex-router: the running ProviderOS apps could not be asked to quit; the app was not replaced.\n' >&2
       exit 1
     fi
     # A pre-unification standalone app used the same Control Center bundle id
@@ -483,14 +483,14 @@ RESTORE_MACOS_SUPERVISION
     wait_count=0
     while :; do
       if ! running_count=$(router_app_count); then
-        printf 'codex-router: the running Codex Router apps could not be inspected; the app was not replaced.\n' >&2
+        printf 'codex-router: the running ProviderOS apps could not be inspected; the app was not replaced.\n' >&2
         exit 1
       fi
       case "$running_count" in *[!0-9]*|'') exit 1 ;; esac
       [ "$running_count" -eq 0 ] && break
       wait_count=$((wait_count + 1))
       if [ "$wait_count" -ge 720 ]; then
-        printf 'codex-router: the running Codex Router did not finish its active operation; the app was not replaced.\n' >&2
+        printf 'codex-router: the running ProviderOS did not finish its active operation; the app was not replaced.\n' >&2
         exit 1
       fi
       # A clean AppKit exit does not satisfy launchd's SuccessfulExit=false
@@ -506,7 +506,7 @@ RESTORE_MACOS_SUPERVISION
     # the application's terminate-later guarantee on a long provider mutation.
     write_macos_phase supervision-stopping
     if ! node "$repo_dir/src/tray-service.mjs" stop >/dev/null; then
-      printf 'codex-router: launchd would not release the current Codex Router; the app was not replaced.\n' >&2
+      printf 'codex-router: launchd would not release the current ProviderOS; the app was not replaced.\n' >&2
       exit 1
     fi
     write_macos_phase supervision-stopped
@@ -537,7 +537,7 @@ RESTORE_MACOS_SUPERVISION
       trap 'exit 129' HUP
       trap 'exit 130' INT
       trap 'exit 143' TERM
-      printf 'codex-router: launchd would not accept the rebuilt Codex Router; the previous app will be restored.\n' >&2
+      printf 'codex-router: launchd would not accept the rebuilt ProviderOS; the previous app will be restored.\n' >&2
       exit 1
     fi
     trap 'exit 129' HUP
@@ -573,7 +573,7 @@ RESTORE_MACOS_SUPERVISION
       sleep 0.25
     done
     if [ "$replacement_ready" -ne 1 ]; then
-      printf 'codex-router: the rebuilt Codex Router did not start as the exact live native host (count: %s, live matches: %s); the previous app will be restored.\n' "$readiness_count" "$readiness_matches" >&2
+      printf 'codex-router: the rebuilt ProviderOS did not start as the exact live native host (count: %s, live matches: %s); the previous app will be restored.\n' "$readiness_count" "$readiness_matches" >&2
       exit 1
     fi
     write_macos_phase replacement-ready
@@ -586,7 +586,7 @@ RESTORE_MACOS_SUPERVISION
     embedded_app="$bundle_dir/Contents/Resources/Control Center.app"
     embedded_binary=$(embedded_control_center_binary "$embedded_app")
     if [ ! -x "$embedded_binary" ]; then
-      printf 'codex-router: the rebuilt Codex Router has no executable embedded Control Center; the previous app will be restored.\n' >&2
+      printf 'codex-router: the rebuilt ProviderOS has no executable embedded Control Center; the previous app will be restored.\n' >&2
       exit 1
     fi
     run_embedded_control_center "$embedded_binary" --tray-only \

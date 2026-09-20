@@ -1,10 +1,10 @@
-# Chutes provider feasibility for Codex Router
+# Chutes provider feasibility for ProviderOS
 
 Date checked: 2026-08-10
 
 ## Outcome
 
-Yes. Chutes is a clean technical fit for Codex Router as an API-key-backed,
+Yes. Chutes is a clean technical fit for ProviderOS as an API-key-backed,
 OpenAI-compatible provider. The implementation registers `chutes` as a
 catalog-only provider, lets the user store a Chutes key through the router's
 hidden local prompt/tray flow, discovers models from Chutes' public live
@@ -26,7 +26,7 @@ repeated for this update.
   [Connect Any Agent](https://chutes.ai/agents/connect)
 - Chutes' Codex guide calls its Codex support "guide only": it works where the
   runtime accepts an OpenAI-compatible provider, but upstream Codex does not ship
-  a built-in Chutes provider. Codex Router supplies exactly that missing provider
+  a built-in Chutes provider. ProviderOS supplies exactly that missing provider
   and protocol bridge.
   [Chutes Codex guide](https://chutes.ai/agents/codex)
 - The model-specific Kimi K3 OpenAPI document contains

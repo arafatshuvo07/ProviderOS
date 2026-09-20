@@ -735,11 +735,16 @@ async function makeBarrierControlRoot() {
 test("control center knows each installer's stable checkout location", () => {
   assert.deepEqual(
     standardSourceRoots({ platform: "win32", environment: { LOCALAPPDATA: "/local/appdata" }, home: "/home/test" }),
-    [path.join("/local/appdata", "codex-router")],
+    [path.join("/local/appdata", "provideros"), path.join("/local/appdata", "codex-router")],
   );
   assert.deepEqual(
     standardSourceRoots({ platform: "linux", environment: { XDG_DATA_HOME: "/xdg/data" }, home: "/home/test" }),
-    [path.join("/xdg/data", "codex-router"), path.join("/home/test", ".local", "share", "codex-router")],
+    [
+      path.join("/xdg/data", "provideros"),
+      path.join("/xdg/data", "codex-router"),
+      path.join("/home/test", ".local", "share", "provideros"),
+      path.join("/home/test", ".local", "share", "codex-router"),
+    ],
   );
 });
 
@@ -805,7 +810,7 @@ test("Windows detached tray refresh runs outside the package on external node.ex
   const directory = await mkdtemp(path.join(os.tmpdir(), "router-control-detached-"));
   const packageDirectory = path.join(directory, "win-unpacked");
   const runtimeDirectory = path.join(directory, "node-runtime");
-  const packagedExecutable = path.join(packageDirectory, "Codex Router.exe");
+  const packagedExecutable = path.join(packageDirectory, "ProviderOS.exe");
   const externalNode = path.join(runtimeDirectory, "node.exe");
   try {
     await mkdir(packageDirectory, { recursive: true });
@@ -1173,7 +1178,7 @@ test("electron boundary does not enable node integration or shell argv", async (
   assert.match(builder, /enableEmbeddedAsarIntegrityValidation:\s*true/);
   assert.match(builder, /onlyLoadAppFromAsar:\s*true/);
   assert.match(builder, /mac:[\s\S]*target:\s*\[dmg, zip\]/);
-  assert.match(builder, /linux:[\s\S]*executableName:\s*codex-router-control-center[\s\S]*target:\s*\[AppImage\]/);
+  assert.match(builder, /linux:[\s\S]*executableName:\s*provideros-control-center[\s\S]*target:\s*\[AppImage\]/);
   assert.match(builder, /win:[\s\S]*target:\s*\[nsis\]/);
   const compatibilityMain = await readFile(new URL("../apps/control-center/main.mjs", import.meta.url), "utf8");
   assert.match(compatibilityMain, /import "\.\/electron\/main\.mjs"/);
@@ -2439,7 +2444,7 @@ test(
 
 test("Electron uses the installed Windows Job Object owner", () => {
   const invocation = windowsJobProcessInvocation(
-    "C:\\Program Files\\Codex Router\\router.exe",
+    "C:\\Program Files\\ProviderOS\\router.exe",
     ["control.mjs", "doctor"],
     {
       sourceRoot: "C:\\Users\\operator\\codex-router",
@@ -2455,7 +2460,7 @@ test("Electron uses the installed Windows Job Object owner", () => {
   assert.deepEqual(
     JSON.parse(Buffer.from(invocation.args.at(-1), "base64").toString("utf8")),
     {
-      command: "C:\\Program Files\\Codex Router\\router.exe",
+      command: "C:\\Program Files\\ProviderOS\\router.exe",
       arguments: ["control.mjs", "doctor"],
       ownerProcessId: 4321,
       windowsHide: true,

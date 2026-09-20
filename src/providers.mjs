@@ -402,7 +402,7 @@ async function main() {
       deadline: operation.deadline,
     });
     process.stdout.write(
-      `${provider.displayName} accepted the truthful Codex Router live probe with ${result.model}.\n`,
+      `${provider.displayName} accepted the truthful ProviderOS live probe with ${result.model}.\n`,
     );
     if (!readProviderSelection().includes(provider.id)) {
       process.stdout.write(

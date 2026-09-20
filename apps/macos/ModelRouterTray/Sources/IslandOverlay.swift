@@ -1897,7 +1897,7 @@ private struct DesktopPanelView: View {
         .stroke(Color.white.opacity(0.11), lineWidth: 0.8)
     )
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("Codex Router usage widget")
+    .accessibilityLabel("ProviderOS usage widget")
   }
 
   private var header: some View {
@@ -1909,7 +1909,7 @@ private struct DesktopPanelView: View {
         .background(routerAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
 
       VStack(alignment: .leading, spacing: 1) {
-        Text("Codex Router")
+        Text("ProviderOS")
           .font(.system(size: 12, weight: .semibold, design: .rounded))
         Text(routerLocalized("Usage and live activity"))
           .font(.system(size: 8.5, weight: .medium, design: .rounded))

@@ -234,7 +234,7 @@ export function renderFormula({
   const homebrewPythonDependencies = homebrewProvidedResources
     .map((resource) => `  depends_on ${rubyString(resource.formula)}`)
     .join("\n");
-  return `class CodexRouter < Formula
+  return `class Provideros < Formula
   include Language::Python::Virtualenv
 
   desc "Use external coding models inside the Codex App and CLI"
@@ -317,23 +317,30 @@ ${exclusionComment}${resourceBlocks}
       end
     end
 
-    # bin/codex-router is the dispatcher written for exactly this case: a
+    # bin/provideros is the dispatcher written for exactly this case: a
     # package manager puts one name on PATH, not a directory of them. Routing
     # through "bin/model-router codex" instead stranded every command outside
     # that script's fixed whitelist -- curate-models, discover-models,
     # refresh-catalog, test-model, support-bundle, control -- and made a bare
-    # "codex-router" or "codex-router --help" print model-router's usage.
-    (bin/"codex-router").write <<~SH
+    # "provideros" or "provideros --help" print ProviderOS usage.
+    (bin/"provideros").write <<~SH
       #!/bin/sh
       source_root=$(CDPATH= cd -- "#{opt_libexec}" && pwd -P)
       export PATH="#{formula_opt_bin("node")}:$PATH"
       export CODEX_ROUTER_SOURCE_ROOT="$source_root"
       export CODEX_ROUTER_NODE_BIN="#{formula_opt_bin("node")}/node"
       export CODEX_ROUTER_PACKAGE_MANAGER=homebrew
-      exec "$source_root/bin/codex-router" "$@"
+      exec "$source_root/bin/provideros" "$@"
     SH
 
-    # bin/codex-router deliberately refuses "install": a packaged install has
+    # Keep the historical command as a silent compatibility alias. New
+    # documentation and fresh installs use provideros.
+    (bin/"codex-router").write <<~SH
+      #!/bin/sh
+      exec "#{bin}/provideros" "$@"
+    SH
+
+    # bin/provideros deliberately refuses "install": a packaged install has
     # no writable checkout to rewrite, so it must never be a user-facing verb.
     # Upgrade reconciliation still legitimately needs the installer, so it
     # gets its own private entry point rather than a hole in the dispatcher.
@@ -362,7 +369,7 @@ ${exclusionComment}${resourceBlocks}
         const manifest = JSON.parse(readFileSync(process.argv[1], "utf8"));
         process.stdout.write(manifest?.current?.packageManager || "");
       ' "$manifest_path" 2>/dev/null) || {
-        printf '%s\\n' 'Warning: Existing Codex Router install manifest is invalid; run \`codex-router setup\`.' >&2
+        printf '%s\\n' 'Warning: Existing ProviderOS install manifest is invalid; run \`provideros setup\`.' >&2
         exit 0
       }
       [ "$package_manager" = homebrew ] || exit 0
@@ -380,25 +387,25 @@ ${exclusionComment}${resourceBlocks}
   def caveats
     <<~EOS
       Finish the one-time Codex integration with:
-        codex-router setup --guided
+        provideros setup --guided
 
       This formula installs the router and CLI only. It does not build or
       download the Electron Control Center, tray/menu-bar app, or macOS desktop
       widget. Use the recommended installer on the project homepage for the
       complete desktop experience.
 
-      List every available command, including \`codex-router curate-models\`
+      List every available command, including \`provideros curate-models\`
       for adding a custom provider's models, with:
-        codex-router help
+        provideros help
 
-      Before \`brew uninstall codex-router\`, remove the per-user service and
+      Before \`brew uninstall provideros\`, remove the per-user service and
       managed Codex config with:
-        codex-router uninstall
+        provideros uninstall
     EOS
   end
 
   test do
-    output = shell_output("#{bin}/codex-router providers list --json")
+    output = shell_output("#{bin}/provideros providers list --json")
     assert_match '"providers":', output
     assert_match '"anthropic-api"', output
     system formula_opt_bin("node")/"node", "--input-type=module", "--eval",
@@ -413,7 +420,7 @@ end
 // Homebrew reads formulae from Formula/, HomebrewFormula/, or the repository
 // root, so users can `brew tap` this URL directly instead of needing a second
 // homebrew-prefixed repository.
-export const FORMULA_PATH = "Formula/codex-router.rb";
+export const FORMULA_PATH = "Formula/provideros.rb";
 
 // Single path from the lock to formula text. The release job and the drift
 // check both go through here so neither can quietly build it a different way.

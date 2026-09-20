@@ -33,7 +33,7 @@ enum RouterWidgetDestination: String {
 
   func url(sourceID: String? = nil) -> URL {
     var components = URLComponents()
-    components.scheme = "codex-router"
+    components.scheme = "provideros"
     components.host = "control-center"
     components.path = "/\(rawValue)"
     if let sourceID, sourceID.range(of: #"^[a-z0-9][a-z0-9-]{0,63}$"#, options: .regularExpression) != nil {
@@ -126,7 +126,7 @@ struct RouterUsageEntry: TimelineEntry {
 
 struct RouterUsageProvider: AppIntentTimelineProvider {
   private static let logger = Logger(
-    subsystem: "io.github.codex-router.tray.widget",
+    subsystem: "io.github.provideros.tray.widget",
     category: "snapshot"
   )
 
@@ -236,7 +236,7 @@ struct RouterUsageWidget: Widget {
         .containerBackground(for: .widget) { RouterWidgetBackground() }
         .widgetURL(RouterWidgetDestination.usage.url(sourceID: entry.effectiveSourceID))
     }
-    .configurationDisplayName("Codex Router Usage")
+    .configurationDisplayName("ProviderOS Usage")
     .description("Track cumulative token usage for any connected source.")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
@@ -253,7 +253,7 @@ struct RouterResetWidget: Widget {
         .containerBackground(for: .widget) { RouterWidgetBackground() }
         .widgetURL(RouterWidgetDestination.usageResets.url(sourceID: entry.effectiveSourceID))
     }
-    .configurationDisplayName("Codex Router Reset")
+    .configurationDisplayName("ProviderOS Reset")
     .description("See when the selected provider quota resets.")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
@@ -395,7 +395,7 @@ struct RouterUsageWidgetView: View {
     WidgetUnavailableState(
       icon: "clock.badge.exclamationmark",
       title: "Usage snapshot is stale",
-      message: "Open Codex Router to refresh usage.",
+      message: "Open ProviderOS to refresh usage.",
       tint: widgetWarning,
       compact: family == .systemSmall
     )
@@ -405,7 +405,7 @@ struct RouterUsageWidgetView: View {
     WidgetUnavailableState(
       icon: "chart.xyaxis.line",
       title: "Waiting for router data",
-      message: "Open Codex Router once to publish usage.",
+      message: "Open ProviderOS once to publish usage.",
       tint: widgetAccent,
       compact: family == .systemSmall
     )
@@ -532,7 +532,7 @@ struct RouterResetWidgetView: View {
     WidgetUnavailableState(
       icon: icon,
       title: title,
-      message: "Open Codex Router to refresh provider limits.",
+      message: "Open ProviderOS to refresh provider limits.",
       tint: widgetAccent,
       compact: family == .systemSmall,
       headerSection: "Reset"
@@ -580,7 +580,7 @@ private struct WidgetUnavailableState: View {
 private struct WidgetHeader: View {
   let snapshot: RouterWidgetSnapshot?
   var compact = false
-  var title = "Codex Router"
+  var title = "ProviderOS"
   var section: String?
 
   var body: some View {

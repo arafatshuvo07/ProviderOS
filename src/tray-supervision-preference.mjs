@@ -12,10 +12,12 @@ export function traySupervisionPreferencePath({
   home = os.homedir(),
 } = {}) {
   const codexHome = environment.CODEX_HOME || path.join(home, ".codex");
+  const providerosState = path.join(codexHome, "provideros");
+  const legacyState = path.join(codexHome, "codex-router");
   const stateDirectory = environment.MODEL_ROUTER_STATE_DIR
     || environment.CODEX_ROUTER_STATE_DIR
     || environment.KIMI_CODEX_STATE_DIR
-    || path.join(codexHome, "codex-router");
+    || (existsSync(providerosState) || !existsSync(legacyState) ? providerosState : legacyState);
   return path.join(stateDirectory, "tray-supervision.json");
 }
 

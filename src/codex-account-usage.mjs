@@ -253,7 +253,7 @@ export function readCodexAccountUsage({
       params: {
         clientInfo: {
           name: "codex_router_tray",
-          title: "Codex Router Tray",
+          title: "ProviderOS Tray",
           version: "0.4.0",
         },
         capabilities: { experimentalApi: true },

@@ -385,17 +385,17 @@ struct MenuBarSettingsTests {
     RouterLanguage.setSelection(.english)
     #expect(
       RouterStore.menuBarTooltip(provider: "Grok", state: "Idle", usage: "45% left")
-        == "Codex Router · Grok (Idle) · 45% left"
+        == "ProviderOS · Grok (Idle) · 45% left"
     )
     #expect(
       RouterStore.menuBarTooltip(provider: "Grok", state: "Idle", usage: nil)
-        == "Codex Router · Grok (Idle)"
+        == "ProviderOS · Grok (Idle)"
     )
 
     RouterLanguage.setSelection(.chinese)
     #expect(
       RouterStore.menuBarTooltip(provider: "Grok", state: "空闲", usage: "剩余 45%")
-        == "Codex Router · Grok (空闲) · 剩余 45%"
+        == "ProviderOS · Grok (空闲) · 剩余 45%"
     )
   }
 }

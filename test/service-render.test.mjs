@@ -46,7 +46,7 @@ function serviceCommand(
     {
       cwd: sourceRoot,
       encoding: "utf8",
-      env: { ...serviceEnv(platform, testRoot, target), ...env },
+      env: { ...serviceEnv(platform, testRoot, target), CODEX_ROUTER_SOURCE_ROOT: sourceRoot, ...env },
     },
   );
 }
@@ -293,7 +293,7 @@ test(
         "xdg config",
         "systemd",
         "user",
-        "codex-router.service",
+        "provideros.service",
       );
       assert.equal(statSync(unitPath).mode & 0o777, 0o600);
       assert.match(readFileSync(unitPath, "utf8"), /HTTPS_PROXY=/);

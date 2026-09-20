@@ -84,16 +84,16 @@ jobs:
             mapfile -t installers < <(find apps/control-center/release -maxdepth 1 -type f -name '*.exe' -print)
             test "${#installers[@]}" -eq 1
             cp "${installers[0]}" \
-              "staged/model-router-${version}-windows-x64.exe"
+              "staged/provideros-${version}-windows-x64.exe"
           else
             (cd apps/control-center && npx --no-install electron-builder --linux --publish never)
             mapfile -t appimages < <(find apps/control-center/release -maxdepth 1 -type f -name '*.AppImage' -print)
             test "${#appimages[@]}" -eq 1
-            package_dir="$RUNNER_TEMP/model-router-linux-package"
-            package_name="model-router-${version}-linux-x64.AppImage"
+            package_dir="$RUNNER_TEMP/provideros-linux-package"
+            package_name="provideros-${version}-linux-x64.AppImage"
             mkdir -p "$package_dir"
             install -m 0755 "${appimages[0]}" "$package_dir/$package_name"
-            tar -czf "staged/model-router-${version}-linux-x64.tar.gz" \
+            tar -czf "staged/provideros-${version}-linux-x64.tar.gz" \
               -C "$package_dir" "$package_name"
           fi
       - name: Smoke the packaged Linux application
@@ -107,7 +107,7 @@ jobs:
           sudo apt-get install -y xvfb
           xvfb-run --auto-servernum bash -s <<'SMOKE'
           set -euo pipefail
-          app="./apps/control-center/release/linux-unpacked/codex-router-control-center"
+          app="./apps/control-center/release/linux-unpacked/provideros-control-center"
           log="${RUNNER_TEMP}/control-center-linux-release.log"
           "$app" --no-sandbox --tray-only >"$log" 2>&1 &
           pid=$!
@@ -149,7 +149,7 @@ jobs:
         run: |
           $stdout = Join-Path $env:RUNNER_TEMP "control-center-windows-release.log"
           $stderr = Join-Path $env:RUNNER_TEMP "control-center-windows-release-error.log"
-          $app = ".\apps\control-center\release\win-unpacked\Codex Router.exe"
+          $app = ".\apps\control-center\release\win-unpacked\ProviderOS.exe"
           $process = Start-Process $app -ArgumentList "--tray-only" -PassThru `
             -RedirectStandardOutput $stdout -RedirectStandardError $stderr
           try {
@@ -190,8 +190,38 @@ jobs:
           path: staged/*
           if-no-files-found: error
 
+  macos-app:
+    name: Unsigned tester app (macOS)
+    needs: release-preflight
+    runs-on: macos-14
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      MODEL_ROUTER_TRAY_UNIVERSAL: "1"
+      MODEL_ROUTER_CODESIGN_IDENTITY: "-"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/control-center/package-lock.json
+      - name: Build the unsigned ProviderOS macOS application
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p staged
+          ./scripts/build-macos-tray-app.sh "$RUNNER_TEMP/ProviderOS.app" >/dev/null
+          ditto -c -k --keepParent "$RUNNER_TEMP/ProviderOS.app" \
+            "staged/provideros-${version}-macos-universal.zip"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: unified-app-macos
+          path: staged/*
+          if-no-files-found: error
+
   release:
-    needs: [release-preflight, unified-app]
+    needs: [release-preflight, unified-app, macos-app]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -213,9 +243,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          prefix="codex-router-${GITHUB_REF_NAME#v}/"
-          git archive --format=tar.gz --prefix="$prefix" -o "dist/codex-router-${GITHUB_REF_NAME#v}.tar.gz" "$GITHUB_REF_NAME"
-          git archive --format=zip --prefix="$prefix" -o "dist/codex-router-${GITHUB_REF_NAME#v}.zip" "$GITHUB_REF_NAME"
+          prefix="provideros-${GITHUB_REF_NAME#v}/"
+          git archive --format=tar.gz --prefix="$prefix" -o "dist/provideros-${GITHUB_REF_NAME#v}.tar.gz" "$GITHUB_REF_NAME"
+          git archive --format=zip --prefix="$prefix" -o "dist/provideros-${GITHUB_REF_NAME#v}.zip" "$GITHUB_REF_NAME"
       - name: Collect unified platform apps
         uses: actions/download-artifact@v8
         with:
@@ -226,7 +256,7 @@ jobs:
         shell: bash
         run: |
           cd dist
-          sha256sum codex-router-* model-router-* > SHA256SUMS
+          sha256sum provideros-* > SHA256SUMS
       - uses: actions/attest-build-provenance@v4
         with:
           subject-path: "dist/*"
@@ -235,13 +265,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          warning="The Windows and Linux desktop packages are unsigned tester artifacts. Install the matching Codex Router version before running them. macOS is excluded until its app can be Developer ID signed and notarized."
+          warning="All desktop packages are unsigned tester artifacts. Install the matching ProviderOS version before running them; macOS builds use an ad-hoc signature until Developer ID signing and notarization are configured."
           gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes --notes "$warning"
       - name: Update Homebrew formula
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME#v}"
-          tarball="codex-router-${version}.tar.gz"
+          tarball="provideros-${version}.tar.gz"
           sha=$(awk -v file="$tarball" '$2 == file { print $1 }' dist/SHA256SUMS)
           test -n "$sha"
           git fetch origin main
@@ -250,12 +280,12 @@ jobs:
             --version "$version" \
             --source-url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${tarball}" \
             --source-sha256 "$sha" \
-            --output Formula/codex-router.rb
-          if git diff --quiet -- Formula/codex-router.rb; then
+            --output Formula/provideros.rb
+          if git diff --quiet -- Formula/provideros.rb; then
             echo "Formula already matches ${GITHUB_REF_NAME}."
             exit 0
           fi
-          git add Formula/codex-router.rb
+          git add Formula/provideros.rb
           git -c user.name="github-actions[bot]" \
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
               commit -m "chore: update Homebrew formula for ${GITHUB_REF_NAME}"

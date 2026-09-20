@@ -276,7 +276,7 @@ async function readForm(request, { timeoutMs = FORM_READ_TIMEOUT_MS } = {}) {
 
 function clientSetupHtml(state) {
   return `<!doctype html>
-<html><head><meta charset="utf-8"><title>Codex Router OAuth setup</title></head>
+<html><head><meta charset="utf-8"><title>ProviderOS OAuth setup</title></head>
 <body style="font:16px system-ui;max-width:42rem;margin:3rem auto;padding:0 1rem;line-height:1.5">
 <h1>Connect your Google OAuth client</h1>
 <p>Enter the client ID and matching client secret from a Google OAuth <strong>Desktop app</strong> you own. These values are posted only to this loopback listener and are saved in the router's owner-only credential file after Google sign-in succeeds.</p>
@@ -512,7 +512,7 @@ export async function signInAntigravity({
             signal,
           },
         );
-        browserResponse(response, 200, "<h1>Signed in</h1><p>You can close this window. Return to Codex Router to run the explicit live compatibility test.</p>");
+        browserResponse(response, 200, "<h1>Signed in</h1><p>You can close this window. Return to ProviderOS to run the explicit live compatibility test.</p>");
         // Callers need only completion. Returning the stored object would put
         // the OAuth client secret and tokens one accidental log away from a
         // UI process even though every current caller ignores the value.
@@ -596,7 +596,7 @@ export async function signInAntigravity({
         .catch((error) => {
           const detail = error instanceof Error ? error.message : String(error);
           const failure = new Error(
-            "Codex Router could not open the browser automatically " +
+            "ProviderOS could not open the browser automatically " +
               `(${detail}). Run sign-in in a terminal and open the printed loopback URL.`,
           );
           failure.code = "oauth_browser_launch_failed";

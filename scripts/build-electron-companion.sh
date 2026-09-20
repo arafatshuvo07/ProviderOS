@@ -93,7 +93,7 @@ done
 
 case $(uname -s) in
   Linux)
-    binary="$target_dir/codex-router-control-center"
+    binary="$target_dir/provideros-control-center"
     ;;
   *)
     printf 'This build entrypoint supports Linux; use build-electron-companion.ps1 on Windows.\n' >&2
@@ -113,7 +113,7 @@ CSC_IDENTITY_AUTO_DISCOVERY=false \
     "--config.directories.output=$staging_root" >&2
 
 staged_dir="$staging_root/linux-unpacked"
-staged_binary="$staged_dir/codex-router-control-center"
+staged_binary="$staged_dir/provideros-control-center"
 if [ ! -x "$staged_binary" ]; then
   printf 'The packaged Control Center is missing at %s.\n' "$staged_binary" >&2
   exit 1
@@ -152,7 +152,7 @@ if [ "$build_mode" = stage-only ]; then
     printf 'Could not stage the newly packaged Control Center at %s.\n' "$stage_destination" >&2
     exit 1
   fi
-  printf '%s\n' "$stage_destination/codex-router-control-center"
+  printf '%s\n' "$stage_destination/provideros-control-center"
   exit 0
 fi
 

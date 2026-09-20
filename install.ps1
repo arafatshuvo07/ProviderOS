@@ -25,8 +25,8 @@ param(
   # Deliberately never touches untracked files -- see Reset-ManagedCheckout.
   [switch]$Force,
   [string]$InstallDir = $(
-    if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "codex-router" }
-    else { Join-Path $HOME ".local\share\codex-router" }
+    if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "provideros" }
+    else { Join-Path $HOME ".local\share\provideros" }
   )
 )
 
@@ -140,12 +140,20 @@ if (-not $CheckoutInstall) {
   Assert-Command "git" "Install Git for Windows from https://git-scm.com/download/win."
   Assert-Command "node" "Install Node.js 24 LTS from https://nodejs.org/."
 
+  # Preserve an existing checkout in the historical directory during an
+  # upgrade. Fresh installs use the ProviderOS directory above.
+  $LegacyInstallDir = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "codex-router" }
+    else { Join-Path $HOME ".local\share\codex-router" }
+  if (-not (Test-Path (Join-Path $InstallDir ".git")) -and
+      (Test-Path (Join-Path $LegacyInstallDir ".git"))) {
+    $InstallDir = $LegacyInstallDir
+  }
   if (Test-RouterCheckout $ScriptDirectory) {
     $Repository = $ScriptDirectory
   } else {
     if (Test-Path (Join-Path $InstallDir ".git")) {
       if (-not (Test-RouterCheckout $InstallDir)) {
-        throw "$InstallDir is not a Codex Router checkout."
+        throw "$InstallDir is not a ProviderOS checkout."
       }
       $Origin = (& git -C $InstallDir remote get-url origin).Trim()
       $AllowedOrigins = @(
@@ -186,15 +194,15 @@ if (-not $CheckoutInstall) {
         if ($Branch -ne "main") { throw "$InstallDir must be on its main branch to update." }
       }
       $PreviousRevision = (& git -C $InstallDir rev-parse HEAD).Trim()
-      & git -C $InstallDir update-ref refs/codex-router/rollback $PreviousRevision
+      & git -C $InstallDir update-ref refs/provideros/rollback $PreviousRevision
       & git -C $InstallDir pull --ff-only origin main
       if ($LASTEXITCODE -ne 0) { throw "Unable to fast-forward the managed checkout." }
     } elseif (Test-Path $InstallDir) {
-      throw "$InstallDir exists and is not a Codex Router checkout."
+      throw "$InstallDir exists and is not a ProviderOS checkout."
     } else {
       New-Item -ItemType Directory -Force -Path (Split-Path $InstallDir) | Out-Null
       & git clone --depth 1 $RepositoryUrl $InstallDir
-      if ($LASTEXITCODE -ne 0) { throw "Unable to clone Codex Router." }
+      if ($LASTEXITCODE -ne 0) { throw "Unable to clone ProviderOS." }
     }
     $Repository = $InstallDir
   }
@@ -225,7 +233,7 @@ if (-not $CheckoutInstall) {
   # Any other non-zero code still restores the checkout, so the running
   # service is never left on half-applied code by an unrecognized failure.
   if ($SetupExitCode -eq 2) {
-    Write-Warning "Setup did not finish configuring; the update was kept. Re-run setup to continue, or ./codex-router.ps1 rollback to return to the previous revision."
+    Write-Warning "Setup did not finish configuring; the update was kept. Re-run setup to continue, or ./provideros.ps1 rollback to return to the previous revision."
   } elseif ($SetupExitCode -ne 0 -and $PreviousRevision) {
     & git -C $Repository switch --detach $PreviousRevision 2>$null | Out-Null
     Write-Warning "Setup failed; the managed source checkout was restored to $PreviousRevision."
@@ -234,7 +242,7 @@ if (-not $CheckoutInstall) {
 }
 
 if (-not (Test-RouterCheckout $ScriptDirectory)) {
-  throw "-CheckoutInstall must be run from a Codex Router checkout."
+  throw "-CheckoutInstall must be run from a ProviderOS checkout."
 }
 
 Assert-Command "node" "Install Node.js 24 LTS from https://nodejs.org/."
@@ -441,8 +449,16 @@ try {
   $StateRoot = if ($env:MODEL_ROUTER_STATE_DIR) { $env:MODEL_ROUTER_STATE_DIR }
     elseif ($env:CODEX_ROUTER_STATE_DIR) { $env:CODEX_ROUTER_STATE_DIR }
     elseif ($env:KIMI_CODEX_STATE_DIR) { $env:KIMI_CODEX_STATE_DIR }
-    elseif ($env:CODEX_HOME) { Join-Path $env:CODEX_HOME "codex-router" }
-    else { Join-Path $HOME ".codex\codex-router" }
+    elseif ($env:CODEX_HOME) {
+      $ProviderState = Join-Path $env:CODEX_HOME "provideros"
+      $LegacyState = Join-Path $env:CODEX_HOME "codex-router"
+      if ((Test-Path $ProviderState) -or -not (Test-Path $LegacyState)) { $ProviderState } else { $LegacyState }
+    }
+    else {
+      $ProviderState = Join-Path $HOME ".codex\provideros"
+      $LegacyState = Join-Path $HOME ".codex\codex-router"
+      if ((Test-Path $ProviderState) -or -not (Test-Path $LegacyState)) { $ProviderState } else { $LegacyState }
+    }
   # Only refresh-catalog can safely resume the provider-state/journal pair left
   # by an interrupted login-free catalog refresh. Refuse install and doctor
   # repair before either can publish another catalog and report false recovery.
@@ -546,17 +562,17 @@ try {
   if ($TrayWasInstalled -and $env:CODEX_ROUTER_DEFER_TRAY_REBUILD -ne "1") {
     $SavedRouterTarget = $env:MODEL_ROUTER_TARGET
     try {
-      # The tray belongs to the shared router plane. codex-router.ps1 is the
+      # The tray belongs to the shared router plane. provideros.ps1 is the
       # Windows companion entry point and deliberately accepts only its Codex
       # spelling, even when this update was initiated for DSH or Gemini CLI.
       $env:MODEL_ROUTER_TARGET = "codex"
-      & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDirectory "codex-router.ps1") tray install --preserve-window
+      & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDirectory "provideros.ps1") tray install --preserve-window
       $TrayExitCode = $LASTEXITCODE
       if ($TrayExitCode -ne 0) {
-        Write-Warning "Desktop companion refresh failed with exit code $TrayExitCode; the router is installed. Run '.\codex-router.ps1 tray repair' if an earlier elevated install owns the task."
+        Write-Warning "Desktop companion refresh failed with exit code $TrayExitCode; the router is installed. Run '.\provideros.ps1 tray repair' if an earlier elevated install owns the task."
       }
     } catch {
-      Write-Warning "Desktop companion refresh failed; the router is installed: $($_.Exception.Message) Run '.\codex-router.ps1 tray repair' if an earlier elevated install owns the task."
+      Write-Warning "Desktop companion refresh failed; the router is installed: $($_.Exception.Message) Run '.\provideros.ps1 tray repair' if an earlier elevated install owns the task."
     } finally {
       $env:MODEL_ROUTER_TARGET = $SavedRouterTarget
     }
@@ -595,7 +611,7 @@ try {
   } elseif ($Target -eq "claude") {
     Write-Host "Published all routed models to Claude Code. Run claude-router and choose a codex_router/anthropic/... model."
   } elseif ($Target -eq "openclaw") {
-    Write-Host "Installed OpenClaw and published every routed model under its codex-router provider. Run openclaw to start."
+    Write-Host "Installed OpenClaw and published every routed model under its ProviderOS provider. Run openclaw to start."
   } else {
     Write-Host "Installed the selected external model routes. Fully quit and reopen Codex."
   }

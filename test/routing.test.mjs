@@ -929,7 +929,7 @@ test("native tool-result aging is opt-in and rewrites only consumed old results"
     await waitFor(`${routerBase(agingPort)}/models`, agingRouter);
     assert.equal((await send(agingPort)).status, 200);
     const forwarded = nativeRequests.at(-1).body.input;
-    assert.match(forwarded[1].output, /^\[Older tool result compacted by Codex Router/);
+    assert.match(forwarded[1].output, /^\[Older tool result compacted by ProviderOS/);
     assert.match(forwarded[1].output, /sha256:[0-9a-f]{64}/);
     assert.equal(forwarded.at(-1).output, "small result 4");
 
@@ -8082,7 +8082,7 @@ test("router ages consumed large tool results but preserves the newest result fr
     });
     assert.equal(response.status, 200, await response.text());
     const forwarded = gatewayBodies[0].input;
-    assert.match(forwarded[1].output, /Older tool result compacted by Codex Router/);
+    assert.match(forwarded[1].output, /Older tool result compacted by ProviderOS/);
     assert.match(forwarded[1].output, /old-head/);
     assert.match(forwarded[1].output, /old-tail/);
     for (let index = 0; index < 4; index += 1) {
@@ -8180,7 +8180,7 @@ test("RTK shaping is reserved for routed compaction and ordinary turns keep newe
     assert.equal(gatewayBodies[0].input[1].output, value);
     assert.equal(gatewayBodies[0].instructions, "Base instructions.");
     assert.doesNotMatch(gatewayBodies[0].instructions, /Token maxxing pressure|decision packet|Be terse/u);
-    assert.match(gatewayBodies[1].input[1].output, /Tool result shaped by Codex Router RTK-style compaction/u);
+    assert.match(gatewayBodies[1].input[1].output, /Tool result shaped by ProviderOS RTK-style compaction/u);
     assert.match(gatewayBodies[1].input[1].output, /same line repeated 109999 more times/u);
     assert.match(gatewayBodies[1].input[1].output, /ERROR final link failed/u);
     assert.match(gatewayBodies[1].input[1].output, /Repeat the preceding exec_command call/u);
@@ -8954,7 +8954,7 @@ test("reasoning survives the replay onto tool-call and prose assistant turns ali
     const older = forwarded.find(
       (item) => item?.type === "function_call_output" && item.call_id === "old",
     );
-    assert.match(older.output, /compacted by Codex Router/);
+    assert.match(older.output, /compacted by ProviderOS/);
 
     // The whole reasoning run reaches the assistant message LiteLLM will fold
     // the tool call into, not just the item nearest the call.

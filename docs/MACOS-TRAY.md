@@ -1,7 +1,7 @@
 # macOS native tray and Control Center
 
 ProviderOS is one installed macOS app with two coordinated surfaces. Existing
-installs may retain the legacy `Codex Router.app` bundle path for migration.
+installs may retain the legacy `ProviderOS.app` bundle path for migration.
 Its Swift host owns the native menu-bar item and optional Dynamic-Island-style
 overlay; its embedded Electron app supplies the full Control Center window.
 The top-center island follows the provider handling the latest request, reveals
@@ -38,7 +38,7 @@ snapshot is called out after 45 minutes instead of presenting old data as live.
 
 Local source builds use ad-hoc signing. Their signed storage mode writes one
 private file at
-`~/Library/Application Support/Codex Router Widget/usage-widget.json` and the
+`~/Library/Application Support/ProviderOS Widget/usage-widget.json` and the
 extension receives only the matching home-relative, read-only temporary
 filesystem exception. That exception is local-source-only: it is not present in
 production entitlements, and neither process reads or writes the extension's
@@ -50,7 +50,7 @@ the same Apple team with that App Group provisioned for both bundle identifiers.
 
 ## Opening it like an app
 
-`./bin/model-router-tray` installs the companion into `~/Applications`,
+`./bin/provideros-tray` installs the companion into `~/Applications`,
 where Finder, Spotlight, and Launchpad can all find it by name and icon. Every
 desktop icon is built from
 `apps/macos/ModelRouterTray/Resources/AppIcon.svg`; edit the SVG and run
@@ -76,7 +76,7 @@ hidden surfaces visible, so follow mode is not overridden every morning.
 
 ## launchd supervision and login startup
 
-`./bin/model-router-tray` installs a per-user LaunchAgent for the native host.
+`./bin/provideros-tray` installs a per-user LaunchAgent for the native host.
 It starts the app at login and restarts it after an abnormal exit, while a clean
 **Quit** remains a quit until the next login or manual launch. The app does not
 register a second startup mechanism; there is one startup owner and therefore
@@ -109,7 +109,7 @@ was needed for. The watcher therefore also scans the process table (via
 The native host itself stays resident as a lightweight watcher; quitting on app
 exit would leave nothing around to notice the next launch. Combined with
 launchd supervision, this makes the tray automatic: it waits invisibly after a
-reboot and shows up exactly while Codex is open. Opening `Codex Router.app`
+reboot and shows up exactly while Codex is open. Opening `ProviderOS.app`
 temporarily reveals the native surfaces and opens the Control Center even while
 Codex is closed, so the setting remains reachable. In **With Codex** mode the
 router endpoint starts as soon as Codex or ChatGPT appears and stops only after
@@ -239,15 +239,15 @@ popover.
 Run it from a stable checkout on macOS:
 
 ```sh
-./bin/model-router-tray
+./bin/provideros-tray
 ```
 
 The command builds and verifies a staging bundle, atomically installs it as
-`~/Applications/Codex Router.app`, and registers the native host with launchd.
+`~/Applications/ProviderOS.app`, and registers the native host with launchd.
 The installed bundle records the checkout path used at build time, so rebuild
 it after moving the repository.
 
-`bin/model-router-tray` lets active Control Center mutations drain, replaces the
+`bin/provideros-tray` lets active Control Center mutations drain, replaces the
 already-running bundle, and restarts its launchd agent. `codex update` rebuilds
 and relaunches the installed app from the updated checkout, so the companion
 stays current without creating a second app copy.

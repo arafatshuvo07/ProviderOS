@@ -22,7 +22,7 @@ test("parses the authoritative instance count, result, and launcher liveness", a
   assert.equal(invocation.executable, "powershell.exe");
   assert.equal(invocation.options.timeout, 10_000);
   assert.equal(invocation.options.windowsHide, true);
-  assert.equal(invocation.options.env.CODEX_ROUTER_TASK, "Codex Router");
+  assert.equal(invocation.options.env.CODEX_ROUTER_TASK, "ProviderOS");
   const script = invocation.args.at(-1);
   assert.match(script, /Schedule\.Service/);
   assert.match(script, /GetInstances\(0\)/);

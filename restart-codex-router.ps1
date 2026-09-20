@@ -9,18 +9,18 @@ param(
 $ErrorActionPreference = "Stop"
 $routerRoot = [IO.Path]::GetFullPath($InstallDir)
 if (-not (Test-Path (Join-Path $routerRoot "src\service.mjs"))) {
-  throw "Installed Codex Router not found at $routerRoot."
+  throw "Installed ProviderOS not found at $routerRoot."
 }
 Push-Location $routerRoot
 try {
-  Write-Host "Gracefully restarting Codex Router..."
+  Write-Host "Gracefully restarting ProviderOS..."
   & node (Join-Path $routerRoot "src\service.mjs") restart
   $RestartExitCode = $LASTEXITCODE
   if ($RestartExitCode -ne 0) {
-    throw "Codex Router restart failed with exit code $RestartExitCode."
+    throw "ProviderOS restart failed with exit code $RestartExitCode."
   }
 } finally {
   Pop-Location
 }
 
-Write-Host "Codex Router is running."
+Write-Host "ProviderOS is running."

@@ -39,7 +39,7 @@ const HOST_MANAGED = process.platform === "win32";
 const effectivePlatform = process.env.CODEX_ROUTER_SERVICE_PLATFORM || process.platform;
 const command = process.argv[2] || "status";
 const renderCommands = new Set(["render", "render-launcher", "render-task"]);
-const taskName = "Codex Router";
+const taskName = "ProviderOS";
 const guardLauncherWrite = () => assertServiceWriteIsolated(STATE_DIR, {
   redirected: Boolean(
     process.env.MODEL_ROUTER_STATE_DIR || process.env.CODEX_ROUTER_STATE_DIR,

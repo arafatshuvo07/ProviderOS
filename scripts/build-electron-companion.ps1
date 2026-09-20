@@ -90,7 +90,7 @@ try {
   }
 
   $StagedDirectory = Join-Path $StagingRoot "win-unpacked"
-  $StagedBinary = Join-Path $StagedDirectory "Codex Router.exe"
+  $StagedBinary = Join-Path $StagedDirectory "ProviderOS.exe"
   if (-not (Test-Path -LiteralPath $StagedBinary -PathType Leaf)) {
     throw "The packaged Control Center is missing at $StagedBinary."
   }
@@ -153,5 +153,5 @@ try {
   }
 }
 
-$Binary = Join-Path $TargetDirectory "Codex Router.exe"
+$Binary = Join-Path $TargetDirectory "ProviderOS.exe"
 Write-Output $Binary

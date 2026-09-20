@@ -479,8 +479,8 @@ function modelDetails(selection) {
   return Buffer.concat([
     encodeStringField(1, id),
     encodeStringField(3, id),
-    encodeStringField(4, `${displayName} (Codex Router)`),
-    encodeStringField(5, `${displayName} (Codex Router)`),
+    encodeStringField(4, `${displayName} (ProviderOS)`),
+    encodeStringField(5, `${displayName} (ProviderOS)`),
     encodeStringField(6, id),
   ]);
 }

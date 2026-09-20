@@ -37,7 +37,7 @@ test("the registered action points at the packaged Control Center", () => {
   const result = trayService("render-task");
   assert.equal(result.status, 0, result.stderr);
   const action = JSON.parse(result.stdout);
-  assert.ok(action.execute.endsWith("Codex Router.exe"), action.execute);
+  assert.ok(action.execute.endsWith("ProviderOS.exe"), action.execute);
   assert.ok(action.execute.includes(path.join("control-center", "release", "win-unpacked")), action.execute);
   assert.equal(action.argument, "--tray-only");
 });
@@ -596,9 +596,9 @@ test("tray repair validates the task and grants only its current principal contr
   // A task registered from another checkout must still be recognized by shape,
   // so a dev user whose task points at %LOCALAPPDATA% is not rejected.
   assert.doesNotMatch(script, /this checkout's tray companion/);
-  assert.match(script, /apps\\control-center\\release\\win-unpacked\\Codex Router\.exe/);
+  assert.match(script, /apps\\control-center\\release\\win-unpacked\\ProviderOS\.exe/);
   assert.match(script, /--tray-only/);
-  assert.match(script, /not a recognized Codex Router Control Center/);
+  assert.match(script, /not a recognized ProviderOS Control Center/);
   assert.match(script, /RawSecurityDescriptor/);
   assert.match(script, /SetSecurityDescriptor\([^\n]+0x10\)/);
   // The elevated PowerShell host must be named absolutely so ShellExecuteEx

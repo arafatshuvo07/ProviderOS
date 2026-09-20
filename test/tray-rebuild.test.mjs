@@ -41,7 +41,7 @@ function macosTransactionFixture({
 } = {}) {
   const parent = scratch();
   const transaction = path.join(parent, ".model-router-tray-transaction");
-  const bundle = path.join(parent, "Codex Router.app");
+  const bundle = path.join(parent, "ProviderOS.app");
   mkdirSync(transaction, { mode: 0o700 });
   chmodSync(transaction, 0o700);
   mkdirSync(path.join(transaction, "staged"), { mode: 0o700 });
@@ -105,7 +105,7 @@ function installCompleteMacosTrayBundle(bundle, { includeWidget = true } = {}) {
   );
   mkdirSync(path.join(embedded, "MacOS"), { recursive: true });
   mkdirSync(path.join(embedded, "Resources"), { recursive: true });
-  const embeddedBinary = path.join(embedded, "MacOS", "Codex Router");
+  const embeddedBinary = path.join(embedded, "MacOS", "ProviderOS");
   writeFileSync(embeddedBinary, "binary", "utf8");
   chmodSync(embeddedBinary, 0o755);
   writeFileSync(path.join(embedded, "Resources", "app.asar"), "archive", "utf8");
@@ -118,7 +118,7 @@ function installTrayAt(home) {
 
 function installPackagedControlCenter(fakeRoot, platform) {
   const [directory, executable] = platform === "win32"
-    ? ["win-unpacked", "Codex Router.exe"]
+    ? ["win-unpacked", "ProviderOS.exe"]
     : ["linux-unpacked", "codex-router-control-center"];
   const release = path.join(fakeRoot, "apps", "control-center", "release", directory);
   mkdirSync(path.join(release, "resources"), { recursive: true });
@@ -370,7 +370,7 @@ test("Windows and Linux never trust linked package ancestors or resources", () =
     const externalReleaseRoot = scratch();
     try {
       const [directory, executable] = platform === "win32"
-        ? ["win-unpacked", "Codex Router.exe"]
+        ? ["win-unpacked", "ProviderOS.exe"]
         : ["linux-unpacked", "codex-router-control-center"];
       const releaseParent = path.join(fakeRoot, "apps", "control-center", "release");
       const packageRoot = path.join(releaseParent, directory);
@@ -462,8 +462,8 @@ test("one companion location: the Node and shell sides name the same directory",
   // script default, and trayBundleDir -- which is how a machine ends up with a
   // separate tray per checkout and launchd pointing at whichever built last.
   const script = readFileSync(path.join(root, "scripts", "build-macos-tray-app.sh"), "utf8");
-  assert.match(script, /bundle_dir=\$\{1:-"\$HOME\/Applications\/Codex Router\.app"\}/);
-  assert.equal(trayBundleDir("darwin", "/Users/example"), "/Users/example/Applications/Codex Router.app");
+  assert.match(script, /bundle_dir=\$\{1:-"\$HOME\/Applications\/ProviderOS\.app"\}/);
+  assert.equal(trayBundleDir("darwin", "/Users/example"), "/Users/example/Applications/ProviderOS.app");
   assert.doesNotMatch(script, /\$repo_dir\/dist\/Model Router\.app"\}/);
 });
 
@@ -657,7 +657,7 @@ test("committed macOS recovery keeps rollback until every versioned bundle artif
     "Contents/MacOS/ModelRouterTray",
     "Contents/PlugIns/RouterUsageWidget.appex/Contents/Info.plist",
     "Contents/PlugIns/RouterUsageWidget.appex/Contents/MacOS/RouterUsageWidget",
-    "Contents/Resources/Control Center.app/Contents/MacOS/Codex Router",
+    "Contents/Resources/Control Center.app/Contents/MacOS/ProviderOS",
     "Contents/Resources/Control Center.app/Contents/Resources/app.asar",
   ];
   const executableArtifacts = [artifacts[0], artifacts[2], artifacts[3]];
@@ -806,7 +806,7 @@ test("macOS swap journals reject symlinks, unsafe modes, unknown entries, and im
     for (const fixture of cases) {
       await assert.rejects(
         inspectMacosTrayTransaction(fixture.transaction),
-        /refusing ambiguous macOS Codex Router transaction/,
+        /refusing ambiguous macOS ProviderOS transaction/,
       );
     }
 
@@ -876,7 +876,7 @@ test("tray updates journal every macOS swap before replacing the live app", () =
   assert.match(mac, /mkdir -m 700 "\$transaction_dir"[\s\S]*chmod 600 "\$had_previous_file"/);
   assert.match(mac, /printf '%s\\n' codex-router >"\$target_name_file"[\s\S]*chmod 600 "\$target_name_file"/);
   assert.match(mac, /printf '%s\\n' widget-v1 >"\$artifact_set_file"[\s\S]*chmod 600 "\$artifact_set_file"/);
-  assert.match(mac, /both Codex Router\.app and the legacy Model Router\.app exist; refusing an ambiguous replacement/);
+  assert.match(mac, /both ProviderOS\.app and the legacy Model Router\.app exist; refusing an ambiguous replacement/);
   assert.match(mac, /next_phase_file="\$transaction_dir\/phase\.next"[\s\S]*write_macos_phase\(\)[\s\S]*mv "\$next_phase_file" "\$phase_file"/);
   assert.ok(
     build > createJournal && draining > build && terminate > draining && drained > terminate
@@ -908,7 +908,7 @@ test("tray updates journal every macOS swap before replacing the live app", () =
     /readiness_identity=\$\(tray_app_identity "\$bundle_dir"\)[\s\S]*"\$readiness_count" -eq 1[\s\S]*"\$readiness_matches" -eq 1/,
   );
   assert.match(mac, /readiness_count" -gt 1/);
-  assert.doesNotMatch(mac, /killall -QUIT ModelRouterTray|pgrep[\s\S]*(?:ModelRouterTray|Codex Router)/);
+  assert.doesNotMatch(mac, /killall -QUIT ModelRouterTray|pgrep[\s\S]*(?:ModelRouterTray|ProviderOS)/);
 
   for (const relative of ["src/update.mjs", "src/control.mjs", "bin/install"]) {
     const caller = readFileSync(path.join(root, relative), "utf8");
@@ -1222,7 +1222,7 @@ test("Linux and Windows keep independent build stamps", () => {
       "control-center",
       "release",
       "win-unpacked",
-      "Codex Router.exe",
+      "ProviderOS.exe",
     );
     installPackagedControlCenter(fakeRoot, "linux");
     installPackagedControlCenter(fakeRoot, "win32");
@@ -1370,7 +1370,7 @@ test("the docs no longer claim the Island is on by default", () => {
 
 // The tray dictionary is keyed on the English source string, so a new
 // routerLocalized("...") literal is silently English-only until somebody
-// remembers to add it. That is exactly how "Fix Codex Router installation"
+// remembers to add it. That is exactly how "Fix ProviderOS installation"
 // shipped untranslated. Check every literal against the dictionary here,
 // where it is cheap, instead of noticing it in a screenshot.
 test("every localized tray literal has a Chinese translation", () => {

@@ -3,7 +3,8 @@ set -eu
 
 repository_url=${CODEX_ROUTER_REPOSITORY_URL:-https://github.com/arafatshuvo07/ProviderOS.git}
 default_data_dir=${XDG_DATA_HOME:-$HOME/.local/share}
-install_dir=$default_data_dir/codex-router
+install_dir=${PROVIDEROS_INSTALL_DIR:-$default_data_dir/provideros}
+legacy_install_dir=$default_data_dir/codex-router
 prepare_only=false
 configure_provider_keys=
 guided=auto
@@ -56,12 +57,12 @@ Options:
   -h, --help          Show this help
 
 When run from a checkout, this script installs that checkout. When piped from
-GitHub, it clones or updates ~/.local/share/codex-router first.
+GitHub, it clones or updates ~/.local/share/provideros first.
 EOF
 }
 
 die() {
-  printf 'codex-router: %s\n' "$*" >&2
+  printf 'provideros: %s\n' "$*" >&2
   exit 1
 }
 
@@ -264,7 +265,15 @@ case "$0" in
 esac
 
 if [ -z "$repo_dir" ]; then
-  command -v git >/dev/null 2>&1 || die "git is required to download codex-router"
+  command -v git >/dev/null 2>&1 || die "git is required to download ProviderOS"
+
+  # Existing installs keep their checkout in place for a no-surprise upgrade.
+  # Fresh installs use the ProviderOS path above; the compatibility directory is
+  # only selected when it is already a recognized checkout and the new path is
+  # absent.
+  if [ ! -e "$install_dir" ] && [ -d "$legacy_install_dir/.git" ]; then
+    install_dir=$legacy_install_dir
+  fi
 
   if [ -d "$install_dir/.git" ]; then
     origin_url=$(git -C "$install_dir" remote get-url origin 2>/dev/null || true)
@@ -295,13 +304,13 @@ if [ -z "$repo_dir" ]; then
       die "$install_dir must be on its main branch before updating"
     printf 'Updating %s...\n' "$install_dir"
     previous_revision=$(git -C "$install_dir" rev-parse HEAD)
-    git -C "$install_dir" update-ref refs/codex-router/rollback "$previous_revision"
+    git -C "$install_dir" update-ref refs/provideros/rollback "$previous_revision"
     git -C "$install_dir" pull --ff-only origin main
   elif [ -e "$install_dir" ]; then
-    die "$install_dir already exists and is not a codex-router checkout"
+    die "$install_dir already exists and is not a ProviderOS checkout"
   else
     mkdir -p "$(dirname -- "$install_dir")"
-    printf 'Cloning codex-router to %s...\n' "$install_dir"
+    printf 'Cloning ProviderOS to %s...\n' "$install_dir"
     git clone --depth 1 "$repository_url" "$install_dir"
   fi
   repo_dir=$install_dir
@@ -377,7 +386,7 @@ case "$target" in
     printf '\nProviderOS is installed for Claude Code. Run claude-router and choose a codex_router/anthropic/... model.\n'
     ;;
   openclaw)
-    printf '\nProviderOS installed OpenClaw and published every routed model under its codex-router provider. Run openclaw to start.\n'
+    printf '\nProviderOS installed OpenClaw and published every routed model under its ProviderOS provider. Run openclaw to start.\n'
     ;;
   *)
     printf '\nProviderOS is installed. Fully quit Codex, reopen it, and start a new task.\n'

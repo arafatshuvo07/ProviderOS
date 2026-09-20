@@ -20,6 +20,7 @@ import {
 } from "./native-catalog-source.mjs";
 import {
   CODEX_HOME,
+  HISTORIC_SERVICE_LABEL,
   CONFIG_PATH,
   LEGACY_SERVICE_LABEL,
   LEGACY_STATE_DIR,
@@ -38,6 +39,11 @@ export const LEGACY_VARIANTS = Object.freeze([
   Object.freeze({
     id: "kimi-router-0.x",
     label: LEGACY_SERVICE_LABEL,
+    stateDir: LEGACY_STATE_DIR,
+  }),
+  Object.freeze({
+    id: "codex-router-legacy-0.x",
+    label: HISTORIC_SERVICE_LABEL,
     stateDir: LEGACY_STATE_DIR,
   }),
   Object.freeze({

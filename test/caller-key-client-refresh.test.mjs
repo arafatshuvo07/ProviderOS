@@ -25,7 +25,7 @@ test("Codex capability refresh changes only managed caller URLs", () => {
     "",
     "# BEGIN codex-router-provider-managed",
     "[model_providers.codex-router]",
-    'name = "Codex Router (external models)"',
+    'name = "ProviderOS (external models)"',
     `base_url = ${JSON.stringify(oldBase)}`,
     'wire_api = "responses"',
     "# END codex-router-provider-managed",

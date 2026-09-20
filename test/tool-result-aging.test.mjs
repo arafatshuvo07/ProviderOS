@@ -148,7 +148,7 @@ test("dense compaction shapes a noisy newest result with a recoverable RTK recei
 
 test("dense compaction does not wrap a receipt written by the former pressure mode", () => {
   const legacy = [
-    "[Tool result shaped by Codex Router token maxxing: 10000 -> 100 bytes, sha256:abc.]",
+    "[Tool result shaped by ProviderOS token maxxing: 10000 -> 100 bytes, sha256:abc.]",
     ...Array(1_000).fill("repeated legacy output"),
   ].join("\n");
   const input = [call("latest", "exec_command"), output("latest", legacy)];

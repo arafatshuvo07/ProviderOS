@@ -1,15 +1,15 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
   [string]$InstallDir = $(
-    if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "codex-router" }
-    else { Join-Path $HOME ".local\share\codex-router" }
+    if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "provideros" }
+    else { Join-Path $HOME ".local\share\provideros" }
   )
 )
 
 $ErrorActionPreference = "Stop"
 $sourceDir = (Resolve-Path (Split-Path -Parent $MyInvocation.MyCommand.Path)).Path
 $installDir = [IO.Path]::GetFullPath($InstallDir)
-$DeployManifestName = ".codex-router-deploy-manifest.json"
+$DeployManifestName = ".provideros-deploy-manifest.json"
 $DeployManifestPath = Join-Path $installDir $DeployManifestName
 $ExcludedDirectoryNames = @(
   ".git", ".venv", "node_modules", "target", "dist", "release", "release-local"
@@ -207,12 +207,12 @@ if ($PSCmdlet.ShouldProcess($installDir, "copy router source")) {
     # managed skills, and the optional existing tray all stay in one path. It
     # reads the current provider selection rather than replacing it.
     & (Join-Path $installDir "install.ps1") -CheckoutInstall -Target codex
-    if (-not $?) { throw "The installed Codex Router update failed." }
+    if (-not $?) { throw "The installed ProviderOS update failed." }
 
     & node (Join-Path $installDir "src\doctor.mjs")
     $DoctorExitCode = $LASTEXITCODE
     if ($DoctorExitCode -ne 0) {
-      throw "Codex Router doctor failed with exit code $DoctorExitCode."
+      throw "ProviderOS doctor failed with exit code $DoctorExitCode."
     }
 
     if ($TrayWasInstalled) {
@@ -223,7 +223,7 @@ if ($PSCmdlet.ShouldProcess($installDir, "copy router source")) {
       $SavedRouterTarget = $env:MODEL_ROUTER_TARGET
       try {
         $env:MODEL_ROUTER_TARGET = "codex"
-        & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $installDir "codex-router.ps1") tray install --preserve-window
+        & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $installDir "provideros.ps1") tray install --preserve-window
         $TrayInstallExitCode = $LASTEXITCODE
         if ($TrayInstallExitCode -ne 0) {
           throw "Refreshing the installed tray failed with exit code $TrayInstallExitCode."
@@ -236,7 +236,7 @@ if ($PSCmdlet.ShouldProcess($installDir, "copy router source")) {
       if (-not $TrayStatus.installed -or -not $TrayStatus.loaded -or -not $TrayStatus.appPresent) {
         throw "The refreshed tray is not installed, running, and present on disk."
       }
-      $ExpectedTrayPath = Join-Path $installDir "apps\control-center\release\win-unpacked\Codex Router.exe"
+      $ExpectedTrayPath = Join-Path $installDir "apps\control-center\release\win-unpacked\ProviderOS.exe"
       $RegisteredTrayPath = [IO.Path]::GetFullPath([string]$TrayStatus.path)
       if (-not [string]::Equals(
         $RegisteredTrayPath,
@@ -263,5 +263,5 @@ if ($PSCmdlet.ShouldProcess($installDir, "copy router source")) {
     }
     Pop-Location
   }
-  Write-Host "Codex Router published, installed, and verified."
+  Write-Host "ProviderOS published, installed, and verified."
 }

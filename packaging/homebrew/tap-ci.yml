@@ -1,4 +1,4 @@
-# Workflow for the tap repository (duolahypercho/homebrew-codex-router), not for
+# Workflow for a ProviderOS tap repository, not for
 # this one. Copy it there as .github/workflows/ci.yml when the tap is created.
 #
 # The tap ships no bottles, so every user builds from source. That makes this the
@@ -32,17 +32,17 @@ jobs:
       - uses: actions/checkout@v7
       - uses: Homebrew/actions/setup-homebrew@master
       - run: brew style .
-      - run: brew audit --strict --formula ./Formula/codex-router.rb
+      - run: brew audit --strict --formula ./Formula/provideros.rb
       # Building from source is the whole point: `brew install` alone would pour a
       # bottle on a tap that had one, and would never exercise the venv build.
-      - run: brew install --build-from-source --verbose ./Formula/codex-router.rb
-      - run: brew test --verbose ./Formula/codex-router.rb
+      - run: brew install --build-from-source --verbose ./Formula/provideros.rb
+      - run: brew test --verbose ./Formula/provideros.rb
       # `brew linkage` is what catches a keg whose compiled extensions point at
       # libraries that were only present on the build machine.
-      - run: brew linkage --test codex-router
+      - run: brew linkage --test provideros
       # setup is interactive and registers a background service, so it is never
       # run here. `doctor` is the closest non-mutating check: it must run and
       # report, rather than crash on a path that only exists in a checkout.
       - name: Diagnose without configuring
-        run: codex-router doctor --json || true
-      - run: brew uninstall codex-router
+        run: provideros doctor --json || true
+      - run: brew uninstall provideros

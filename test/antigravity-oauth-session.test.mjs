@@ -1980,7 +1980,7 @@ test("rejects a foreign OAuth record even when its fields resemble this router's
         expires_at: 2_000_000_000,
         expires_in: 3600,
       });
-      assert.throws(readAntigravityToken, /only a credential created by this Codex Router/);
+      assert.throws(readAntigravityToken, /only a credential created by this ProviderOS/);
     },
   );
 });

@@ -50,7 +50,7 @@ test("a Homebrew install sends updates back to Homebrew", () => {
     },
   );
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /brew upgrade codex-router/);
+  assert.match(result.stderr, /brew upgrade provideros/);
   assert.doesNotMatch(result.stderr, /not a Git checkout/);
 });
 
@@ -87,7 +87,7 @@ test("tray refresh is required when the checkout dist bundle exists", () => {
 test("tray refresh is required when setup installed the canonical home app bundle", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "tray-refresh-home-"));
   try {
-    mkdirSync(path.join(root, "home", "Applications", "Codex Router.app"), {
+    mkdirSync(path.join(root, "home", "Applications", "ProviderOS.app"), {
       recursive: true,
     });
     assert.equal(
@@ -127,7 +127,7 @@ test("tray refresh is required when only the legacy home app bundle exists", () 
 test("tray refresh is required when only a registered bundle path exists", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "tray-refresh-registered-"));
   try {
-    const registered = path.join(root, "Codex Router.app");
+    const registered = path.join(root, "ProviderOS.app");
     mkdirSync(registered, { recursive: true });
     assert.equal(
       trayRefreshRequired({
@@ -163,7 +163,7 @@ test("tray refresh is skipped when no tray bundle exists", () => {
 test("tray refresh preserves an explicit macOS supervision disable", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "tray-refresh-disabled-"));
   try {
-    mkdirSync(path.join(root, "home", "Applications", "Codex Router.app"), {
+    mkdirSync(path.join(root, "home", "Applications", "ProviderOS.app"), {
       recursive: true,
     });
     assert.equal(
@@ -171,7 +171,7 @@ test("tray refresh preserves an explicit macOS supervision disable", () => {
         platform: "darwin",
         home: path.join(root, "home"),
         sourceRoot: path.join(root, "router"),
-        registeredPath: path.join(root, "home", "Applications", "Codex Router.app"),
+        registeredPath: path.join(root, "home", "Applications", "ProviderOS.app"),
         supervisionPreference: { state: "disabled", enabled: false },
       }),
       false,
@@ -181,7 +181,7 @@ test("tray refresh preserves an explicit macOS supervision disable", () => {
         platform: "darwin",
         home: path.join(root, "home"),
         sourceRoot: path.join(root, "router"),
-        registeredPath: path.join(root, "home", "Applications", "Codex Router.app"),
+        registeredPath: path.join(root, "home", "Applications", "ProviderOS.app"),
         supervisionPreference: { state: "invalid", enabled: null },
       }),
       false,

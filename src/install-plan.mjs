@@ -296,7 +296,7 @@ const TRAY_PLATFORMS = {
           "MacOS",
           "RouterUsageWidget",
         ),
-        path.join(embedded, "MacOS", "Codex Router"),
+        path.join(embedded, "MacOS", "ProviderOS"),
         path.join(embedded, "Resources", "app.asar"),
       ];
     },
@@ -349,7 +349,7 @@ const TRAY_PLATFORMS = {
     artifacts: (root) => {
       const release = path.join(root, "apps", "control-center", "release", "win-unpacked");
       return [
-        path.join(release, "Codex Router.exe"),
+        path.join(release, "ProviderOS.exe"),
         path.join(release, "resources", "app.asar"),
       ];
     },

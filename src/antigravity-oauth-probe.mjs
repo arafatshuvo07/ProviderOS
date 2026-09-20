@@ -173,7 +173,7 @@ export async function probeAntigravity({
   if (!upstream.ok || !upstream.body) {
     await upstream.body?.cancel().catch(() => {});
     const error = new Error(
-      `Google did not accept the truthful Codex Router compatibility probe (HTTP ${upstream.status}).`,
+      `Google did not accept the truthful ProviderOS compatibility probe (HTTP ${upstream.status}).`,
     );
     error.code = "antigravity_probe_failed";
     error.status = upstream.status >= 400 && upstream.status <= 599 ? upstream.status : 502;
@@ -197,7 +197,7 @@ export async function probeAntigravity({
     turn.contentText.trim() !== "OK"
   ) {
     const error = new Error(
-      "Google completed the truthful Codex Router compatibility probe without the exact safe `OK` result.",
+      "Google completed the truthful ProviderOS compatibility probe without the exact safe `OK` result.",
     );
     error.code = "antigravity_probe_result_mismatch";
     error.status = 502;

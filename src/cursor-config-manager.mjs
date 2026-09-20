@@ -233,7 +233,7 @@ export function installCursorAgentIntegration({ probe = cursorAgentAvailable } =
   const agent = probe();
   if (!agent.available) {
     throw new Error(
-      `${agent.command} is unavailable. Install Cursor Agent before connecting it to Codex Router.`,
+      `${agent.command} is unavailable. Install Cursor Agent before connecting it to ProviderOS.`,
     );
   }
   const caller = secret(CALLER_SECRET_PATH, "Router caller key");

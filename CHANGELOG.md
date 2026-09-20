@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.2 - ProviderOS rebrand and release packaging
+
+- Make ProviderOS the primary CLI, app, installer, macOS bundle, widget, and
+  release artifact name.
+- Keep legacy paths and provider identifiers only as hidden migration aliases so
+  existing installations retain their state and credentials.
+- Add a copyable AI-assisted installation guide and publish macOS, Windows, and
+  Linux desktop artifacts through the release workflow.
+
 ## Unreleased
 
 - **The ChatGPT Web provider is removed: using it risked an OpenAI account
@@ -76,7 +85,7 @@
   verified history instead of failing locally with `model_search_not_supported`
   (issue #639).
 - **Startup now repairs drifted routed-agent definitions.** The post-health
-  native-catalog reconciliation also compares Codex Router's managed agent
+  native-catalog reconciliation also compares ProviderOS's managed agent
   files with the current routed-model, visibility, and subagent settings. A
   missing, stale, unprotected, or extra managed definition triggers the same
   locked picker republish even when native model metadata itself is unchanged.
@@ -1951,7 +1960,7 @@
   no-op that reads as success while no tray was ever going to appear. The only
   route was knowing to run `scripts/build-desktop-tray.ps1` by hand, and even
   then the companion vanished at the next reboot. `install.ps1 -WithTray` (and
-  `-NoTray`, matching `install.sh`) now builds it and registers a `Codex Router
+  `-NoTray`, matching `install.sh`) now builds it and registers a `ProviderOS
   Tray` logon task, kept separate from the router's own task so stopping one
   never takes the other down. Quitting from the tray menu stays quit: the
   restart setting covers a crash, not a clean exit. A platform with no

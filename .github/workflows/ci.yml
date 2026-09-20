@@ -47,7 +47,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          foreach ($file in @("install.ps1", "codex-router.ps1", "model-router.ps1", "deploy-codex-router.ps1", "restart-codex-router.ps1", "src/windows-process-tree.ps1", "scripts/build-electron-companion.ps1")) {
+          foreach ($file in @("install.ps1", "provideros.ps1", "codex-router.ps1", "model-router.ps1", "deploy-provideros.ps1", "deploy-codex-router.ps1", "restart-codex-router.ps1", "src/windows-process-tree.ps1", "scripts/build-electron-companion.ps1")) {
             $errors = $null
             [System.Management.Automation.Language.Parser]::ParseFile(
               (Resolve-Path $file),
@@ -132,7 +132,7 @@ jobs:
           - platform: Linux
             os: ubuntu-latest
             builder_flag: --linux
-            artifact_path: apps/control-center/release/codex-router-control-center-linux.tar.gz
+            artifact_path: apps/control-center/release/provideros-control-center-linux.tar.gz
           - platform: Windows
             os: windows-latest
             builder_flag: --win
@@ -140,7 +140,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       # Pull-request artifacts are deliberately unsigned and intended only for
-      # testing against a matching Codex Router checkout/install.
+      # testing against a matching ProviderOS checkout/install.
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
     defaults:
       run:
@@ -170,7 +170,7 @@ jobs:
         run: |
           xvfb-run --auto-servernum bash -s <<'SMOKE'
           set -euo pipefail
-          app="./release/linux-unpacked/codex-router-control-center"
+          app="./release/linux-unpacked/provideros-control-center"
           log="${RUNNER_TEMP}/control-center-linux.log"
           "$app" --no-sandbox --tray-only >"$log" 2>&1 &
           pid=$!
@@ -228,7 +228,7 @@ jobs:
         run: |
           $stdout = Join-Path $env:RUNNER_TEMP "control-center-windows.log"
           $stderr = Join-Path $env:RUNNER_TEMP "control-center-windows-error.log"
-          $app = ".\release\win-unpacked\Codex Router.exe"
+          $app = ".\release\win-unpacked\ProviderOS.exe"
           $process = Start-Process $app `
             -ArgumentList "--tray-only" `
             -PassThru `
@@ -273,11 +273,11 @@ jobs:
       - name: Preserve Linux executable permissions
         if: runner.os == 'Linux'
         working-directory: apps/control-center/release
-        run: tar -czf codex-router-control-center-linux.tar.gz -- *.AppImage
+        run: tar -czf provideros-control-center-linux.tar.gz -- *.AppImage
       - name: Publish the unsigned beta package
         uses: actions/upload-artifact@v7
         with:
-          name: codex-router-control-center-${{ matrix.platform }}-${{ github.sha }}
+          name: provideros-control-center-${{ matrix.platform }}-${{ github.sha }}
           path: ${{ matrix.artifact_path }}
           if-no-files-found: error
           retention-days: 14
@@ -297,12 +297,12 @@ jobs:
       - name: Build native tray with embedded Control Center
         env:
           MODEL_ROUTER_TRAY_UNIVERSAL: "1"
-        run: scripts/build-macos-tray-app.sh "$RUNNER_TEMP/Codex Router.app"
+        run: scripts/build-macos-tray-app.sh "$RUNNER_TEMP/ProviderOS.app"
       - name: Verify universal binaries, version, and complete bundle seal
         shell: bash
         run: |
           set -euo pipefail
-          app="$RUNNER_TEMP/Codex Router.app"
+          app="$RUNNER_TEMP/ProviderOS.app"
           expected_control_version=$(node -p 'require("./apps/control-center/package.json").version')
           expected_short_version=${expected_control_version%%-*}
           actual_short_version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")
@@ -314,20 +314,20 @@ jobs:
           lipo "$app/Contents/MacOS/ModelRouterTray" -verify_arch x86_64 arm64
           widget="$app/Contents/PlugIns/RouterUsageWidget.appex"
           lipo "$widget/Contents/MacOS/RouterUsageWidget" -verify_arch x86_64 arm64
-          lipo "$app/Contents/Resources/Control Center.app/Contents/MacOS/Codex Router" -verify_arch x86_64 arm64
+          lipo "$app/Contents/Resources/Control Center.app/Contents/MacOS/ProviderOS" -verify_arch x86_64 arm64
           codesign --verify --deep --strict "$app"
           codesign -d --entitlements :- "$widget" > "$RUNNER_TEMP/widget-entitlements.plist" 2>/dev/null
           test "$(/usr/libexec/PlistBuddy -c 'Print :ModelRouterWidgetStorageMode' "$app/Contents/Info.plist")" = local
           test "$(/usr/libexec/PlistBuddy -c 'Print :ModelRouterWidgetStorageMode' "$widget/Contents/Info.plist")" = local
-          test "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.temporary-exception.files.home-relative-path.read-only:0' "$RUNNER_TEMP/widget-entitlements.plist")" = "/Library/Application Support/Codex Router Widget/"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.temporary-exception.files.home-relative-path.read-only:0' "$RUNNER_TEMP/widget-entitlements.plist")" = "/Library/Application Support/ProviderOS Widget/"
           ! /usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups' "$RUNNER_TEMP/widget-entitlements.plist" >/dev/null 2>&1
           host_entitlements=$(codesign -d --entitlements :- "$app" 2>/dev/null || true)
           ! grep -q 'com.apple.security.application-groups' <<<"$host_entitlements"
           production_entitlements=apps/macos/RouterUsageWidget/RouterUsageWidget/RouterUsageWidget.entitlements
           local_entitlements=apps/macos/RouterUsageWidget/RouterUsageWidget/RouterUsageWidget.local.entitlements
-          test "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups:0' "$production_entitlements")" = group.io.github.codex-router
+          test "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups:0' "$production_entitlements")" = group.io.github.provideros
           ! /usr/libexec/PlistBuddy -c 'Print :com.apple.security.temporary-exception.files.home-relative-path.read-only' "$production_entitlements" >/dev/null 2>&1
-          test "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.temporary-exception.files.home-relative-path.read-only:0' "$local_entitlements")" = "/Library/Application Support/Codex Router Widget/"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.temporary-exception.files.home-relative-path.read-only:0' "$local_entitlements")" = "/Library/Application Support/ProviderOS Widget/"
           ! /usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups' "$local_entitlements" >/dev/null 2>&1
       - name: Smoke the unified macOS app lifecycle
         env:
@@ -336,10 +336,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app="$RUNNER_TEMP/Codex Router.app"
+          app="$RUNNER_TEMP/ProviderOS.app"
           outer="$app/Contents/MacOS/ModelRouterTray"
-          embedded="$app/Contents/Resources/Control Center.app/Contents/MacOS/Codex Router"
-          log="$RUNNER_TEMP/model-router-macos-smoke.log"
+          embedded="$app/Contents/Resources/Control Center.app/Contents/MacOS/ProviderOS"
+          log="$RUNNER_TEMP/provideros-macos-smoke.log"
 
           query_lifecycle() {
             /usr/bin/env -u ELECTRON_RUN_AS_NODE "$embedded" --query-lifecycle
@@ -410,7 +410,7 @@ jobs:
           }
 
           assert_single_outer_host() {
-            count=$(bundle_count io.github.codex-router.tray)
+            count=$(bundle_count io.github.provideros.tray)
             case "$count" in *[!0-9]*|'') count=invalid ;; esac
             if [ "$count" != 1 ]; then
               printf 'Expected one unified macOS host after reopen; found %s.\n' "$count" >&2
@@ -424,8 +424,8 @@ jobs:
           cleanup() {
             cleanup_status=$?
             trap - EXIT
-            terminate_bundle io.github.codex-router.control-center >/dev/null 2>&1 || true
-            terminate_bundle io.github.codex-router.tray >/dev/null 2>&1 || true
+            terminate_bundle io.github.provideros.control-center >/dev/null 2>&1 || true
+            terminate_bundle io.github.provideros.tray >/dev/null 2>&1 || true
             if kill -0 "$pid" 2>/dev/null; then
               kill -KILL "$pid" 2>/dev/null || true
             fi
@@ -449,7 +449,7 @@ jobs:
 
           # The embedded window can quit without taking its native tray owner
           # down, and opening the one outer app must create a fresh window host.
-          terminate_bundle io.github.codex-router.control-center
+          terminate_bundle io.github.provideros.control-center
           wait_for_lifecycle false false false >/dev/null
           kill -0 "$pid"
           /usr/bin/open "$app"
@@ -460,8 +460,8 @@ jobs:
 
           # A normal quit of the outer app owns the complete lifetime: AppKit
           # stops the embedded Electron child and both processes exit cleanly.
-          terminate_bundle io.github.codex-router.tray
-          wait_for_bundle_exit io.github.codex-router.tray
+          terminate_bundle io.github.provideros.tray
+          wait_for_bundle_exit io.github.provideros.tray
           wait_for_lifecycle false false false >/dev/null
           if wait "$pid"; then
             :
@@ -473,10 +473,10 @@ jobs:
           fi
           trap - EXIT
       - name: Package the one visible application
-        run: ditto -c -k --keepParent "$RUNNER_TEMP/Codex Router.app" "$RUNNER_TEMP/model-router-macos.zip"
+        run: ditto -c -k --keepParent "$RUNNER_TEMP/ProviderOS.app" "$RUNNER_TEMP/provideros-macos.zip"
       - uses: actions/upload-artifact@v7
         with:
-          name: model-router-macOS-${{ github.sha }}
-          path: ${{ runner.temp }}/model-router-macos.zip
+          name: provideros-macOS-${{ github.sha }}
+          path: ${{ runner.temp }}/provideros-macos.zip
           if-no-files-found: error
           retention-days: 14

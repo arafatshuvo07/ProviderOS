@@ -438,7 +438,7 @@ export function geminiModelListPayload(models) {
       return {
         name: `models/${model.slug}`,
         displayName: String(model.displayName || model.slug),
-        description: "Routed by Codex Router.",
+        description: "Routed by ProviderOS.",
         inputTokenLimit: window,
         outputTokenLimit: window,
         supportedGenerationMethods: [...GEMINI_GENERATION_METHODS],

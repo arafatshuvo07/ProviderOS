@@ -1,6 +1,6 @@
 {
   "name": "provideros",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": true,
   "type": "module",
   "description": "Extensible local provider router for Codex, Cursor, and compatible clients",

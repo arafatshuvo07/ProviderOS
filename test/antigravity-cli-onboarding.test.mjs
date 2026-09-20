@@ -201,8 +201,8 @@ test("installation docs publish the operator-client login and explicit probe", (
   for (const file of ["README.md", path.join("docs", "INSTALL.md")]) {
     const contents = readFileSync(path.join(root, file), "utf8");
     assert.match(contents, /Google OAuth \*\*Desktop app\*\*/);
-    assert.match(contents, /\.\/bin\/model-router codex providers login antigravity-oauth/);
-    assert.match(contents, /\.\\model-router\.ps1 codex providers login antigravity-oauth/);
+    assert.match(contents, /\.\/bin\/provideros codex providers login antigravity-oauth/);
+    assert.match(contents, /\.\\provideros\.ps1 codex providers login antigravity-oauth/);
     assert.match(contents, /providers probe antigravity-oauth --live --yes/);
     assert.doesNotMatch(contents, /ANTIGRAVITY_CLIENT_SECRET\s*=/);
   }
@@ -213,7 +213,7 @@ test("the installation agent contract forbids vendor credential reuse and impers
   assert.match(contents, /operator-owned Google OAuth client/i);
   assert.match(contents, /never read or reuse the official `agy`\/IDE credential\s+store/i);
   assert.match(contents, /OS-assigned port/i);
-  assert.match(contents, /truthfully\s+as Codex Router/i);
+  assert.match(contents, /truthfully\s+as ProviderOS/i);
   assert.match(contents, /probe antigravity-oauth --live --yes/);
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "@provideros/control-center",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Electron control center for ProviderOS",
   "author": "ProviderOS contributors",
   "private": true,

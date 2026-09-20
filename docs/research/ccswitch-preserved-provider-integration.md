@@ -6,13 +6,13 @@ Research date: 2026-08-09
 
 The safest coexistence design on this Mac is to keep Codex's root
 `model_provider` equal to `custom` at all times and make that one provider point
-at Codex Router's authenticated local Responses endpoint. This preserves the
+at ProviderOS's authenticated local Responses endpoint. This preserves the
 task bucket that currently contains almost all of the user's tasks while letting
 the router choose either the signed-in ChatGPT backend or an external provider
 from the requested model slug.
 
 CC Switch does not need to be uninstalled to make that work. It can be retained
-as the owner of one dedicated **Codex Router (coexistence)** profile, provided
+as the owner of one dedicated **ProviderOS (coexistence)** profile, provided
 its own local routing/takeover remains off. Uninstalling the app would remove a
 source of accidental config writes, but deleting `~/.cc-switch` would also throw
 away the database and the reversible history-migration backups. If CC Switch is
@@ -161,7 +161,7 @@ alone should not rewrite Codex while its proxy flag remains disabled.
 
 ## Recommended dedicated profile
 
-Create one CC Switch Codex provider named **Codex Router (coexistence)** and make
+Create one CC Switch Codex provider named **ProviderOS (coexistence)** and make
 it the current provider. It should store an empty provider auth object and the
 following TOML shape (paths and the capability URL must be filled locally, never
 pasted into chat):
@@ -195,12 +195,12 @@ Profile settings:
   settings, plugins, profiles, MCP entries, and desktop preferences are merged
   into the profile instead of being replaced.
 - Select **Responses (native)** as the upstream format.
-- Do not enable CC Switch **Local Routing** or Codex **takeover**. Codex Router
+- Do not enable CC Switch **Local Routing** or Codex **takeover**. ProviderOS
   already terminates Responses and performs any external-provider conversion;
   stacking CC Switch's proxy would add a second owner and a second backup/
   restore lifecycle.
 - Do not enter a ClinePass, Chutes, or other provider key into this CC Switch
-  profile. Those credentials remain provider-scoped inside Codex Router. Never
+  profile. Those credentials remain provider-scoped inside ProviderOS. Never
   paste any key into chat.
 - Treat the Router capability URL as sensitive local configuration even though
   it is not an upstream API key.
@@ -252,7 +252,7 @@ restart, not request transport.
    current. The shipped toggle snapshots the complete selected provider tree,
    replaces it with the authenticated Router transport, and restores it only
    after an ownership check. It never changes root `model_provider`.
-7. Start Codex Router and test through a temporary Codex process first, using
+7. Start ProviderOS and test through a temporary Codex process first, using
    `model_provider = "custom"` with the exact live provider table. Require both
    an exact response marker and a correlated Router usage event for one native
    GPT model and one external model.

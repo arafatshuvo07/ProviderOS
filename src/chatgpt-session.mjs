@@ -43,7 +43,7 @@ function printStatus(status, { json = false } = {}) {
       ? ""
       : ` (session valid for about ${status.expiresInHours}h)`;
     process.stdout.write(
-      `ChatGPT session sharing is enabled for this user's local Codex Router clients${expiry}.\n`,
+      `ChatGPT session sharing is enabled for this user's local ProviderOS clients${expiry}.\n`,
     );
   } else {
     process.stdout.write(

@@ -281,7 +281,7 @@ test("status is read-only and reports CLI, loopback, served, and publication sta
 
 test("the target dispatcher and packaged help expose local-mlx", () => {
   const modelRouter = readFileSync(path.resolve("bin/model-router"), "utf8");
-  const packaged = readFileSync(path.resolve("bin/codex-router"), "utf8");
+  const packaged = readFileSync(path.resolve("bin/provideros-dispatcher"), "utf8");
   assert.match(modelRouter, /local-mlx/);
   assert.match(packaged, /local-mlx/);
 });

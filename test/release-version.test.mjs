@@ -46,7 +46,7 @@ test("the widget keeps production App Group and local-source read-only contracts
     "utf8",
   );
   assert.match(productionEntitlements, /com\.apple\.security\.application-groups/);
-  assert.match(productionEntitlements, /group\.io\.github\.codex-router/);
+  assert.match(productionEntitlements, /group\.io\.github\.provideros/);
   assert.doesNotMatch(productionEntitlements, /temporary-exception\.files/);
   assert.match(localEntitlements, /com\.apple\.security\.app-sandbox/);
   assert.match(
@@ -55,7 +55,7 @@ test("the widget keeps production App Group and local-source read-only contracts
   );
   assert.match(
     localEntitlements,
-    /\/Library\/Application Support\/Codex Router Widget\//,
+    /\/Library\/Application Support\/ProviderOS Widget\//,
   );
   assert.doesNotMatch(localEntitlements, /com\.apple\.security\.application-groups/);
   assert.doesNotMatch(localEntitlements, /home-relative-path\.read-write|absolute-path/);
@@ -85,7 +85,7 @@ test("releases are tag-driven and validate every asset before publishing", () =>
   assert.match(release, /actions\/workflows\/ci\.yml\/runs\?head_sha=\$\{GITHUB_SHA\}/);
   assert.match(release, /select\(\.conclusion == "success"/);
   assert.match(release, /needs: release-preflight/);
-  assert.match(release, /needs: \[release-preflight, unified-app\]/);
+  assert.match(release, /needs: \[release-preflight, unified-app, macos-app\]/);
   assert.ok(
     release.indexOf("- run: npm test") < release.indexOf("gh release create"),
     "the release must pass the full test suite before publishing assets",
@@ -102,11 +102,11 @@ test("releases are tag-driven and validate every asset before publishing", () =>
   assert.match(release, /-ArgumentList "--tray-only"/);
   assert.match(release, /-ArgumentList "--quit-for-update"/);
   assert.match(release, /install -m 0755/);
-  assert.match(release, /model-router-\$\{version\}-linux-x64\.tar\.gz/);
-  assert.doesNotMatch(release, /platform: macos|macos-latest|model-router-\$\{version\}-macos/);
+  assert.match(release, /provideros-\$\{version\}-linux-x64\.tar\.gz/);
+  assert.match(release, /platform: macos|macos-14|provideros-\$\{version\}-macos/);
   assert.match(release, /unsigned tester artifacts/);
-  assert.match(release, /matching Codex Router version/);
-  assert.match(release, /sha256sum codex-router-\* model-router-\* > SHA256SUMS/);
+  assert.match(release, /matching ProviderOS version/);
+  assert.match(release, /sha256sum provideros-\* > SHA256SUMS/);
   assert.doesNotMatch(release, /codex-router-desktop|build-desktop-tray/);
   assert.match(release, /actions\/attest-build-provenance@v4/);
   assert.match(release, /gh release create "\$GITHUB_REF_NAME" dist\/\* --verify-tag/);
@@ -114,8 +114,8 @@ test("releases are tag-driven and validate every asset before publishing", () =>
   assert.match(release, /git push origin main/);
   assert.doesNotMatch(release, /HOMEBREW_TAP_TOKEN/);
 
-  // macOS stays a CI-only artifact until it can be signed for distribution.
-  // CI requests both architectures and verifies the actual nested executables,
+  // macOS is published as an ad-hoc tester artifact until Developer ID signing
+  // is configured. CI requests both architectures and verifies nested executables,
   // rather than trusting the builder's output filename.
   assert.match(ci, /MODEL_ROUTER_TRAY_UNIVERSAL: "1"/);
   assert.match(ci, /CFBundleShortVersionString/);
@@ -134,13 +134,13 @@ test("releases are tag-driven and validate every asset before publishing", () =>
   assert.match(ci, /local_entitlements=.*RouterUsageWidget\.local\.entitlements/);
   assert.match(
     ci,
-    /lipo "\$app\/Contents\/Resources\/Control Center\.app\/Contents\/MacOS\/Codex Router" -verify_arch x86_64 arm64/,
+    /lipo "\$app\/Contents\/Resources\/Control Center\.app\/Contents\/MacOS\/ProviderOS" -verify_arch x86_64 arm64/,
   );
   assert.match(ci, /Smoke the unified macOS app lifecycle/);
   assert.match(ci, /"\$outer" --supervised/);
   assert.match(ci, /"\$embedded" --query-lifecycle/);
-  assert.match(ci, /terminate_bundle io\.github\.codex-router\.control-center/);
-  assert.match(ci, /terminate_bundle io\.github\.codex-router\.tray/);
+  assert.match(ci, /terminate_bundle io\.github\.provideros\.control-center/);
+  assert.match(ci, /terminate_bundle io\.github\.provideros\.tray/);
   assert.match(ci, /assert_single_outer_host/);
   assert.equal(
     (ci.match(/^[ ]+assert_single_outer_host$/gm) || []).length,

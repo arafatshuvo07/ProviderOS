@@ -13,9 +13,9 @@ export const DENSE_SHAPING_MIN_BYTES = 8 * 1024;
 const PREVIEW_CODE_UNITS = 1_024;
 const DENSE_SHAPING_MIN_SAVED_BYTES = 1_024;
 const DENSE_SHAPING_RECEIPT_PREFIX =
-  "[Tool result shaped by Codex Router RTK-style compaction:";
+  "[Tool result shaped by ProviderOS RTK-style compaction:";
 const LEGACY_TOKEN_MAXXING_RECEIPT_PREFIX =
-  "[Tool result shaped by Codex Router token maxxing:";
+  "[Tool result shaped by ProviderOS token maxxing:";
 const OUTPUT_TYPES = new Set(["function_call_output", "custom_tool_call_output"]);
 const MODEL_ACTION_TYPES = new Set([
   "function_call",
@@ -191,7 +191,7 @@ function resultReceipt(value, toolName) {
   const bytes = Buffer.byteLength(value, "utf8");
   const digest = createHash("sha256").update(value, "utf8").digest("hex");
   return [
-    `[Older tool result compacted by Codex Router after the model acted on it: ${bytes} bytes, sha256:${digest}.`,
+    `[Older tool result compacted by ProviderOS after the model acted on it: ${bytes} bytes, sha256:${digest}.`,
     `${recoveryInstruction(toolName)} if exact or omitted content is needed. The original result remains in Codex; only this routed copy was compacted.]`,
     "",
     "--- beginning of original result ---",

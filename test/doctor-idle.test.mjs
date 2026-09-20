@@ -73,12 +73,15 @@ function stageIdleHome() {
   const accountSentinel = path.join(codexHome, "account-catalog-probed");
   const env = {
     ...process.env,
+    HOME: codexHome,
+    CODEX_ROUTER_LAUNCH_AGENTS_DIR: path.join(codexHome, "Library", "LaunchAgents"),
     CODEX_BIN: writeCodexStub(codexHome, loginSentinel, codexHome, accountSentinel),
     CODEX_HOME: codexHome,
     CODEX_ROUTER_PORT: "46193",
     CODEX_ROUTER_STATE_DIR: stateDir,
     MODEL_ROUTER_STATE_DIR: stateDir,
     MODEL_ROUTER_TARGET: "codex",
+    CODEX_ROUTER_SKIP_LAUNCHCTL: "1",
   };
   return { codexHome, stateDir, env, loginSentinel, accountSentinel };
 }

@@ -31,11 +31,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 test("the packaged Control Center resolves per platform", () => {
   assert.equal(
     controlCenterBinary("win32", "/checkout"),
-    path.join("/checkout", "apps", "control-center", "release", "win-unpacked", "Codex Router.exe"),
+    path.join("/checkout", "apps", "control-center", "release", "win-unpacked", "ProviderOS.exe"),
   );
   assert.equal(
     controlCenterBinary("linux", "/checkout"),
-    path.join("/checkout", "apps", "control-center", "release", "linux-unpacked", "codex-router-control-center"),
+    path.join("/checkout", "apps", "control-center", "release", "linux-unpacked", "provideros-control-center"),
   );
   assert.equal(controlCenterBinary("darwin", "/checkout"), undefined);
 });
@@ -85,21 +85,21 @@ test("the supervised launch starts one packaged app in tray-only mode", () => {
 test("a stable-checkout Windows task is recognized for graceful update drain", () => {
   assert.equal(
     isRecognizedControlCenterAction({
-      execute: "C:\\Users\\A User\\AppData\\Local\\codex-router\\apps\\control-center\\release\\win-unpacked\\Codex Router.exe",
+      execute: "C:\\Users\\A User\\AppData\\Local\\codex-router\\apps\\control-center\\release\\win-unpacked\\ProviderOS.exe",
       argument: " --tray-only ",
     }),
     true,
   );
   assert.equal(
     isRecognizedControlCenterAction({
-      execute: "C:\\Users\\A User\\AppData\\Local\\codex-router\\apps\\desktop\\Codex Router.exe",
+      execute: "C:\\Users\\A User\\AppData\\Local\\codex-router\\apps\\desktop\\ProviderOS.exe",
       argument: "--tray-only",
     }),
     false,
   );
   assert.equal(
     isRecognizedControlCenterAction({
-      execute: "C:\\Users\\A User\\AppData\\Local\\codex-router\\apps\\control-center\\release\\win-unpacked\\Codex Router.exe",
+      execute: "C:\\Users\\A User\\AppData\\Local\\codex-router\\apps\\control-center\\release\\win-unpacked\\ProviderOS.exe",
       argument: "--different-mode",
     }),
     false,
@@ -114,7 +114,7 @@ test("the Windows supervisor renders the unified action", () => {
   );
   assert.equal(result.status, 0, result.stderr);
   const action = JSON.parse(result.stdout);
-  assert.ok(action.execute.endsWith("Codex Router.exe"), action.execute);
+  assert.ok(action.execute.endsWith("ProviderOS.exe"), action.execute);
   assert.equal(action.argument, "--tray-only");
 });
 

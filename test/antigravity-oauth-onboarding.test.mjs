@@ -202,14 +202,14 @@ test("refuses to overwrite an invalid or foreign credential record during sign-i
         open: () => { opened = true; },
         fetchImpl: async () => { throw new Error("must not run"); },
       }),
-      /only a credential created by this Codex Router/,
+      /only a credential created by this ProviderOS/,
     );
     assert.equal(opened, false);
     assert.equal(readFileSync(tokenPath, "utf8"), foreign);
   });
 });
 
-test("uses the truthful Codex Router identity on every host platform", () => {
+test("uses the truthful ProviderOS identity on every host platform", () => {
   assert.equal(antigravityUserAgent("win32", "x64"), "codex-router (os_type=windows; arch=amd64)");
   assert.equal(antigravityUserAgent("linux", "ia32"), "codex-router (os_type=linux; arch=386)");
   assert.equal(antigravityUserAgent("darwin", "arm64"), "codex-router (os_type=darwin; arch=arm64)");

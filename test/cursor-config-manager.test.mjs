@@ -64,8 +64,8 @@ test("packaged setup writes a real Node runtime instead of the Electron host", (
   const node = nodeRuntimePath({
     execPath:
       process.platform === "win32"
-        ? "C:\\Program Files\\Codex Router\\Codex Router.exe"
-        : "/Applications/Codex Router.app/Contents/MacOS/Codex Router",
+        ? "C:\\Program Files\\ProviderOS\\ProviderOS.exe"
+        : "/Applications/ProviderOS.app/Contents/MacOS/ProviderOS",
     electron: true,
     environment: { PATH: runtimeDir },
     exists: (candidate) => candidate === runtime,

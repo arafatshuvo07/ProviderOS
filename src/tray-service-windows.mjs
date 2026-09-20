@@ -608,7 +608,7 @@ function waitForExactUserExecutableExit(executable, timeoutMs, pid) {
     `$deadline = [DateTime]::UtcNow.AddMilliseconds(${timeoutMs})`,
     "do {",
     "  $running = $false",
-    "  $filter = if ($targetPid -gt 0) { \"ProcessId = $targetPid\" } else { \"Name = 'Codex Router.exe'\" }",
+    "  $filter = if ($targetPid -gt 0) { \"ProcessId = $targetPid\" } else { \"Name = 'ProviderOS.exe'\" }",
     "  $candidates = @(Get-CimInstance Win32_Process -Filter $filter -ErrorAction Stop)",
     "  foreach ($candidate in $candidates) {",
     "    if ([string]::IsNullOrWhiteSpace([string]$candidate.ExecutablePath)) { continue }",

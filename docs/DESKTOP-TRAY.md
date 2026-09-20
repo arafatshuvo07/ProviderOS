@@ -88,7 +88,7 @@ The same panel is served by the router you have already started, so there is
 nothing to build, download, or find in the tray:
 
 ```powershell
-.\codex-router.ps1 panel
+.\provideros.ps1 panel
 ```
 
 ```sh
@@ -112,12 +112,12 @@ they no longer build or select the old Tauri or tray-only Electron shells:
 
 ```powershell
 .\scripts\build-electron-companion.ps1
-.\codex-router.ps1 tray install
+.\provideros.ps1 tray install
 ```
 
 ```sh
 ./scripts/build-electron-companion.sh
-./bin/model-router-tray
+./bin/provideros-tray
 ```
 
 Both scripts verify the renderer, package the native Electron executable, and
@@ -134,8 +134,8 @@ same ProviderOS version first, then run the matching desktop package.
 
 | Asset | Platform |
 | --- | --- |
-| `model-router-<version>-windows-x64.exe` | Windows 10/11 unsigned tester installer |
-| `model-router-<version>-linux-x64.tar.gz` | Linux archive containing the executable AppImage |
+| `provideros-<version>-windows-x64.exe` | Windows 10/11 unsigned tester installer |
+| `provideros-<version>-linux-x64.tar.gz` | Linux archive containing the executable AppImage |
 
 Windows SmartScreen may warn about the unsigned installer. On Linux, extract
 the tarball before launching its AppImage; the archive preserves its executable
@@ -162,14 +162,14 @@ system runtime or package manager.
 
 ## Build and run
 
-The build commands above create `linux-unpacked/codex-router-control-center` or
-`win-unpacked/Codex Router.exe` under `apps/control-center/release`.
+The build commands above create `linux-unpacked/provideros-control-center` or
+`win-unpacked/ProviderOS.exe` under `apps/control-center/release`.
 
 ## Starting at logon
 
-`install.ps1 -WithTray` builds the companion and registers a `Codex Router
+`install.ps1 -WithTray` builds the companion and registers a `ProviderOS
 Tray` scheduled task that runs it at logon, separately from the router's own
-`Codex Router` task so stopping one never takes the other down. The same task
+`ProviderOS` task so stopping one never takes the other down. The same task
 is managed directly with:
 
 ```powershell
@@ -180,24 +180,24 @@ node src\control.mjs tray disable
 
 Quitting from the tray menu keeps it quit: the restart setting covers a crash,
 not a clean exit, so the tray returns at the next logon rather than reappearing
-immediately. Linux has no supervisor — launch it with `./bin/model-router-tray`
+immediately. Linux has no supervisor — launch it with `./bin/provideros-tray`
 — and the tray commands say so instead of reporting a silent success.
 
-On Windows the same `Codex Router Tray` task is also managed directly through
+On Windows the same `ProviderOS Tray` task is also managed directly through
 the checkout wrapper, which owns the Control Center build and registration.
 `companion` remains a deprecated alias of `tray` for one migration release:
 
 ```powershell
-.\codex-router.ps1 tray status          # JSON: installed, loaded, supported, state
-.\codex-router.ps1 tray start          # ask Task Scheduler to run it now
-.\codex-router.ps1 tray stop
-.\codex-router.ps1 tray restart
-.\codex-router.ps1 tray uninstall      # remove the scheduled task
-.\codex-router.ps1 tray rebuild        # stop, rebuild, then re-register
-.\codex-router.ps1 tray repair         # fix task permissions, then reinstall the companion
+.\provideros.ps1 tray status          # JSON: installed, loaded, supported, state
+.\provideros.ps1 tray start          # ask Task Scheduler to run it now
+.\provideros.ps1 tray stop
+.\provideros.ps1 tray restart
+.\provideros.ps1 tray uninstall      # remove the scheduled task
+.\provideros.ps1 tray rebuild        # stop, rebuild, then re-register
+.\provideros.ps1 tray repair         # fix task permissions, then reinstall the companion
 ```
 
-`tray repair` fixes a `Codex Router Tray` task the current user cannot
+`tray repair` fixes a `ProviderOS Tray` task the current user cannot
 otherwise modify — the catch-22 a router reinstall fails with when an earlier
 elevated install left the task readable but not writable. It validates the
 task's principal, its logon type, and that its action is a genuine companion

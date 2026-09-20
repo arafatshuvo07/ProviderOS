@@ -340,7 +340,7 @@ if (!provider) {
 }
 if (provider.generic === true && provider.adapter === "openai-completions") {
   console.error(
-    `${provider.displayName} exposes legacy OpenAI Completions. Codex Router can discover ` +
+    `${provider.displayName} exposes legacy OpenAI Completions. ProviderOS can discover ` +
       "that catalog but has no completions caller surface, so those models cannot be curated or published.",
   );
   process.exit(2);
@@ -453,7 +453,7 @@ async function main() {
   if (candidates.length === 0 && removeOption === undefined && modelsOption === undefined) {
     const blockedCandidates = Object.entries(discovery.blocked || {});
     if (blockedCandidates.length) {
-      process.stdout.write(`No newly advertised ${provider.displayName} models are supported by this Codex Router version yet.\n`);
+      process.stdout.write(`No newly advertised ${provider.displayName} models are supported by this ProviderOS version yet.\n`);
       for (const [id, reason] of blockedCandidates) process.stdout.write(`${id}: ${reason}\n`);
     } else {
       process.stdout.write(

@@ -110,7 +110,7 @@ test(
 test("trayBundleDir places the macOS bundle in the user's Applications folder", () => {
   assert.equal(
     trayBundleDir("darwin", "/Users/example"),
-    "/Users/example/Applications/Codex Router.app",
+    "/Users/example/Applications/ProviderOS.app",
   );
 });
 

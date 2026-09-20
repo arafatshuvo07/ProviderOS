@@ -61,7 +61,7 @@ export function runCodexMaintenance({
     options,
   );
   if (update.error || update.status !== 0) {
-    throw new Error(commandDetail(update, "Codex Router update failed."));
+    throw new Error(commandDetail(update, "ProviderOS update failed."));
   }
 
   const doctor = runner(
@@ -76,7 +76,7 @@ export function runCodexMaintenance({
       .map((check) => check.name);
     const detail = failedChecks?.length
       ? `Doctor found problems: ${failedChecks.join(", ")}.`
-      : commandDetail(doctor, "Codex Router doctor failed.");
+      : commandDetail(doctor, "ProviderOS doctor failed.");
     throw new Error(detail);
   }
 

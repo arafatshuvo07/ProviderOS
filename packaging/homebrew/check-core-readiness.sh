@@ -2,8 +2,8 @@
 set -eu
 
 source_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-formula_path="$source_root/Formula/codex-router.rb"
-tap_name="local/codex-router-readiness"
+formula_path="$source_root/Formula/provideros.rb"
+tap_name="local/provideros-readiness"
 install_formula=false
 installed_by_check=false
 official_probe_root=""
@@ -29,7 +29,7 @@ fi
 
 cleanup() {
   if [ "$installed_by_check" = true ]; then
-    brew uninstall "$tap_name/codex-router" >/dev/null 2>&1 || true
+    brew uninstall "$tap_name/provideros" >/dev/null 2>&1 || true
   fi
   brew untap "$tap_name" >/dev/null 2>&1 || true
   if [ -n "$official_probe_root" ]; then
@@ -43,31 +43,31 @@ trap 'exit 143' TERM
 
 brew tap-new --no-git "$tap_name" >/dev/null
 tap_root=$(brew --repository "$tap_name")
-cp "$formula_path" "$tap_root/Formula/codex-router.rb"
+cp "$formula_path" "$tap_root/Formula/provideros.rb"
 
 # Homebrew applies additional formula rules only when the path belongs to an
 # official tap. The temporary third-party tap below is still needed for install
 # and audit commands, but it cannot catch those rules by itself. Mirror the
 # formula into an isolated official-looking path so local checks exercise the
 # same style policy as homebrew/core CI.
-official_probe_root=$(mktemp -d "${TMPDIR:-/tmp}/codex-router-homebrew-core.XXXXXX")
+official_probe_root=$(mktemp -d "${TMPDIR:-/tmp}/provideros-homebrew-core.XXXXXX")
 official_formula_dir="$official_probe_root/Taps/homebrew/homebrew-core/Formula/c"
 mkdir -p "$official_formula_dir"
-cp "$formula_path" "$official_formula_dir/codex-router.rb"
+cp "$formula_path" "$official_formula_dir/provideros.rb"
 
-brew style "$official_formula_dir/codex-router.rb"
-brew style "$tap_root/Formula/codex-router.rb"
-brew audit --strict --new --online --formula "$tap_name/codex-router"
+brew style "$official_formula_dir/provideros.rb"
+brew style "$tap_root/Formula/provideros.rb"
+brew audit --strict --new --online --formula "$tap_name/provideros"
 
 if [ "$install_formula" = true ]; then
-  if brew list --formula codex-router >/dev/null 2>&1; then
-    echo "codex-router is already installed; refusing to replace the user's formula." >&2
+  if brew list --formula provideros >/dev/null 2>&1; then
+    echo "provideros is already installed; refusing to replace the user's formula." >&2
     exit 1
   fi
-  brew install --build-from-source "$tap_name/codex-router"
+  brew install --build-from-source "$tap_name/provideros"
   installed_by_check=true
-  brew test "$tap_name/codex-router"
-  brew uninstall "$tap_name/codex-router"
+  brew test "$tap_name/provideros"
+  brew uninstall "$tap_name/provideros"
   installed_by_check=false
 fi
 

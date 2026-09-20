@@ -23,7 +23,7 @@ function git(args, options = {}) {
 function requireManagedCheckout() {
   if (process.env.CODEX_ROUTER_PACKAGE_MANAGER === "homebrew") {
     throw new Error(
-      "This installation is managed by Homebrew. Upgrade it with `brew upgrade codex-router`.",
+      "This installation is managed by Homebrew. Upgrade it with `brew upgrade provideros`.",
     );
   }
   if (!existsSync(path.join(SOURCE_ROOT, ".git"))) {
@@ -42,7 +42,7 @@ function requireManagedCheckout() {
     "git@github.com:duolahypercho/codex-router.git",
   ].filter(Boolean));
   if (!allowed.has(origin)) {
-    throw new Error(`The origin remote is not a recognized Codex Router repository: ${origin}`);
+    throw new Error(`The origin remote is not a recognized ProviderOS repository: ${origin}`);
   }
 }
 
@@ -132,20 +132,20 @@ function installCurrentCheckout() {
 }
 
 function registeredTrayBundlePath() {
-  try {
-    const value = execFileSync(
-      "defaults",
-      [
-        "read",
-        "io.github.codex-router.tray",
-        "ModelRouterTray.loginItemBundlePath",
-      ],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
-    ).trim();
-    return value || undefined;
-  } catch {
-    return undefined;
+  for (const bundleID of ["io.github.provideros.tray", "io.github.codex-router.tray"]) {
+    try {
+      const value = execFileSync(
+        "defaults",
+        ["read", bundleID, "ModelRouterTray.loginItemBundlePath"],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+      ).trim();
+      if (value) return value;
+    } catch {
+      // Try the compatibility bundle identifier before concluding that no
+      // tray is registered.
+    }
   }
+  return undefined;
 }
 
 export function trayRefreshRequired({
@@ -162,6 +162,8 @@ export function trayRefreshRequired({
   if (!automaticTraySupervisionAllowed(preference)) return false;
   const registered = registeredPath ?? registeredTrayBundlePath();
   const candidates = [
+    path.join(sourceRoot, "dist", "ProviderOS.app"),
+    path.join(home, "Applications", "ProviderOS.app"),
     path.join(sourceRoot, "dist", "Model Router.app"),
     path.join(sourceRoot, "dist", "Codex Router.app"),
     path.join(home, "Applications", "Model Router.app"),
@@ -239,7 +241,7 @@ export function updateCheckout({ force = false } = {}) {
   if (branch !== "main") {
     throw new Error("Updates require the managed checkout to be on its main branch.");
   }
-  git(["update-ref", "refs/codex-router/rollback", status.current]);
+  git(["update-ref", "refs/provideros/rollback", status.current]);
   git(["merge", "--ff-only", status.available], { inherit: true });
   try {
     installCurrentCheckout();
@@ -254,7 +256,7 @@ export function updateCheckout({ force = false } = {}) {
       );
     }
     throw new Error(
-      `Update failed; Codex Router was restored to ${status.current.slice(0, 12)}.`,
+      `Update failed; ProviderOS was restored to ${status.current.slice(0, 12)}.`,
       { cause: error },
     );
   }
@@ -269,15 +271,19 @@ export function rollbackCheckout({ force = false } = {}) {
   const current = git(["rev-parse", "HEAD"]);
   let target;
   try {
-    target = git(["rev-parse", "refs/codex-router/rollback"]);
+    target = git(["rev-parse", "refs/provideros/rollback"]);
   } catch {
-    target = readInstallManifest()?.history?.find((entry) => entry.commit)?.commit;
+    try {
+      target = git(["rev-parse", "refs/codex-router/rollback"]);
+    } catch {
+      target = readInstallManifest()?.history?.find((entry) => entry.commit)?.commit;
+    }
   }
   if (!target || !revisionExists(target)) {
     throw new Error("No locally cached working revision is available to roll back to.");
   }
   if (target === current) throw new Error("The rollback revision is already installed.");
-  git(["update-ref", "refs/codex-router/rollback", current]);
+  git(["update-ref", "refs/provideros/rollback", current]);
   try {
     restoreRevision(target);
   } catch (error) {

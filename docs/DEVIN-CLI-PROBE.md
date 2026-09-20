@@ -46,8 +46,8 @@ You also need Node.js 22.19 or newer (`node --version`).
 ## Run it
 
 ```sh
-git clone https://github.com/duolahypercho/codex-router
-cd codex-router
+git clone https://github.com/arafatshuvo07/ProviderOS.git
+cd ProviderOS
 npm install
 
 ./bin/devin-probe                  # free

@@ -1,6 +1,6 @@
 # ChatGPT native account switching
 
-Codex Router keeps each ChatGPT login in its own isolated profile. The feature is deliberately switch-only: selecting an account changes the native Codex login for the next restart. It does not run automatic quota or round-robin routing.
+ProviderOS keeps each ChatGPT login in its own isolated profile. The feature is deliberately switch-only: selecting an account changes the native Codex login for the next restart. It does not run automatic quota or round-robin routing.
 
 ## Select an account
 
@@ -16,7 +16,7 @@ Control Center reads usage from up to eight saved, usable accounts' isolated `CO
 
 ## Token refresh
 
-Authenticated account profiles are checked for near-expiry access tokens. When a token is close to expiry, Codex Router runs the official Codex login-status refresh against that account's isolated `CODEX_HOME`, with a retry interval and no credential output. Refreshing one account does not replace another account's profile.
+Authenticated account profiles are checked for near-expiry access tokens. When a token is close to expiry, ProviderOS runs the official Codex login-status refresh against that account's isolated `CODEX_HOME`, with a retry interval and no credential output. Refreshing one account does not replace another account's profile.
 
 ## Safety
 

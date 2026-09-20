@@ -1,9 +1,10 @@
 # Installation, migration, and upgrades
 
-This page covers the Codex target:
+This page covers the Codex target. For an assistant-ready, copyable procedure,
+see [AI-INSTALL.md](AI-INSTALL.md):
 
 ```sh
-./bin/model-router codex doctor
+provideros doctor
 ```
 
 ## Supported hosts
@@ -81,7 +82,7 @@ desktop widget, or the Windows/Linux Electron Control Center and tray.
 Windows the matching options are `-WithTray` and `-NoTray`.
 
 On macOS the companion bundle is placed in `~/Applications`. Existing
-installations may retain the legacy `Codex Router.app` outer host while new
+installations may retain the legacy `ProviderOS.app` outer host while new
 Control Center builds use the ProviderOS product name. It keeps
 the Swift-native menu-bar tray and embeds the Electron Control Center, so the
 build needs the full Xcode app plus the Node runtime the router already
@@ -96,7 +97,7 @@ A missing full Xcode installation skips the companion with guidance instead of
 failing the already-installed router. Opening the app shows the Control Center,
 while a supervised login start keeps only the native tray visible. On Windows
 the packaged Electron Control Center owns both the native tray and the full
-window and is registered as the single `Codex Router Tray` logon task. Linux
+window and is registered as the single `ProviderOS Tray` logon task. Linux
 uses the same packaged Control Center and native Electron tray. Neither
 platform requires Rust.
 Guided setup walks through numbered steps: a provider list you toggle by
@@ -146,7 +147,7 @@ Grok OAuth uses the official Grok CLI session:
 ```sh
 npm install -g @xai-official/grok
 grok login --oauth
-./bin/model-router codex providers enable grok-oauth
+./bin/provideros codex providers enable grok-oauth
 ```
 
 The OAuth token remains in `~/.grok/auth.json` and is sent only to xAI's Grok
@@ -183,17 +184,17 @@ An older incompatible router record is preserved until you explicitly run
 it automatically.
 
 ```sh
-./bin/model-router codex providers login antigravity-oauth
-./bin/model-router codex providers probe antigravity-oauth --live --yes
-./bin/model-router codex providers enable antigravity-oauth
+./bin/provideros codex providers login antigravity-oauth
+./bin/provideros codex providers probe antigravity-oauth --live --yes
+./bin/provideros codex providers enable antigravity-oauth
 ```
 
 Windows PowerShell:
 
 ```powershell
-.\model-router.ps1 codex providers login antigravity-oauth
-.\model-router.ps1 codex providers probe antigravity-oauth --live --yes
-.\model-router.ps1 codex providers enable antigravity-oauth
+.\provideros.ps1 codex providers login antigravity-oauth
+.\provideros.ps1 codex providers probe antigravity-oauth --live --yes
+.\provideros.ps1 codex providers enable antigravity-oauth
 ```
 
 The client pair and tokens are stored together in the router's owner-only state
@@ -222,12 +223,12 @@ by its operator; the command reports this instead of claiming the route is live.
 Windows:
 
 ```powershell
-./codex-router.ps1 provider-key kimi-api set
-./codex-router.ps1 provider-key deepseek set
-./codex-router.ps1 provider-key grok-api set
-./codex-router.ps1 provider-key anthropic-api set
-./codex-router.ps1 provider-key github-copilot set
-./codex-router.ps1 provider-key orca set
+./provideros.ps1 provider-key kimi-api set
+./provideros.ps1 provider-key deepseek set
+./provideros.ps1 provider-key grok-api set
+./provideros.ps1 provider-key anthropic-api set
+./provideros.ps1 provider-key github-copilot set
+./provideros.ps1 provider-key orca set
 ```
 
 Kimi OAuth, Kimi Platform, DeepSeek, xAI, Anthropic, GitHub Copilot, and OrcaRouter are separate account and billing
@@ -325,7 +326,7 @@ the background service definition.
 Setup performs these operations in order:
 
 1. Validates provider selection and credential presence.
-2. Detects other model-catalog owners and earlier ProviderOS/Codex Router variants.
+2. Detects other model-catalog owners and earlier ProviderOS/ProviderOS variants.
 3. With approval, snapshots and stops only recognized older variants.
 4. Installs locked Node dependencies and pinned LiteLLM in `.venv`.
 5. Generates separate random Codex caller and internal-service keys.
@@ -390,11 +391,11 @@ kill-switch in the state directory (`discovery-mode.json`). While it is set:
 The full lifecycle works in this state:
 
 ```sh
-./bin/model-router codex status
-./bin/model-router codex doctor    # exits 0; idle state reports as warnings
-./bin/model-router codex stop
-./bin/model-router codex start     # starts the background service again
-./bin/model-router codex uninstall
+./bin/provideros codex status
+./bin/provideros codex doctor    # exits 0; idle state reports as warnings
+./bin/provideros codex stop
+./bin/provideros codex start     # starts the background service again
+./bin/provideros codex uninstall
 ```
 
 Uninstall is the undo path: it removes the managed config block and, once no
@@ -488,9 +489,9 @@ The optional `codex` shim closes that window by doing the check in the one place
 that is provably earlier than Codex — in front of it:
 
 ```sh
-./bin/model-router codex shim install
-./bin/model-router codex shim status
-./bin/model-router codex shim uninstall
+./bin/provideros codex shim install
+./bin/provideros codex shim status
+./bin/provideros codex shim uninstall
 ```
 
 It is never installed automatically, because putting a file named `codex` on
@@ -522,9 +523,9 @@ The shim is a bash script and is not available on Windows.
 Windows:
 
 ```powershell
-./codex-router.ps1 update check
-./codex-router.ps1 update
-./codex-router.ps1 rollback
+./provideros.ps1 update check
+./provideros.ps1 update
+./provideros.ps1 rollback
 ```
 
 The updater requires the recognized GitHub origin and a checkout with no edits
@@ -536,7 +537,7 @@ only compares the revisions and changes nothing.
 Untracked files never block an update; only edits to tracked files do, and the
 refusal names them. Keep them with `git -C <checkout> stash`, or discard them by
 re-running the same command with `--force` (`./bin/update --force`,
-`./bin/rollback --force`, `./codex-router.ps1 rollback --force`). The bootstrap
+`./bin/rollback --force`, `./provideros.ps1 rollback --force`). The bootstrap
 installers take the same escape: `--force` for the `curl | sh` script and
 `-Force` for the `irm | iex` one. Every force path discards tracked edits only;
 none of them delete untracked files.
@@ -548,7 +549,7 @@ that was just fetched, and discarding it means the next attempt repeats the
 same failure with the same code. Rolling back there is what made a setup-path
 bug impossible to fix by updating: the fix was fetched and then thrown away.
 Any other non-zero exit still restores the previous revision. Re-run setup to
-continue, or `./bin/rollback` (`./codex-router.ps1 rollback` on Windows) to
+continue, or `./bin/rollback` (`./provideros.ps1 rollback` on Windows) to
 return to the retained revision deliberately.
 
 For checkout installs, the reinstall skips dependency work whose inputs are
@@ -589,16 +590,16 @@ instead. Release pages provide SHA-256 checksums and provenance attestations.
 Windows:
 
 ```powershell
-./codex-router.ps1 disable
-./codex-router.ps1 enable
-./codex-router.ps1 uninstall
+./provideros.ps1 disable
+./provideros.ps1 enable
+./provideros.ps1 uninstall
 ```
 
 Uninstall removes the marked integration config and current background service.
 It intentionally retains the checkout, native catalog cache, logs, backups,
 migration snapshots, internal key, and provider credentials. This prevents a
 routine uninstall from silently destroying authentication or recovery data.
-Existing ProviderOS/Codex Router installs that used the former 4100–4103/4108 defaults are
+Existing ProviderOS/ProviderOS installs that used the former 4100–4103/4108 defaults are
 migrated on the next install or update: the managed Codex URL and generated
 systemd/launchd/task service are rewritten as one install transaction, and the
 old service is stopped before the new unit is started. Explicit

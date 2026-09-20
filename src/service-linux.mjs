@@ -33,13 +33,18 @@ const nodeBinary = process.env.CODEX_ROUTER_NODE_BIN || process.execPath;
 if (!path.isAbsolute(nodeBinary)) {
   throw new Error("CODEX_ROUTER_NODE_BIN must be an absolute path.");
 }
-const unitName = "codex-router.service";
-const unitPath = path.join(
+const unitDirectory = path.join(
   process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"),
   "systemd",
   "user",
-  unitName,
 );
+const providerosUnitName = "provideros.service";
+const legacyUnitName = "codex-router.service";
+const unitName = existsSync(path.join(unitDirectory, legacyUnitName))
+  && !existsSync(path.join(unitDirectory, providerosUnitName))
+  ? legacyUnitName
+  : providerosUnitName;
+const unitPath = path.join(unitDirectory, unitName);
 
 const guardUnitWrite = () => assertServiceWriteIsolated(unitPath, {
   redirected: Boolean(process.env.XDG_CONFIG_HOME),

@@ -3,10 +3,10 @@ import "@fontsource-variable/manrope";
 import "@fontsource-variable/jetbrains-mono";
 import "../styles/global.css";
 
-const githubUrl = "https://github.com/duolahypercho/codex-router";
-const installCommand = `brew tap duolahypercho/codex-router https://github.com/duolahypercho/codex-router
-brew install codex-router
-codex-router setup --guided`;
+const githubUrl = "https://github.com/arafatshuvo07/ProviderOS";
+const installCommand = `brew tap arafatshuvo07/provideros https://github.com/arafatshuvo07/ProviderOS
+brew install provideros
+provideros setup --guided`;
 
 const providers = [
   { name: "Anthropic", logo: "/providers/anthropic.png" },
@@ -31,7 +31,7 @@ const clients = [
 ];
 
 const faqs = [
-  { question: "What is Codex Router?", answer: "Codex Router is an open local routing plane that connects supported AI coding clients to external model providers through one managed service." },
+  { question: "What is ProviderOS?", answer: "ProviderOS is an open local routing plane that connects supported AI coding clients to external model providers through one managed service." },
   { question: "Does it replace Codex or another coding client?", answer: "No. It preserves each client's native interface and publishes routed models into the client you already use." },
   { question: "Which clients share the router today?", answer: "The supported targets are Codex, DeepSeek Harness, and Gemini CLI. Each client keeps its own settings and sessions." },
   { question: "Where do provider credentials live?", answer: "Credentials stay in the router's private local store. Client integrations receive a scoped local caller capability, not your upstream provider secret." },
@@ -42,7 +42,7 @@ const faqs = [
 const softwareSchema = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Codex Router",
+  name: "ProviderOS",
   applicationCategory: "DeveloperApplication",
   operatingSystem: "macOS, Linux, Windows",
   description: "An open local model router for Codex, DeepSeek Harness, and Gemini CLI.",
@@ -64,20 +64,20 @@ const socialImageUrl = new URL("/app/control-center-models.png", Astro.site);
     <meta name="description" content="A local model router for Codex, DeepSeek Harness, and Gemini CLI. Bring external providers into the coding clients you already use." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:title" content="Codex Router | A local model router for AI coding clients" />
+    <meta property="og:title" content="ProviderOS | A local model router for AI coding clients" />
     <meta property="og:description" content="One local control plane for external models across Codex, DeepSeek Harness, and Gemini CLI." />
     <meta property="og:image" content={socialImageUrl} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" href="/router-mark.svg" type="image/svg+xml" />
-    <title>Codex Router | A local model router for AI coding clients</title>
+    <title>ProviderOS | A local model router for AI coding clients</title>
     <script is:inline type="application/ld+json" set:html={JSON.stringify(softwareSchema)}></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-nav">
-      <a class="brand" href="#top" aria-label="Codex Router home">
+      <a class="brand" href="#top" aria-label="ProviderOS home">
         <img src="/router-mark.svg" alt="" width="32" height="32" />
         <span>CODEX ROUTER</span>
       </a>
@@ -103,7 +103,7 @@ const socialImageUrl = new URL("/app/control-center-models.png", Astro.site);
         </div>
 
         <figure class="hero-product" data-reveal data-delay="1">
-          <img src="/app/control-center-models.png" alt="Codex Router Control Center showing provider connections and routed models" width="1440" height="900" loading="eager" fetchpriority="high" />
+          <img src="/app/control-center-models.png" alt="ProviderOS Control Center showing provider connections and routed models" width="1440" height="900" loading="eager" fetchpriority="high" />
           <figcaption>Production Control Center UI with local demo data.</figcaption>
         </figure>
       </section>
@@ -123,7 +123,7 @@ const socialImageUrl = new URL("/app/control-center-models.png", Astro.site);
       <section class="product section-shell" id="product" aria-labelledby="product-title">
         <div class="section-intro" data-reveal>
           <h2 id="product-title">Keep the client. Change the model.</h2>
-          <p>Codex Router publishes one curated model catalog into every supported client and manages the shared route behind it.</p>
+          <p>ProviderOS publishes one curated model catalog into every supported client and manages the shared route behind it.</p>
         </div>
         <div class="principle-grid" data-reveal>
           {productPrinciples.map((principle) => (
@@ -188,7 +188,7 @@ const socialImageUrl = new URL("/app/control-center-models.png", Astro.site);
           </div>
           <div class="route-core">
             <img src="/router-mark.svg" alt="" width="58" height="58" loading="lazy" />
-            <strong>Codex Router</strong>
+            <strong>ProviderOS</strong>
             <span>Local control plane</span>
           </div>
           <div class="route-column route-outputs">
@@ -263,7 +263,7 @@ const socialImageUrl = new URL("/app/control-center-models.png", Astro.site);
     </main>
 
     <footer>
-      <a class="brand" href="#top" aria-label="Codex Router home">
+      <a class="brand" href="#top" aria-label="ProviderOS home">
         <img src="/router-mark.svg" alt="" width="32" height="32" loading="lazy" />
         <span>CODEX ROUTER</span>
       </a>

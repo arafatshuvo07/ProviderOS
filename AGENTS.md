@@ -38,7 +38,7 @@ These instructions apply when a user asks an agent to install this repository.
 
 ## Codex outcome
 
-Install Codex Router for the current user, preserve every unrelated Codex
+Install ProviderOS for the current user, preserve every unrelated Codex
 setting and ChatGPT authentication artifact, expose only the external providers
 the user wants, verify the integration, and leave the final Codex restart to the
 user.
@@ -135,7 +135,7 @@ user.
    requires a successful, schema-valid bootstrap response that explicitly
    advertises the selected tier; auth errors, server errors, malformed
    responses, and missing tiers fail closed. The probe identifies itself
-   truthfully as Codex Router, and only a successful proof makes the provider
+   truthfully as ProviderOS, and only a successful proof makes the provider
    enableable. The Antigravity forwarder is not spawned or health-gated before
    that proof, so an unused provider port cannot fail the whole router. A
    passing probe records a generation-bound `pending_activation` that every
@@ -157,7 +157,7 @@ user.
    Never ask for the key in chat or place it in command
    arguments, logs, environment snippets, or tracked files.
 6. Run read-only legacy detection. It is safe to pass `--migrate-known` when the
-   detector identifies a repository-recognized older Codex Router: migration is
+   detector identifies a repository-recognized older ProviderOS: migration is
    scoped, snapshotted, and reversible. Never migrate, stop, delete, or replace
    an unknown router automatically.
 7. On macOS/Linux, run

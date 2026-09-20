@@ -50,7 +50,7 @@ test("tray supervision preference follows the shared state-directory aliases", (
   const home = path.join(path.sep, "Users", "example");
   assert.equal(
     traySupervisionPreferencePath({ home, environment: {} }),
-    path.join(home, ".codex", "codex-router", "tray-supervision.json"),
+    path.join(home, ".codex", "provideros", "tray-supervision.json"),
   );
   assert.equal(
     traySupervisionPreferencePath({

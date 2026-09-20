@@ -25,6 +25,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 function homebrewDoctorEnv(testRoot) {
   return {
     ...process.env,
+    HOME: testRoot,
+    CODEX_ROUTER_SKIP_LAUNCHCTL: "1",
     CODEX_HOME: path.join(testRoot, "codex-home"),
     CODEX_ROUTER_PACKAGE_MANAGER: "homebrew",
     CODEX_ROUTER_SOURCE_ROOT: testRoot,
@@ -40,7 +42,7 @@ test("Homebrew repair stays with the package manager", () => {
   assert.equal(isHomebrewManaged("homebrew"), true);
   assert.match(
     dependencyRepairHint({ packageManager: "homebrew", platform: "darwin" }),
-    /^Run `brew reinstall codex-router`/,
+    /^Run `brew reinstall provideros`/,
   );
 });
 
@@ -52,7 +54,7 @@ test("checkout repair names the platform-native force path", () => {
   );
   assert.match(
     dependencyRepairHint({ packageManager: undefined, platform: "win32" }),
-    /codex-router\.ps1 doctor --fix.*install\.ps1 -CheckoutInstall -ForceDeps/,
+    /provideros\.ps1 doctor --fix.*install\.ps1 -CheckoutInstall -ForceDeps/,
   );
 });
 
@@ -70,7 +72,7 @@ test(
       });
       assert.equal(result.status, 1);
       assert.match(result.stderr, /Homebrew-managed LiteLLM is damaged/);
-      assert.match(result.stderr, /brew reinstall codex-router/);
+    assert.match(result.stderr, /brew reinstall provideros/);
       assert.equal(existsSync(installLog), false, "repair must fail before the installer runs");
     } finally {
       rmSync(testRoot, { recursive: true, force: true });

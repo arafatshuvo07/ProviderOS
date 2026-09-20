@@ -121,12 +121,12 @@ struct RouterWidgetQuota: Codable, Equatable, Identifiable {
 struct RouterWidgetSnapshot: Codable, Equatable {
   static let schemaVersion = 1
   static let fileName = "usage-widget.json"
-  static let kind = "io.github.codex-router.usage-widget"
-  static let resetKind = "io.github.codex-router.reset-widget"
+  static let kind = "io.github.provideros.usage-widget"
+  static let resetKind = "io.github.provideros.reset-widget"
   static let defaultUsageSourceID = "openai"
-  static let defaultAppGroup = "group.io.github.codex-router"
-  static let extensionBundleIdentifier = "io.github.codex-router.tray.widget"
-  static let supportDirectoryName = "Codex Router Widget"
+  static let defaultAppGroup = "group.io.github.provideros"
+  static let extensionBundleIdentifier = "io.github.provideros.tray.widget"
+  static let supportDirectoryName = "ProviderOS Widget"
   static let storageModeInfoKey = "ModelRouterWidgetStorageMode"
   static let maximumEncodedBytes = 64 * 1024
   static let maximumDailyPoints = 31

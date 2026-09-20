@@ -1,4 +1,4 @@
-# Codex Router maintenance surfaces
+# ProviderOS maintenance surfaces
 
 Use this map to begin impact analysis; the repository's `AGENTS.md` remains authoritative for exact invariants.
 

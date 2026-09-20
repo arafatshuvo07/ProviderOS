@@ -256,7 +256,7 @@ function runAppServerTurn(binary, env, model, modelProvider) {
       params: {
         clientInfo: {
           name: "codex_router_login_free_test",
-          title: "Codex Router login-free test",
+          title: "ProviderOS login-free test",
           version: "1.0.0",
         },
         capabilities: { experimentalApi: true },

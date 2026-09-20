@@ -115,7 +115,7 @@ function runCodex({ model, marker, routerBaseUrl, catalogPath }) {
       "--config",
       'model_provider="codex-router-signed"',
       "--config",
-      'model_providers.codex-router-signed.name="Codex Router isolated proof"',
+      'model_providers.codex-router-signed.name="ProviderOS isolated proof"',
       "--config",
       `model_providers.codex-router-signed.base_url=${JSON.stringify(routerBaseUrl)}`,
       "--config",

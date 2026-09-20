@@ -25,7 +25,7 @@ fi
 # at whichever one installed last; ~/Applications is also a LaunchServices
 # location, so the app resolves by name and can be found and quit normally.
 # src/tray-install.mjs trayBundleDir() holds the same path for the Node side.
-bundle_dir=${1:-"$HOME/Applications/Codex Router.app"}
+bundle_dir=${1:-"$HOME/Applications/ProviderOS.app"}
 configuration=${MODEL_ROUTER_TRAY_CONFIGURATION:-release}
 app_version=$(node -e '
   const fs = require("node:fs");
@@ -94,7 +94,7 @@ trap 'exit 143' TERM
     --publish never \
     "--config.directories.output=$electron_output" 1>&2
 )
-control_center_bundle=$(find "$electron_output" -maxdepth 3 -type d \( -name 'ProviderOS.app' -o -name 'Codex Router.app' -o -name 'Switchboard.app' \) -print -quit)
+control_center_bundle=$(find "$electron_output" -maxdepth 3 -type d -name 'ProviderOS.app' -print -quit)
 if [ -z "$control_center_bundle" ] || [ ! -d "$control_center_bundle" ]; then
   printf 'The packaged Electron Control Center was not produced.\n' >&2
   exit 1
@@ -116,11 +116,11 @@ fi
 # The icon is committed as a built .icns, not rasterized here: scripts/build-app-icon.sh
 # needs sips and iconutil, and a tray build must not start depending on them.
 # Without this file the bundle falls back to the generic macOS app icon, which
-# is what made Codex Router unfindable in Finder, Launchpad, and Spotlight.
+# is what made ProviderOS unfindable in Finder, Launchpad, and Spotlight.
 if [ -f "$tray_dir/Resources/AppIcon.icns" ]; then
   cp "$tray_dir/Resources/AppIcon.icns" "$bundle_dir/Contents/Resources/AppIcon.icns"
 else
-  printf 'codex-router: AppIcon.icns is missing; run scripts/build-app-icon.sh.\n' >&2
+  printf 'provideros: AppIcon.icns is missing; run scripts/build-app-icon.sh.\n' >&2
 fi
 if [ -d "$binary_dir/ModelRouterTray_ModelRouterTray.bundle" ]; then
   rm -rf "$bundle_dir/Contents/Resources/ModelRouterTray_ModelRouterTray.bundle" \

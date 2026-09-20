@@ -1,8 +1,15 @@
 #!/bin/sh
 set -eu
 
-# ProviderOS is the public product name. Keep the established codex-router
-# dispatcher as the implementation entrypoint so existing scripts and state
-# remain compatible while new installations can use the branded command.
-bin_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
-exec "$bin_dir/codex-router" "$@"
+# ProviderOS is the public product name and primary command. The historical
+# codex-router dispatcher remains a compatibility alias for existing scripts.
+self=$0
+while [ -L "$self" ]; do
+  link=$(readlink "$self")
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname -- "$self")/$link ;;
+  esac
+done
+bin_dir=$(CDPATH='' cd -- "$(dirname -- "$self")" && pwd)
+exec "$bin_dir/provideros-dispatcher" "$@"

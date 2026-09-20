@@ -608,7 +608,7 @@ function managedSignedProviderBlock(providerId, baseUrl) {
   return [
     signedProviderStartMarker,
     `[model_providers.${headerId}]`,
-    'name = "Codex Router (with ChatGPT)"',
+    'name = "ProviderOS (with ChatGPT)"',
     `base_url = ${JSON.stringify(baseUrl)}`,
     'wire_api = "responses"',
     "requires_openai_auth = true",
@@ -629,7 +629,7 @@ function managedLoginFreeProviderBlock(providerId, baseUrl) {
   return [
     signedProviderStartMarker,
     `[model_providers.${headerId}]`,
-    'name = "Codex Router (external models)"',
+    'name = "ProviderOS (external models)"',
     `base_url = ${JSON.stringify(baseUrl)}`,
     'wire_api = "responses"',
     "requires_openai_auth = false",
@@ -651,7 +651,7 @@ function managedSignedProviderBlockHttpFallback(providerId, baseUrl) {
   return [
     signedProviderStartMarker,
     `[model_providers.${headerId}]`,
-    'name = "Codex Router (with ChatGPT)"',
+    'name = "ProviderOS (with ChatGPT)"',
     `base_url = ${JSON.stringify(baseUrl)}`,
     'wire_api = "responses"',
     "requires_openai_auth = true",
@@ -668,7 +668,7 @@ function managedLoginFreeProviderBlockHttpFallback(providerId, baseUrl) {
   return [
     signedProviderStartMarker,
     `[model_providers.${headerId}]`,
-    'name = "Codex Router (external models)"',
+    'name = "ProviderOS (external models)"',
     `base_url = ${JSON.stringify(baseUrl)}`,
     'wire_api = "responses"',
     "requires_openai_auth = false",
@@ -689,7 +689,7 @@ function managedSignedProviderBlockLegacy(providerId, baseUrl) {
   return [
     signedProviderStartMarker,
     `[model_providers.${headerId}]`,
-    'name = "Codex Router (with ChatGPT)"',
+    'name = "ProviderOS (with ChatGPT)"',
     `base_url = ${JSON.stringify(baseUrl)}`,
     'wire_api = "responses"',
     "requires_openai_auth = true",
@@ -705,7 +705,7 @@ function managedLoginFreeProviderBlockLegacy(providerId, baseUrl) {
   return [
     signedProviderStartMarker,
     `[model_providers.${headerId}]`,
-    'name = "Codex Router (external models)"',
+    'name = "ProviderOS (external models)"',
     `base_url = ${JSON.stringify(baseUrl)}`,
     'wire_api = "responses"',
     "requires_openai_auth = false",
@@ -1134,11 +1134,11 @@ function legacyManagedRouterProvider(contents) {
       (fields.size === 5 &&
         fields.get("supports_standalone_web_search") === "true" &&
         fields.get("requires_openai_auth") === "true")) &&
-    fields.get("name") === "Codex Router (external models)";
+    fields.get("name") === "ProviderOS (external models)";
   const prototypeShape =
     (fields.size === 4 ||
       (fields.size === 5 && fields.get("supports_standalone_web_search") === "true")) &&
-    fields.get("name") === "Codex Router (extra providers)" &&
+    fields.get("name") === "ProviderOS (extra providers)" &&
     fields.get("requires_openai_auth") === "true";
   return commonFieldsMatch && (currentShape || prototypeShape)
     ? { lines, start, end }
@@ -1401,7 +1401,7 @@ function enabledContents(contents, { loginFreeProvider = false } = {}) {
   const providerBlock = [
     providerStartMarker,
     `[model_providers.${routerProviderId}]`,
-    'name = "Codex Router (external models)"',
+    'name = "ProviderOS (external models)"',
     `base_url = ${JSON.stringify(routerBaseUrl)}`,
     'wire_api = "responses"',
     // Provider support is necessary but not sufficient: Codex also reads the
@@ -1520,7 +1520,7 @@ if (
 if (command === "caller-capability-refresh") {
   const currentStatus = snapshot(current);
   if (currentStatus.mode !== "router") {
-    throw new Error("Codex Router is not the active managed route; refusing caller capability refresh.");
+    throw new Error("ProviderOS is not the active managed route; refusing caller capability refresh.");
   }
   const nextBase = configuredRouterBaseUrl();
   const nextContents = refreshCodexCallerCapabilityContents(current, nextBase, { port: PORTS.router, legacyPort: LEGACY_PORTS.router });
@@ -1658,7 +1658,7 @@ if (command === "enable") {
     throw new Error("The router default is for signed-in Codex; login-free mode already owns its default.");
   }
   if (currentSnapshot.mode !== "router") {
-    throw new Error("Enable Codex Router before setting a router default model.");
+    throw new Error("Enable ProviderOS before setting a router default model.");
   }
   const existing = readCodexRouterDefault();
   const { rootLines } = splitRoot(current);

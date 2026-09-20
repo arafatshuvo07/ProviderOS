@@ -515,7 +515,7 @@ test("the model list is shaped the way the SDK expects", () => {
     {
       name: "models/vendor/model",
       displayName: "Vendor Model",
-      description: "Routed by Codex Router.",
+      description: "Routed by ProviderOS.",
       inputTokenLimit: 262144,
       outputTokenLimit: 262144,
       supportedGenerationMethods: ["generateContent", "streamGenerateContent", "countTokens"],

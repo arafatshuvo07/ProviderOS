@@ -531,6 +531,6 @@ try {
     (Get-Location).Path
   )
 } catch {
-  [Console]::Error.WriteLine("Codex Router process containment failed: {0}", $_.Exception.Message)
+  [Console]::Error.WriteLine("ProviderOS process containment failed: {0}", $_.Exception.Message)
   exit 1
 }

@@ -432,11 +432,14 @@ function markedSourceRoot(marker) {
 }
 
 function stateDirectory() {
+  const codexHome = process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
+  const providerosState = path.join(codexHome, "provideros");
+  const legacyState = path.join(codexHome, "codex-router");
   return (
     process.env.MODEL_ROUTER_STATE_DIR ||
     process.env.CODEX_ROUTER_STATE_DIR ||
     process.env.KIMI_CODEX_STATE_DIR ||
-    path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "codex-router")
+    (existsSync(providerosState) || !existsSync(legacyState) ? providerosState : legacyState)
   );
 }
 
@@ -518,13 +521,14 @@ export function standardSourceRoots({
 } = {}) {
   if (platform === "win32") {
     return environment.LOCALAPPDATA
-      ? [path.join(environment.LOCALAPPDATA, "codex-router")]
+      ? [path.join(environment.LOCALAPPDATA, "provideros"), path.join(environment.LOCALAPPDATA, "codex-router")]
       : [];
   }
   return [
     ...(environment.XDG_DATA_HOME
-      ? [path.join(environment.XDG_DATA_HOME, "codex-router")]
+      ? [path.join(environment.XDG_DATA_HOME, "provideros"), path.join(environment.XDG_DATA_HOME, "codex-router")]
       : []),
+    path.join(home, ".local", "share", "provideros"),
     path.join(home, ".local", "share", "codex-router"),
   ];
 }

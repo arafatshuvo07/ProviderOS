@@ -148,7 +148,7 @@ test("the generated formula owns upgrades and preserves one-time setup", () => {
       { name: "numpy", version: "2.5.1", formula: "numpy" },
     ],
   });
-  assert.match(formula, /class CodexRouter < Formula/);
+  assert.match(formula, /class Provideros < Formula/);
   assert.doesNotMatch(formula, /^\s*version\s+/m);
   assert.match(formula, /depends_on "libyaml"/);
   assert.match(formula, /depends_on "numpy"/);
@@ -166,7 +166,7 @@ test("the generated formula owns upgrades and preserves one-time setup", () => {
   // whitelist stranded curate-models, discover-models, refresh-catalog,
   // test-model, support-bundle and control, and made a bare `codex-router`
   // print the wrong usage. It must go through the packaged dispatcher.
-  assert.match(formula, /exec "\$source_root\/bin\/codex-router" "\$@"/);
+  assert.match(formula, /exec "\$source_root\/bin\/provideros" "\$@"/);
   assert.doesNotMatch(formula, /bin\/model-router" codex/);
   // bin/codex-router refuses `install` on purpose, so upgrade reconciliation
   // must not reach the installer through the dispatcher -- that pairing would
@@ -183,11 +183,11 @@ test("the generated formula owns upgrades and preserves one-time setup", () => {
   assert.match(formula, /\[ "\$package_manager" = homebrew \] \|\| exit 0/);
   assert.match(formula, /exec "\$helper_root\/packaged-install"/);
   assert.match(formula, /install manifest is invalid/);
-  assert.match(formula, /codex-router setup --guided/);
+  assert.match(formula, /provideros setup --guided/);
   assert.match(formula, /router and CLI only/);
   assert.match(formula, /does not build or\s+download the Electron Control Center/);
-  assert.match(formula, /codex-router uninstall/);
-  assert.match(formula, /codex-router providers list --json/);
+  assert.match(formula, /provideros uninstall/);
+  assert.match(formula, /provideros providers list --json/);
   assert.match(formula, /resource "litellm" do/);
   assert.doesNotMatch(formula, /resource "numpy" do/);
   assert.match(formula, /pyroscope-io==0\.8\.16/);

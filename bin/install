@@ -55,7 +55,7 @@ if [ "$target" = dsh ] && [ "$adopt_native_catalog" = true ]; then
   exit 2
 fi
 if [ "${CODEX_ROUTER_PACKAGE_MANAGER:-}" = homebrew ] && [ "$force_deps" = true ]; then
-  echo "--force-deps cannot rebuild Homebrew-managed dependencies; run brew reinstall codex-router instead." >&2
+  echo "--force-deps cannot rebuild Homebrew-managed dependencies; run brew reinstall provideros instead." >&2
   exit 2
 fi
 
@@ -67,9 +67,9 @@ packaged_dependency_refusal() {
   manager=${CODEX_ROUTER_PACKAGE_MANAGER:-}
   [ -z "$manager" ] && return 0
   if [ "$manager" = homebrew ]; then
-    echo "Homebrew owns this installation; run brew reinstall codex-router to rebuild ${1:-dependencies}." >&2
+  echo "Homebrew owns this installation; run brew reinstall provideros to rebuild ${1:-dependencies}." >&2
   else
-    echo "Reinstall the codex-router package managed by $manager to rebuild ${1:-dependencies}." >&2
+    echo "Reinstall the ProviderOS package managed by $manager to rebuild ${1:-dependencies}." >&2
   fi
   exit 1
 }
