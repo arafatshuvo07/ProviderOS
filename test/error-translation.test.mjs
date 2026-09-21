@@ -157,7 +157,7 @@ test("a 401 points at credentials and setup", () => {
   });
   assert.equal(
     payload.error.message,
-    "deepseek rejected the stored credentials while serving DeepSeek V4 Pro. Re-run codex-router setup to refresh them. (HTTP 401: invalid api key)",
+    "deepseek rejected the stored credentials while serving DeepSeek V4 Pro. Re-run ProviderOS setup to refresh them. (HTTP 401: invalid api key)",
   );
   assert.equal(payload.error.type, "authentication_error");
 });
@@ -180,7 +180,7 @@ test("a 401 from an OAuth provider says sign in again, not re-run setup", () => 
     "kimi rejected the OAuth session while serving Kimi K3. Sign in to kimi again. (HTTP 401: Kimi OAuth was rejected; run `kimi login` again.)",
   );
   assert.equal(payload.error.type, "authentication_error");
-  assert.ok(!payload.error.message.includes("codex-router setup"));
+  assert.ok(!payload.error.message.includes("ProviderOS setup"));
 });
 
 // Captured from a live opencode-free outage: OpenCode Zen answered 401 with
@@ -204,7 +204,7 @@ test("a 401 from an anonymous provider never advises refreshing credentials", ()
     "opencode serves Ox Alpha Free anonymously, so there is no stored credential to refresh. opencode rejected this request on its free route; the free catalog and limits change without notice, so retry later or switch models. (HTTP 401: Model  is not supported)",
   );
   assert.equal(payload.error.type, "authentication_error");
-  assert.ok(!payload.error.message.includes("codex-router setup"));
+  assert.ok(!payload.error.message.includes("ProviderOS setup"));
 });
 
 test("an anonymous provider without the auth mode keeps the credential wording", () => {
@@ -215,7 +215,7 @@ test("an anonymous provider without the auth mode keeps the credential wording",
     providerName: "deepseek",
     providerKind: "openai-compatible",
   });
-  assert.match(payload.error.message, /Re-run codex-router setup/);
+  assert.match(payload.error.message, /Re-run ProviderOS setup/);
 });
 
 // Captured from a live Kimi OAuth 403: an exhausted plan arrives on the same
@@ -497,7 +497,7 @@ test("a plan without API access is not reported as a bad credential", () => {
   assert.match(translated.error.message, /plan does not include the API/);
   // The two fixes that would waste the operator's time must not be suggested.
   assert.doesNotMatch(translated.error.message, /rejected the stored credentials/);
-  assert.doesNotMatch(translated.error.message, /Re-run codex-router setup/);
+  assert.doesNotMatch(translated.error.message, /Re-run ProviderOS setup/);
   assert.doesNotMatch(translated.error.message, /run out of usage/);
   // The provider's own wording still rides along.
   assert.match(translated.error.message, /Upgrade to Provider or higher/);
@@ -533,7 +533,7 @@ test("an upstream 401 is an auth failure, not a rate limit", () => {
     providerKind: "api",
   });
   assert.equal(translated.error.type, "authentication_error");
-  assert.match(translated.error.message, /Re-run codex-router setup/);
+  assert.match(translated.error.message, /Re-run ProviderOS setup/);
 });
 
 test("an upstream 401 on an OAuth provider advises signing in again", () => {
