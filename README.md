@@ -9,6 +9,39 @@ can upgrade without losing their configuration.
 For a self-contained prompt that any coding assistant can follow, see
 [AI-INSTALL.md](docs/AI-INSTALL.md).
 
+## Install with Codex or Claude Code
+
+Paste this into a coding assistant with terminal access on the computer where
+you want ProviderOS installed:
+
+```text
+Install ProviderOS on this computer:
+https://github.com/arafatshuvo07/ProviderOS
+
+Read README.md, AGENTS.md, and docs/AI-INSTALL.md first.
+Install the router AND the ProviderOS desktop app, Control Center,
+and menu-bar/tray companion using the documented guided setup.
+On macOS, also verify the built-in Dynamic Island/Desktop panel.
+
+Detect the operating system and architecture. Check required dependencies
+and resolve missing prerequisites within my granted permissions. On macOS,
+check the full Xcode requirement for building the app.
+
+Preserve my existing client settings. Let me choose providers and enter
+credentials privately; never ask for API keys in chat.
+
+Verify router health, app launch, and selected models in my chosen client.
+Report the installed version, paths, checks, and anything unfinished.
+Do not call a headless-only setup complete. Leave the final client restart
+to me if it would interrupt this session.
+```
+
+Sharing the repository link makes these instructions discoverable; the user
+still needs to request installation and grant the assistant local terminal
+access. A browser-only chat cannot install software on their computer.
+Provider selection, private credential entry, and any required OS approvals
+remain with the user. Personal accounts and settings are not bundled.
+
 ## Install everything (recommended)
 
 This is the default setup: **guided provider setup + Electron Control Center +
@@ -215,17 +248,9 @@ a provider or refreshing its catalogue does not publish every upstream model.
 
 ## Give the link to your agent
 
-Paste this into a Codex task:
-
-```text
-Install the router from this public repository:
-https://github.com/arafatshuvo07/ProviderOS
-
-Follow AGENTS.md. Preserve my existing Codex models, profiles, settings, and
-ChatGPT login. Use only the provider authentication I choose, safely migrate
-only recognized older versions, run the Codex doctor, and leave the final app
-restart to me. Never ask me to paste a token or API key into chat.
-```
+Use the [copyable installation prompt](#install-with-codex-or-claude-code)
+above or share [the full AI installation guide](docs/AI-INSTALL.md). Both
+request the desktop app and router together.
 
 If compatible authentication already exists, an agent can finish everything
 except the final app restart. Provider credentials are entered only through a

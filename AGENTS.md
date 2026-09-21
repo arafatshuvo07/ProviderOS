@@ -1,4 +1,15 @@
-# Model Router installation instructions
+# ProviderOS installation instructions
+
+## Start here for AI-assisted installation
+
+When the user asks to install ProviderOS from this repository link, read
+`README.md` and `docs/AI-INSTALL.md` alongside these instructions. The default
+desktop installation includes the router, ProviderOS Control Center, and
+menu-bar/tray companion; on macOS also verify the built-in desktop panel.
+Use the guided installer with the desktop option. A headless-only result is
+complete only when the user explicitly requested headless operation. Report
+missing prerequisites or unfinished app setup instead of silently omitting
+the desktop app. A link supplied for review alone is not install authorization.
 
 ## Repository maintenance workflow
 

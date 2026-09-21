@@ -5,8 +5,13 @@ another coding assistant and ask it to follow the procedure exactly:
 
 <https://github.com/arafatshuvo07/ProviderOS/blob/main/docs/AI-INSTALL.md>
 
-ProviderOS is a local model-provider router with an optional desktop Control
-Center and menu-bar app. The installer never needs a provider API key to be
+The assistant needs local terminal access on the destination computer and an
+explicit request to install. A repository link in a browser-only chat does not
+grant access to that computer.
+
+The default desktop setup includes the local router, ProviderOS Control Center,
+and menu-bar/tray app. On macOS it also includes the built-in Dynamic
+Island/Desktop panel. The installer never needs a provider API key to be
 embedded in a prompt. Credentials must be entered by the person at the local
 terminal or saved through the operating system credential store.
 
@@ -14,25 +19,33 @@ terminal or saved through the operating system credential store.
 
 ```text
 Install ProviderOS from https://github.com/arafatshuvo07/ProviderOS on this
-computer. First inspect the repository README and docs/INSTALL.md. Do not ask
+computer. First inspect README.md, AGENTS.md, docs/AI-INSTALL.md, and
+docs/INSTALL.md. Install the router AND ProviderOS desktop app, Control Center,
+and menu-bar/tray companion. Do not ask
 me to paste API keys into chat, do not use a random fork, and do not overwrite
 an unrelated directory. Detect the operating system and architecture, check
-that Git and Node.js 22.19+ are available, then run the official installer:
+that Git and Node.js 22.19+ are available. Check the documented Python/uv and
+platform dependencies; on macOS the app build requires full Xcode. Resolve
+missing prerequisites within my granted permissions and report any blocker.
+Preserve my existing client settings and authentication. Use my requested
+client target (the commands below target Codex), then run the official installer:
 
 macOS/Linux:
-  curl -fsSL https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.sh | sh
+  curl -fsSL https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.sh | sh -s -- --target codex --guided --with-tray
 
 Windows PowerShell:
   $script = Join-Path $env:TEMP "provideros-install.ps1"
   Invoke-WebRequest -Uri https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.ps1 -OutFile $script
-  & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $script
+  & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $script -Target codex -Guided -WithTray
 
-Use ProviderOS as the primary command and install the optional desktop app when
-the machine supports it. Let the local user choose providers and enter secrets
+Use ProviderOS as the primary command. Let the local user choose providers and enter secrets
 interactively. After installation, verify `provideros doctor`, the health
 endpoint, the ProviderOS app, and the configured client integration. Report the
 exact install directory, state directory, app path, version, and any failed
-check. Never claim success without showing those checks.
+check. On macOS also verify the built-in Dynamic Island/Desktop panel.
+Never claim success without showing those checks, and do not call a headless-only
+setup complete unless I explicitly requested it. Leave the final client restart
+to me if it would interrupt this session.
 ```
 
 ## Supported install paths
@@ -40,7 +53,7 @@ check. Never claim success without showing those checks.
 For a normal macOS or Linux install:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.sh | sh -s -- --target codex --guided --with-tray
 ```
 
 For an explicit checkout (useful for review or development):
@@ -48,7 +61,7 @@ For an explicit checkout (useful for review or development):
 ```sh
 git clone https://github.com/arafatshuvo07/ProviderOS.git
 cd ProviderOS
-./install.sh --with-tray
+./install.sh --target codex --guided --with-tray
 ```
 
 For Windows PowerShell:
@@ -56,11 +69,18 @@ For Windows PowerShell:
 ```powershell
 $script = Join-Path $env:TEMP "provideros-install.ps1"
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/arafatshuvo07/ProviderOS/main/install.ps1 -OutFile $script
-& powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $script -WithTray
+& powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $script -Target codex -Guided -WithTray
 ```
 
-The desktop build is optional. A headless installation is complete when the
-router health check and the selected client integration pass.
+Use another supported target only when requested. For a desktop installation,
+missing build prerequisites or an app that does not launch must be reported as
+unfinished setup. Only an explicitly requested headless installation can be
+complete without the desktop app.
+
+On macOS, the documented build path requires full Xcode, not just standalone
+Command Line Tools. Follow the Xcode selection guidance in the README. Verify
+the desktop panel through **Settings → Dynamic Island → Desktop** in the
+menu-bar app; it is not an item in macOS's Edit Widgets gallery.
 
 ## Verification checklist
 
