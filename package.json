@@ -1,0 +1,21 @@
+{
+  "name": "provideros",
+  "version": "0.5.2",
+  "private": true,
+  "type": "module",
+  "description": "Extensible local provider router for Codex, Cursor, and compatible clients",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "check": "node scripts-check.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "proper-lockfile": "4.1.2",
+    "undici": "8.10.2"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
