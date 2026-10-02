@@ -11,6 +11,16 @@
 
 ## Unreleased
 
+- **Any model opencode Go adds can be selected from the Control Center.** A
+  live Go id that the registry did not ship yet (for example `mimo-v2.6-flash`
+  or `grok-4.7`) was shown as "Not yet supported" because ProviderOS could not
+  tell which wire protocol it speaks. OpenCode publishes that per model in
+  models.dev: Chat is the `opencode-go` default, and only the GPT, Grok, and
+  Muse Spark families (Responses) and MiniMax/Qwen (Messages) differ. Go
+  curation now applies those family rules with a Chat fallback, so every
+  fetched model is addable. A route the operator already chose for a model is
+  kept even if a family rule would pick another.
+
 - **opencode Zen is removed; the provider is now just "opencode Go".** Zen
   shared the Go API key and was switched on with it, but it bills a separate
   pay-as-you-go balance. Go subscribers who picked a model from its catalog got

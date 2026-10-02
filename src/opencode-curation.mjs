@@ -273,6 +273,23 @@ const CURATION_ROUTES = Object.freeze({
       "qwen3.5-plus",
       "x-preview-f",
     ]),
+    // Route newly discovered Go ids instead of blocking them. OpenCode
+    // publishes the wire contract per model in models.dev/api.json
+    // (`opencode-go`): the provider default is OpenAI-compatible Chat, and
+    // only ids carrying an `@ai-sdk/openai` (Responses) or `@ai-sdk/anthropic`
+    // (Messages) override differ. Those overrides follow model families --
+    // GPT, Grok, and Muse Spark on Responses; MiniMax and Qwen on Messages,
+    // matching the certified lists above -- so a family prefix plus a Chat
+    // fallback lets the operator pick any model OpenCode adds. The exact lists
+    // still win, so a certified exception stays reachable.
+    prefixRoutes: Object.freeze([
+      ["gpt-", "opencode-go-responses"],
+      ["grok-", "opencode-go-responses"],
+      ["muse-spark-", "opencode-go-responses"],
+      ["minimax-", "opencode-go-messages"],
+      ["qwen", "opencode-go-messages"],
+    ]),
+    fallbackProviderId: "opencode-go",
     models: Object.freeze({}),
   }),
   "opencode-free": Object.freeze({
@@ -321,6 +338,11 @@ function curatedModelRouteSelection(providerId, upstreamModel, { existingProvide
     return { providerId: route.messagesProvider };
   }
   if (route?.primaryModels?.includes(upstreamModel)) return { providerId: primary };
+  // A route the operator already chose for an uncertified id stands; a family
+  // rule or fallback added later must not silently move a working entry.
+  if (existingProvider && route?.providers.includes(existingProvider)) {
+    return { providerId: existingProvider };
+  }
   // Family-prefix and fallback routing come before the fail-closed verdict so
   // a provider that has declared them keeps accepting newly discovered ids.
   // Exact lists above still win, so a certified exception stays reachable.

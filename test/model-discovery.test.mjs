@@ -48,7 +48,7 @@ test("model discovery compares fixtures without needing or exposing a key", () =
   }
 });
 
-test("OpenCode Go discovery blocks live ids whose protocol route is not certified", () => {
+test("OpenCode Go discovery offers live ids the registry does not ship yet", () => {
   const testRoot = mkdtempSync(path.join(os.tmpdir(), "codex-router-opencode-route-discovery-"));
   const fixture = path.join(testRoot, "models.json");
   writeFileSync(
@@ -68,13 +68,9 @@ test("OpenCode Go discovery blocks live ids whose protocol route is not certifie
     );
     const result = JSON.parse(output);
     assert.deepEqual(result.unregistered, ["future-responses-only-model", "hy3-preview"]);
-    assert.deepEqual(result.addable, []);
-    assert.deepEqual(Object.keys(result.blocked).sort(), result.unregistered);
+    assert.deepEqual(result.addable, result.unregistered);
+    assert.deepEqual(Object.keys(result.blocked || {}), []);
     assert.ok(result.registered.includes("glm-5"));
-    assert.match(
-      result.blocked["future-responses-only-model"],
-      /provider catalog lists future-responses-only-model.*has not verified whether the model uses Chat, Messages, or Responses.*router compatibility limitation.*future update/s,
-    );
   } finally {
     rmSync(testRoot, { recursive: true, force: true });
   }

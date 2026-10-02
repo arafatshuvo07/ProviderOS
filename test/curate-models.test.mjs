@@ -108,14 +108,20 @@ test("OpenCode curation keeps each endpoint family on its documented protocol", 
     "opencode-free-responses",
   );
   assert.equal(curatedModelBlockReason("opencode-go", "grok-4.5"), undefined);
-  assert.match(
-    curatedModelBlockReason("opencode-go", "future-responses-only-model"),
-    /provider catalog lists future-responses-only-model.*has not verified whether the model uses Chat, Messages, or Responses.*router compatibility limitation.*future update/s,
-  );
-  assert.throws(
-    () => curatedModelProviderId("opencode-go", "future-responses-only-model"),
-    /cannot be added safely/,
-  );
+  // A model OpenCode adds later is never blocked: models.dev publishes Chat as
+  // the opencode-go default and per-family Responses/Messages overrides.
+  for (const [upstreamModel, provider] of [
+    ["mimo-v2.6-flash", "opencode-go"],
+    ["future-chat-model", "opencode-go"],
+    ["grok-4.7", "opencode-go-responses"],
+    ["gpt-7-luna", "opencode-go-responses"],
+    ["muse-spark-2.0-contributor", "opencode-go-responses"],
+    ["minimax-m4", "opencode-go-messages"],
+    ["qwen4-max", "opencode-go-messages"],
+  ]) {
+    assert.equal(curatedModelBlockReason("opencode-go", upstreamModel), undefined, upstreamModel);
+    assert.equal(curatedModelProviderId("opencode-go", upstreamModel), provider, upstreamModel);
+  }
   assert.equal(
     curatedModelProviderId("opencode-go", "existing-private-model", {
       existingProvider: "opencode-go-responses",
