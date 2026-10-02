@@ -538,7 +538,7 @@ test("merged catalog gives native models first and keeps routed providers contig
     { ...grok, slug: "opencode-go/glm-5.3", provider: "opencode-go", priority: 7 },
     { ...grok, slug: "deepseek/deepseek-v4-pro", provider: "deepseek", priority: 1 },
     { ...grok, slug: "antigravity-oauth/gemini-3.7-flash", provider: "antigravity-oauth", priority: 9 },
-    { ...grok, slug: "opencode-zen/zen-r1", provider: "opencode-zen", priority: 4 },
+    { ...grok, slug: "opencode-go-messages/minimax-m3", provider: "opencode-go-messages", priority: 4 },
     { ...grok, slug: "opencode-go-responses/gpt-5.6-luna", provider: "opencode-go-responses", priority: 2 },
     { ...grok, slug: "grok-oauth/grok-4.5", provider: "grok-oauth", priority: 0 },
     { ...grok, slug: "antigravity-oauth/gemini-3.1-pro", provider: "antigravity-oauth", priority: 3 },
@@ -558,7 +558,7 @@ test("merged catalog gives native models first and keeps routed providers contig
     "antigravity-oauth/gemini-3.7-flash",
     "deepseek/deepseek-v4-pro",
     "opencode-go-responses/gpt-5.6-luna",
-    "opencode-zen/zen-r1",
+    "opencode-go-messages/minimax-m3",
     "opencode-go/glm-5.3",
     "grok-oauth/grok-4.5",
   ]);

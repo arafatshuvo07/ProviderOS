@@ -129,7 +129,6 @@ function seedCatalogCache(stateDir) {
     version: 2,
     providers: {
       "opencode-go": catalogEntry("opencode-go", ["go-old-account"]),
-      "opencode-zen": catalogEntry("opencode-zen", ["zen-old-account"]),
       deepseek: catalogEntry("deepseek", ["keep-me"]),
     },
   }));
@@ -270,7 +269,6 @@ test("control clears every catalog source when a shared credential changes", () 
     );
     assert.equal(saved.status, 0, saved.stderr);
     assert.equal(cachedProviders(stateDir)["opencode-go"], undefined);
-    assert.equal(cachedProviders(stateDir)["opencode-zen"], undefined);
     assert.deepEqual(cachedProviders(stateDir).deepseek.discovered, ["keep-me"]);
 
     seedCatalogCache(stateDir);
@@ -281,7 +279,6 @@ test("control clears every catalog source when a shared credential changes", () 
     );
     assert.equal(removed.status, 0, removed.stderr);
     assert.equal(cachedProviders(stateDir)["opencode-go"], undefined);
-    assert.equal(cachedProviders(stateDir)["opencode-zen"], undefined);
     assert.deepEqual(cachedProviders(stateDir).deepseek.discovered, ["keep-me"]);
   } finally {
     rmSync(testRoot, { recursive: true, force: true });
@@ -376,7 +373,6 @@ test("provider-key remove clears every catalog source sharing the credential", (
     assert.equal(result.status, 0, result.stderr);
     assert.equal(existsSync(keyPath), false);
     assert.equal(cachedProviders(stateDir)["opencode-go"], undefined);
-    assert.equal(cachedProviders(stateDir)["opencode-zen"], undefined);
     assert.deepEqual(cachedProviders(stateDir).deepseek.discovered, ["keep-me"]);
   } finally {
     rmSync(testRoot, { recursive: true, force: true });

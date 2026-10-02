@@ -72,11 +72,13 @@ user.
     `zai-coding`, `ollama-cloud`, `minimax-token-plan`, `meta`, `clinepass`,
     `venice`, `nousresearch`, and/or
    `opencode-go`
-   (shown to users as "opencode Go/Zen"; its `opencode-go-messages`,
-   `opencode-go-responses`, and `opencode-zen` variants share its stored key
-   and are enabled and disabled with it automatically; never select or toggle
-   them separately. Zen ships no preselected models — curate them per user
-   with `bin/curate-models opencode-zen`), and/or `commandcode`
+   (shown to users as "opencode Go"; its `opencode-go-messages` and
+   `opencode-go-responses` variants share its stored key and are enabled and
+   disabled with it automatically; never select or toggle them separately.
+   The pay-as-you-go opencode Zen endpoint is deliberately not routed: it
+   shares the Go key but bills a separate balance, so a Zen model fails with
+   402 for a Go subscriber. Do not reintroduce it as a variant of `opencode-go`),
+   and/or `commandcode`
    (shown to users as "Command Code"; its `commandcode-messages` variant
    shares its stored key and is enabled and disabled with it automatically;
    never select or toggle it separately. Command Code uses its stored or

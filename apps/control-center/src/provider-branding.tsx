@@ -139,7 +139,6 @@ const PROVIDER_BRANDS: Record<string, string> = {
   "opencode-go": "opencode",
   "opencode-go-messages": "opencode",
   "opencode-go-responses": "opencode",
-  "opencode-zen": "opencode",
   "opencode-free": "opencode",
   openrouter: "openrouter",
   "qwen-plan": "qwen",

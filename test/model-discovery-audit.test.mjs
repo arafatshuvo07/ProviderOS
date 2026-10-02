@@ -23,9 +23,8 @@ const {
 
 test("the audit folds same-endpoint variants and keeps distinct family catalogs", () => {
   const opencode = auditCatalogSourceIds("opencode-go");
-  assert.deepEqual(opencode, ["opencode-go", "opencode-zen"]);
+  assert.deepEqual(opencode, ["opencode-go"]);
   assert.deepEqual(auditCatalogSourceIds("opencode-go-messages"), ["opencode-go"]);
-  assert.deepEqual(auditCatalogSourceIds("opencode-zen"), ["opencode-zen"]);
   assert.equal(new Set(auditCatalogSourceIds("all")).size, auditCatalogSourceIds("all").length);
 });
 

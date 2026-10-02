@@ -3,8 +3,7 @@
   "providers": [
     {
       "id": "opencode-go",
-      "displayName": "opencode Go/Zen",
-      "modelLabel": "opencode Go",
+      "displayName": "opencode Go",
       "kind": "openai-compatible",
       "ownedBy": "opencode",
       "baseUrl": "https://opencode.ai/zen/go/v1",
@@ -53,28 +52,6 @@
       "protocol": "openai-responses",
       "baseUrl": "https://opencode.ai/zen/go/v1",
       "baseUrlEnv": "OPENCODE_GO_BASE_URL",
-      "credential": {
-        "environment": [
-          "OPENCODE_API_KEY",
-          "OPENCODE_GO_API_KEY"
-        ],
-        "file": "opencode-go-api-key.secret",
-        "legacyFiles": [],
-        "keychainServices": [
-          "codex-router-opencode-go"
-        ],
-        "prompt": "opencode API key"
-      }
-    },
-    {
-      "id": "opencode-zen",
-      "displayName": "opencode Zen",
-      "modelLabel": "opencode Zen",
-      "kind": "openai-compatible",
-      "ownedBy": "opencode",
-      "variantOf": "opencode-go",
-      "baseUrl": "https://opencode.ai/zen/v1",
-      "baseUrlEnv": "OPENCODE_ZEN_BASE_URL",
       "credential": {
         "environment": [
           "OPENCODE_API_KEY",

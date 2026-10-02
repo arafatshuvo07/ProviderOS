@@ -264,9 +264,8 @@ test("provider registry exposes configured API and OAuth model families", () => 
   assert.equal(PROVIDERS.get("opencode-go").baseUrl, "https://opencode.ai/zen/go/v1");
   assert.equal(PROVIDERS.get("opencode-go-messages").baseUrl, "https://opencode.ai/zen/go/v1");
   assert.equal(PROVIDERS.get("opencode-go-responses").baseUrl, "https://opencode.ai/zen/go/v1");
-  assert.equal(PROVIDERS.get("opencode-zen").baseUrl, "https://opencode.ai/zen/v1");
-  assert.equal(PROVIDERS.get("opencode-zen").baseUrlEnv, "OPENCODE_ZEN_BASE_URL");
-  assert.equal(PROVIDERS.get("opencode-zen").protocol, undefined);
+  // Zen is pay-as-you-go and billed separately; it is not routed.
+  assert.equal(PROVIDERS.has("opencode-zen"), false);
   assert.equal(PROVIDERS.get("opencode-go-messages").protocol, "anthropic");
   assert.equal(PROVIDERS.get("opencode-go-responses").protocol, "openai-responses");
   const goMuse = MODEL_BY_SLUG.get("opencode-go-responses/muse-spark-1.2-contributor");
@@ -287,7 +286,6 @@ test("provider registry exposes configured API and OAuth model families", () => 
   assert.equal(PROVIDERS.get("opencode-go").variantOf, undefined);
   assert.equal(PROVIDERS.get("opencode-go-messages").variantOf, "opencode-go");
   assert.equal(PROVIDERS.get("opencode-go-responses").variantOf, "opencode-go");
-  assert.equal(PROVIDERS.get("opencode-zen").variantOf, "opencode-go");
   assert.equal(PROVIDERS.has("opencode-zen-responses"), false);
   assert.equal(PROVIDERS.get("commandcode").variantOf, undefined);
   assert.equal(PROVIDERS.get("commandcode-messages").variantOf, "commandcode");

@@ -100,7 +100,7 @@ test("doctor accepts a selected ready pool without a legacy key", { timeout: 30_
     const report = JSON.parse(result.stdout);
     const pool = report.checks.find((check) => check.name === "Provider API-key pools");
     const provider = report.checks.find((check) =>
-      /opencode Go\/Zen/i.test(check.name) && /provider API-key pool/.test(check.detail),
+      /opencode Go/i.test(check.name) && /provider API-key pool/.test(check.detail),
     );
     assert.equal(pool.status, "ok");
     assert.equal(provider.status, "ok");

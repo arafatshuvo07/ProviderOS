@@ -441,15 +441,12 @@ test("a curated fallback name names the provider that serves and bills it", asyn
       providers.get(providerId),
       providers,
     );
-  // Zen is pay-as-you-go and Go is a subscription; the picker must keep them apart
-  // even though Zen is declared as a variant of the Go provider.
-  assert.equal(label("opencode-zen"), "x-1 (opencode Zen)");
   assert.equal(label("opencode-go"), "x-1 (opencode Go)");
   assert.equal(label("opencode-go-messages"), "x-1 (opencode Go)");
   assert.equal(label("opencode-go-responses"), "x-1 (opencode Go)");
   assert.equal(label("openrouter"), "x-1 (OpenRouter)");
   // A name the user wrote is never replaced.
-  assert.equal(label("opencode-zen", "My model"), undefined);
+  assert.equal(label("opencode-go", "My model"), undefined);
 });
 
 test("opencode Go ships DeepSeek V4.1 Flash and GPT-6 Luna on their own routes", async () => {

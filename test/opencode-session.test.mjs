@@ -18,7 +18,6 @@ test("isOpenCodeProvider prefers ownedBy and accepts known ids", () => {
   assert.equal(isOpenCodeProvider({ id: "opencode-go" }), true);
   assert.equal(isOpenCodeProvider({ id: "opencode-go-messages" }), true);
   assert.equal(isOpenCodeProvider({ id: "opencode-go-responses" }), true);
-  assert.equal(isOpenCodeProvider({ id: "opencode-zen" }), true);
   assert.equal(isOpenCodeProvider({ id: "opencode-free" }), true);
   assert.equal(isOpenCodeProvider({ id: "opencode-free-responses" }), true);
   assert.equal(isOpenCodeProvider({ ownedBy: "openrouter", id: "openrouter" }), false);

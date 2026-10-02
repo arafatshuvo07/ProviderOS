@@ -11,6 +11,15 @@
 
 ## Unreleased
 
+- **opencode Zen is removed; the provider is now just "opencode Go".** Zen
+  shared the Go API key and was switched on with it, but it bills a separate
+  pay-as-you-go balance. Go subscribers who picked a model from its catalog got
+  `402 Insufficient account funds` on every turn, compaction included. The
+  `opencode-zen` route, its cooldown exception, and its catalog source are
+  gone; a stored or scripted `opencode-zen` selection maps to `opencode-go`,
+  and previously curated `opencode-zen/...` entries are skipped with a warning
+  instead of reaching the picker.
+
 - **Updates no longer break after the Codex app rewrites `config.toml`.** When
   the user picks a model, the Codex app re-serializes the config and drops every
   comment, including ProviderOS's ownership markers; the managed inline

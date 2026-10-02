@@ -21,11 +21,10 @@ const NOW = Date.parse("2026-08-11T22:00:00.000Z");
 
 test.after(() => rmSync(testRoot, { recursive: true, force: true }));
 
-test("subscription variants share a breaker while separately billed Zen does not", () => {
+test("subscription variants share one breaker", () => {
   assert.equal(cooldownScope("opencode-go"), "opencode-go");
   assert.equal(cooldownScope("opencode-go-messages"), "opencode-go");
   assert.equal(cooldownScope("opencode-go-responses"), "opencode-go");
-  assert.equal(cooldownScope("opencode-zen"), "opencode-zen");
 });
 
 test("a body-only subscription reset opens a durable provider circuit", () => {
@@ -47,7 +46,6 @@ test("a body-only subscription reset opens a durable provider circuit", () => {
     activeProviderCooldown("opencode-go-messages", { now: NOW + 1_000 }).until,
     NOW + 80 * 60_000,
   );
-  assert.equal(activeProviderCooldown("opencode-zen", { now: NOW + 1_000 }), undefined);
 });
 
 test("plain 429s without pacing headers get a short bounded circuit", () => {
@@ -68,7 +66,6 @@ test("only hard quota circuits temporarily remove subagent models", () => {
   const models = [
     { slug: "opencode-go/kimi-k3", provider: "opencode-go" },
     { slug: "opencode-go-messages/minimax-m3", provider: "opencode-go-messages" },
-    { slug: "opencode-zen/kimi-k3", provider: "opencode-zen" },
     { slug: "deepseek/deepseek-v4-pro", provider: "deepseek" },
   ];
   assert.deepEqual(

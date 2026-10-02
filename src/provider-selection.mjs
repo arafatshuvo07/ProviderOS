@@ -30,7 +30,13 @@ import {
   providerApiKeyAuthoritySnapshot,
 } from "./provider-api-key-routing.mjs";
 
-const RETIRED_PROVIDER_ALIASES = new Map([["chatgpt-oauth", "grok-oauth"]]);
+// opencode Zen was removed: it shared the Go key but billed a separate
+// pay-as-you-go balance, so curating a model there failed with 402 for Go
+// subscribers. A stored or scripted selection naming it keeps opencode Go.
+const RETIRED_PROVIDER_ALIASES = new Map([
+  ["chatgpt-oauth", "grok-oauth"],
+  ["opencode-zen", "opencode-go"],
+]);
 
 function providerIds() {
   return [...PROVIDERS.keys()];

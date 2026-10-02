@@ -202,13 +202,7 @@ function providerNamedResetUntil(bodyText, at) {
 // Windows are keyed by `cooldownScope`, not by the canonical provider id.
 // Protocol variants of one subscription do share an allowance -- opencode's
 // Messages and Responses variants are the same plan behind a different wire
-// format, so one being empty means all of them are. opencode Zen is not:
-// it shares a credential and a selection toggle with Go, and is billed
-// separately at its own endpoint. Keying its window under the canonical parent
-// made a closed Go plan withdraw a Zen route the operator can still pay for,
-// and an exhausted Zen balance withdraw the whole Go subscription -- in both
-// directions a paid route silently swapped away for a window the provider
-// never named for it.
+// format, so one being empty means all of them are.
 
 function readCooldownDocument() {
   if (!existsSync(PROVIDER_COOLDOWNS_PATH)) return {};

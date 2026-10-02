@@ -239,8 +239,6 @@ test("the OpenCode Free Responses sibling does not widen paid curation sets", ()
   ];
   assert.equal(providerNeedsCuration("opencode-free", models), false);
   assert.equal(providerNeedsCuration("opencode-free-responses", models), false);
-  assert.equal(providerNeedsCuration("opencode-zen", models), true);
-  // Checked-in Go models remain their own exact set and do not populate paid
-  // Zen curation just because those providers share a selection credential.
+  // Checked-in Go models remain their own exact set.
   assert.equal(providerNeedsCuration("opencode-go", models), false);
 });

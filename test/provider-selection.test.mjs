@@ -137,7 +137,6 @@ test("opencode Go protocol variants follow their parent as one family", () => {
       "opencode-go",
       "opencode-go-messages",
       "opencode-go-responses",
-      "opencode-zen",
     ]);
 
     const slugs = selectedConfiguredListedModels().map((model) => model.slug);
@@ -221,7 +220,6 @@ test("an authoritative ready pool publishes its family and an unusable pool mask
       "opencode-go",
       "opencode-go-messages",
       "opencode-go-responses",
-      "opencode-zen",
     ]) {
       assert.equal(ready.has(providerId), true, `${providerId} should follow the ready canonical pool`);
     }
@@ -237,7 +235,6 @@ test("an authoritative ready pool publishes its family and an unusable pool mask
       "opencode-go",
       "opencode-go-messages",
       "opencode-go-responses",
-      "opencode-zen",
     ]) {
       assert.equal(unavailable.has(providerId), false, `${providerId} must obey the unusable canonical pool`);
     }

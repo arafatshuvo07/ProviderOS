@@ -50,7 +50,7 @@ export function auditCatalogSourceIds(requested = "all", providers = PROVIDERS) 
     if (!provider) throw new Error(`Unknown provider: ${id}`);
     const sources = providerCatalogSources(id, providers);
     if (!sources.length) throw new Error(`${provider.displayName} does not expose a discoverable model catalog.`);
-    // An explicit endpoint variant such as opencode-zen means that endpoint;
+    // An explicit endpoint variant means that endpoint;
     // selecting its canonical provider card means every distinct endpoint the
     // card owns. Same-endpoint variants fold to the source descriptor above.
     const exact = provider.variantOf && sources.find((source) => (

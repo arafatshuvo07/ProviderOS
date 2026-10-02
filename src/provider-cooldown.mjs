@@ -11,11 +11,7 @@ const DEFAULT_QUOTA_LIMIT_MS = 15 * 60_000;
 const MAX_COOLDOWN_MS = 24 * 60 * 60_000;
 
 // Protocol variants of one subscription share the same upstream allowance.
-// opencode Zen is the exception: it shares a credential and selection toggle
-// with Go, but it uses the separately billed /zen endpoint. Exhausting Go must
-// not disable a route the operator can still pay for through Zen.
 export function cooldownScope(providerId) {
-  if (providerId === "opencode-zen") return providerId;
   return canonicalProviderId(providerId);
 }
 

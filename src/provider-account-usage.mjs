@@ -255,7 +255,7 @@ export function minimaxQuotaMetrics(payload) {
   ].filter(Boolean);
 }
 
-// opencode Zen reports Go-plan windows as used percentages. The rolling
+// opencode reports Go-plan windows as used percentages. The rolling
 // window's duration is not part of the payload, so its label stays generic
 // instead of claiming a specific span.
 export function opencodeGoUsageMetrics(payload) {

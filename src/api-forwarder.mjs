@@ -1123,7 +1123,7 @@ function upstreamHeaders(requestHeaders, body, apiKey, provider, extraHeaders = 
   headers["User-Agent"] = `codex-router/${VERSION}`;
   headers["Accept-Encoding"] = "identity";
   Object.assign(headers, extraHeaders);
-  // OpenCode Go/Zen affinity must win over any session.headers merge above:
+  // OpenCode Go affinity must win over any session.headers merge above:
   // starting 2026-09-06 their edge may refuse requests without this header.
   applyOpenCodeSessionHeaders(headers, {
     provider,

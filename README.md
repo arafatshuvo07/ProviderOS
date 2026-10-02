@@ -422,7 +422,7 @@ Linux installations support the Codex CLI.
 | Hy4 Preview (Command Code) | `commandcode/hy4-preview` | Command Code API key |
 | Hy4 Preview (NanoGPT) | `nano-gpt/tencent/hy4-preview` | NanoGPT API key |
 | Hy4 Preview (Nous Research) | `nousresearch/tencent/hy4-preview` | Nous Portal API key |
-| Hy4 Preview (opencode Go) | `opencode-go/hy4-preview` | opencode Go/Zen API key |
+| Hy4 Preview (opencode Go) | `opencode-go/hy4-preview` | opencode Go API key |
 | Hy4 Preview (OpenRouter) | `openrouter/tencent/hy4-preview` | OpenRouter API key |
 | GLM-5.2 (ClinePass) | `clinepass/glm-5.2` | ClinePass API key |
 | Kimi K3 (ClinePass) | `clinepass/kimi-k3` | ClinePass API key |
@@ -747,18 +747,17 @@ The provider's normal credential isolation and generic-provider DNS checks
 still apply. Messages-native provider protocols cannot opt into this OpenAI
 endpoint.
 
-### opencode (Go subscription and Zen)
+### opencode Go
 
-The opencode provider family covers both of opencode's endpoints with one
-stored API key (`OPENCODE_API_KEY` or `OPENCODE_GO_API_KEY` in the
-environment): the flat-rate **Go** subscription at
-`https://opencode.ai/zen/go/v1`, whose tested models ship in the registry
-below, and the pay-per-use **Zen** endpoint at `https://opencode.ai/zen/v1`,
-whose larger catalog is available through local curation
-(`./bin/curate-models opencode-zen`). Everything appears as a single
-"opencode Go/Zen" provider; internally the catalog is split across provider
-IDs by
-endpoint and by the protocol each model speaks upstream. Set the key once and
+The opencode Go provider uses one stored API key (`OPENCODE_API_KEY` or
+`OPENCODE_GO_API_KEY` in the environment) for the flat-rate **Go** subscription
+at `https://opencode.ai/zen/go/v1`, whose tested models ship in the registry
+below. It appears as a single "opencode Go" provider; internally the catalog is
+split across provider IDs by the protocol each model speaks upstream.
+
+The pay-per-use opencode **Zen** endpoint is not routed. It accepts the same
+key but bills a separate balance, so models curated there failed with
+`402 Insufficient account funds` for Go subscribers. Set the key once and
 enable the family:
 
 ```sh
@@ -802,8 +801,7 @@ v2 models can run as subagents and which models appear in installed client
 pickers. Local settings cannot promote an unverified model. Fully quit and
 reopen Codex after changing either list; DeepSeek Harness hot-reloads its route,
 and the next Gemini CLI invocation reads the new environment.
-The Control Center keeps Go and pay-per-use Zen under this one credential card,
-but exposes each live catalog as a separate source. Loading a catalog only
+The Control Center shows opencode Go as one credential card. Loading its catalog only
 caches and previews its candidates; models are added to the picker only after
 the operator explicitly selects them.
 
@@ -840,15 +838,12 @@ the operator explicitly selects them.
 
 `opencode-go` carries the Chat Completions models, `opencode-go-messages` the
 Anthropic Messages models, `opencode-go-responses` the Responses models
-(including Grok 4.5 and Grok 4.6), and
-`opencode-zen` the pay-per-use Zen endpoint (no preselected models — curate
-the ones you want). All four are one selectable family: they share a single
-stored key, and enabling or disabling any of them toggles all of them
-together.
+(including Grok 4.5 and Grok 4.6). All three are one selectable family: they
+share a single stored key, and enabling or disabling any of them toggles all
+of them together.
 Entries that duplicate a vendor-direct provider (for example DeepSeek V4 Pro)
 intentionally coexist because the subscription bills separately. Point
-`OPENCODE_GO_BASE_URL` (or `OPENCODE_ZEN_BASE_URL`) elsewhere to override the
-endpoints.
+`OPENCODE_GO_BASE_URL` elsewhere to override the endpoint.
 
 ### Anonymous free model gateways
 

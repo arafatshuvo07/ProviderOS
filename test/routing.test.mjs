@@ -10732,14 +10732,13 @@ test("Zen Free Muse bridges custom tools across JSON, history, and errors", asyn
   }
 });
 
-test("Go Chat/Messages, paid Zen, and other Free routes keep compatibility-sensitive wire shapes", async () => {
+test("Go Chat/Messages and other Free routes keep compatibility-sensitive wire shapes", async () => {
   const testRoot = mkdtempSync(path.join(os.tmpdir(), "routing-opencode-identity-"));
   const stateDir = path.join(testRoot, "state");
   mkdirSync(stateDir, { recursive: true });
   const specs = [
     ["opencode-go", "identity-chat"],
     ["opencode-go-messages", "identity-messages"],
-    ["opencode-zen", "identity-paid-zen"],
     ["opencode-free", "identity-other-free"],
   ].map(([provider, upstreamModel], index) => ({
     slug: `${provider}/${upstreamModel}`,
