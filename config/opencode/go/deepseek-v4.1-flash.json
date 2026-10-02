@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "slug": "opencode-go/deepseek-v4.1-flash",
+      "gatewayModel": "opencode-go-deepseek-v4-1-flash",
+      "upstreamModel": "deepseek-v4.1-flash",
+      "provider": "opencode-go",
+      "listed": true,
+      "displayName": "DeepSeek V4.1 Flash (opencode Go)",
+      "description": "DeepSeek V4.1 Flash through the opencode Go subscription.",
+      "priority": 36,
+      "defaultEffort": "high",
+      "reasoningLevels": [
+        {
+          "effort": "high",
+          "description": "Deep reasoning"
+        }
+      ],
+      "contextWindow": 131072,
+      "autoCompact": 110000,
+      "inputModalities": [
+        "text"
+      ],
+      "requestProfile": "auto-tool-choice",
+      "compHash": "opencode-go-deepseek-v4-1-flash-v1"
+    }
+  ]
+}

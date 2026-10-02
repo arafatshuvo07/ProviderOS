@@ -245,6 +245,7 @@ const CURATION_ROUTES = Object.freeze({
     responsesProvider: "opencode-go-responses",
     responsesModels: Object.freeze([
       "gpt-5.6-luna",
+      "gpt-6-luna",
       "grok-4.5",
       "grok-4.6",
       "muse-spark-1.2-contributor",
@@ -254,6 +255,7 @@ const CURATION_ROUTES = Object.freeze({
       "deepseek-v4-flash",
       "deepseek-v4-flash-vision-exp",
       "deepseek-v4-pro",
+      "deepseek-v4.1-flash",
       "glm-5",
       "glm-5.1",
       "glm-5.2",

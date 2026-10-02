@@ -327,10 +327,11 @@ test("registry merges valid user models and skips collisions", async () => {
   assert.equal(slugs.includes("opencode-free/ox-alpha"), false);
   assert.equal(slugs.filter((slug) => slug === "opencode-free/x-preview-f-free").length, 1);
   assert.equal(registry.MODEL_SLUG_ALIASES.has("opencode-free/x-preview-f-free"), false);
-  // Historical user state keeps x-preview-f-free under its opaque id with curated suffix.
+  // Historical user state keeps x-preview-f-free under its opaque id; the
+  // stored "(curated)" fallback is presented with the route's provider name.
   assert.equal(
     registry.MODEL_BY_SLUG.get("opencode-free/x-preview-f-free").displayName,
-    "x-preview-f-free (curated)",
+    "x-preview-f-free (OpenCode Free)",
   );
   assert.equal(registry.MODEL_SLUG_ALIASES.has("deepseek/deepseek-v4-pro"), false);
   assert.equal(registry.MODEL_BY_SLUG.get("deepseek/deepseek-v4-pro").provider, "deepseek");
@@ -426,4 +427,41 @@ test("a defaulted effort ladder is distinguishable from a chosen one", () => {
   );
   assert.equal(hasDefaultUserModelReasoning({}), false);
   assert.equal(hasDefaultUserModelReasoning(undefined), false);
+});
+
+test("a curated fallback name names the provider that serves and bills it", async () => {
+  const registry = await import("../src/model-registry.mjs");
+  const providers = new Map(
+    (registry.PROVIDERS instanceof Map ? [...registry.PROVIDERS.values()] : registry.PROVIDERS)
+      .map((provider) => [provider.id, provider]),
+  );
+  const label = (providerId, displayName = "x-1 (curated)") =>
+    registry.curatedFallbackDisplayName(
+      { provider: providerId, upstreamModel: "x-1", displayName },
+      providers.get(providerId),
+      providers,
+    );
+  // Zen is pay-as-you-go and Go is a subscription; the picker must keep them apart
+  // even though Zen is declared as a variant of the Go provider.
+  assert.equal(label("opencode-zen"), "x-1 (opencode Zen)");
+  assert.equal(label("opencode-go"), "x-1 (opencode Go)");
+  assert.equal(label("opencode-go-messages"), "x-1 (opencode Go)");
+  assert.equal(label("opencode-go-responses"), "x-1 (opencode Go)");
+  assert.equal(label("openrouter"), "x-1 (OpenRouter)");
+  // A name the user wrote is never replaced.
+  assert.equal(label("opencode-zen", "My model"), undefined);
+});
+
+test("opencode Go ships DeepSeek V4.1 Flash and GPT-6 Luna on their own routes", async () => {
+  const registry = await import("../src/model-registry.mjs");
+  const deepseek = registry.CHECKED_IN_MODELS.find(
+    (model) => model.slug === "opencode-go/deepseek-v4.1-flash",
+  );
+  const luna = registry.CHECKED_IN_MODELS.find(
+    (model) => model.slug === "opencode-go-responses/gpt-6-luna",
+  );
+  assert.equal(deepseek?.displayName, "DeepSeek V4.1 Flash (opencode Go)");
+  assert.equal(deepseek?.provider, "opencode-go");
+  assert.equal(luna?.displayName, "GPT-6 Luna (opencode Go)");
+  assert.equal(luna?.provider, "opencode-go-responses");
 });

@@ -529,9 +529,28 @@ function endpointProblem(model, provider) {
 // upstream id, so the table must not overwrite a name the repository chose:
 // `openrouter/glm-5.3-flash` says which reseller route it is, and the
 // table would flatten that back to the curated label.
-function normalizedModel(model, provider, { curated = false } = {}) {
+//
+// An id with no official name used to be published as "<id> (curated)", which
+// says nothing about who serves and bills the call. A picker entry has to name
+// its route, so the stored generic fallback is presented with the provider's
+// label instead -- the same "(opencode Go)" suffix checked-in entries carry.
+// Only the untouched fallback is replaced; a name the user wrote stands.
+export function curatedFallbackDisplayName(model, provider, providers) {
+  if (model.displayName !== `${model.upstreamModel} (curated)`) return undefined;
+  const parent = provider?.variantOf ? providers?.get(provider.variantOf) : undefined;
+  const label =
+    provider?.modelLabel ||
+    parent?.modelLabel ||
+    parent?.displayName ||
+    provider?.displayName ||
+    model.provider;
+  return `${model.upstreamModel} (${label})`;
+}
+
+function normalizedModel(model, provider, { curated = false, providers } = {}) {
   const officialDisplayName = curated
-    ? officialModelDisplayName(model.provider, model.upstreamModel)
+    ? officialModelDisplayName(model.provider, model.upstreamModel) ||
+      curatedFallbackDisplayName(model, provider, providers)
     : undefined;
   // A documented free tier is applied for the same reason the name is: an entry
   // curated before the tag existed carries neither, and re-curating is not
@@ -953,7 +972,10 @@ function mergeUserModels(base, staticAliases) {
     }
     slugs.add(model.slug);
     gatewayModels.add(model.gatewayModel);
-    const frozen = normalizedModel(model, base.providers.get(model.provider), { curated: true });
+    const frozen = normalizedModel(model, base.providers.get(model.provider), {
+      curated: true,
+      providers: base.providers,
+    });
     userModels.add(frozen);
     models.push(frozen);
   }

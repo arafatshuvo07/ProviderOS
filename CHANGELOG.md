@@ -11,6 +11,18 @@
 
 ## Unreleased
 
+- **opencode Go ships DeepSeek V4.1 Flash and GPT-6 Luna, and curated models
+  name their provider instead of "(curated)".** Both ids are on the opencode Go
+  subscription's live catalog, but the checked-in Go set did not carry them, so
+  picking them in the Control Center curated the opencode Zen copies instead.
+  Zen bills a separate pay-as-you-go balance, and with none every turn failed
+  with `402 Insufficient account funds`. They now ship as
+  `opencode-go/deepseek-v4.1-flash` (Chat) and
+  `opencode-go-responses/gpt-6-luna` (Responses). A curated id with no official
+  name is shown as `<id> (<provider>)` -- e.g. `(opencode Zen)` versus
+  `(opencode Go)` -- so the picker always says which account serves and bills
+  the call; existing entries carrying the old fallback are relabelled in place.
+
 - **The ChatGPT Web provider is removed: using it risked an OpenAI account
   ban.** `chatgpt-web` routed Codex turns into an unofficial browser automation
   of chatgpt.com, driven through a separately installed launcher on loopback

@@ -4,6 +4,7 @@
     {
       "id": "opencode-go",
       "displayName": "opencode Go/Zen",
+      "modelLabel": "opencode Go",
       "kind": "openai-compatible",
       "ownedBy": "opencode",
       "baseUrl": "https://opencode.ai/zen/go/v1",
@@ -68,6 +69,7 @@
     {
       "id": "opencode-zen",
       "displayName": "opencode Zen",
+      "modelLabel": "opencode Zen",
       "kind": "openai-compatible",
       "ownedBy": "opencode",
       "variantOf": "opencode-go",
