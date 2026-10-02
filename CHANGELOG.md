@@ -1,15 +1,6 @@
 # Changelog
 
-## 0.5.2 - ProviderOS rebrand and release packaging
-
-- Make ProviderOS the primary CLI, app, installer, macOS bundle, widget, and
-  release artifact name.
-- Keep legacy paths and provider identifiers only as hidden migration aliases so
-  existing installations retain their state and credentials.
-- Add a copyable AI-assisted installation guide and publish macOS, Windows, and
-  Linux desktop artifacts through the release workflow.
-
-## Unreleased
+## 0.5.3 - opencode Go fixes and config resilience
 
 - **Grok on opencode Go works again.** Codex declares its hosted `web_search`
   tool with `external_web_access` on every turn, and opencode Go's Grok
@@ -17,7 +8,6 @@
   external_web_access`. The router now drops that one field for
   `opencode-go-responses/grok-*` only; GPT and Muse Spark on the same endpoint
   accept it and keep it.
-
 - **Any model opencode Go adds can be selected from the Control Center.** A
   live Go id that the registry did not ship yet (for example `mimo-v2.6-flash`
   or `grok-4.7`) was shown as "Not yet supported" because ProviderOS could not
@@ -27,7 +17,6 @@
   curation now applies those family rules with a Chat fallback, so every
   fetched model is addable. A route the operator already chose for a model is
   kept even if a family rule would pick another.
-
 - **opencode Zen is removed; the provider is now just "opencode Go".** Zen
   shared the Go API key and was switched on with it, but it bills a separate
   pay-as-you-go balance. Go subscribers who picked a model from its catalog got
@@ -36,7 +25,6 @@
   gone; a stored or scripted `opencode-zen` selection maps to `opencode-go`,
   and previously curated `opencode-zen/...` entries are skipped with a warning
   instead of reaching the picker.
-
 - **Updates no longer break after the Codex app rewrites `config.toml`.** When
   the user picks a model, the Codex app re-serializes the config and drops every
   comment, including ProviderOS's ownership markers; the managed inline
@@ -47,7 +35,6 @@
   `[features.multi_agent_v2]` table now counts as an existing setting, and the
   exact ProviderOS provider table is re-adopted when the router's own catalog
   path is still present, even without markers.
-
 - **opencode Go ships DeepSeek V4.1 Flash and GPT-6 Luna, and curated models
   name their provider instead of "(curated)".** Both ids are on the opencode Go
   subscription's live catalog, but the checked-in Go set did not carry them, so
@@ -59,6 +46,20 @@
   name is shown as `<id> (<provider>)` -- e.g. `(opencode Zen)` versus
   `(opencode Go)` -- so the picker always says which account serves and bills
   the call; existing entries carrying the old fallback are relabelled in place.
+- Codex 0.159 compatibility: the signed-out app-server test accepts the
+  extra Responses WebSocket newer Codex builds pre-open.
+- CI: Windows-escaped catalog paths and a date-dependent renderer test.
+
+## 0.5.2 - ProviderOS rebrand and release packaging
+
+- Make ProviderOS the primary CLI, app, installer, macOS bundle, widget, and
+  release artifact name.
+- Keep legacy paths and provider identifiers only as hidden migration aliases so
+  existing installations retain their state and credentials.
+- Add a copyable AI-assisted installation guide and publish macOS, Windows, and
+  Linux desktop artifacts through the release workflow.
+
+## Unreleased
 
 - **The ChatGPT Web provider is removed: using it risked an OpenAI account
   ban.** `chatgpt-web` routed Codex turns into an unofficial browser automation
