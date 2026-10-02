@@ -923,6 +923,27 @@ function needsConsoleGoResponsesToolCompatibility(route) {
   return providerForModel(route)?.id === "opencode-go-responses";
 }
 
+// Codex declares its hosted web_search tool with `external_web_access` on
+// every turn. Console Go's Grok Responses routes answer
+// `Argument not supported: external_web_access` and refuse the whole turn,
+// while its GPT and Muse Spark Responses routes accept the same tool. Keep the
+// repair to that measured family so the others keep the field.
+function rejectsExternalWebAccess(route) {
+  return (
+    providerForModel(route)?.id === "opencode-go-responses" &&
+    String(route.upstreamModel || "").toLowerCase().startsWith("grok-")
+  );
+}
+
+function stripWebSearchExternalAccess(tools) {
+  if (!Array.isArray(tools)) return tools;
+  return tools.map((tool) => {
+    if (tool?.type !== "web_search" || !("external_web_access" in tool)) return tool;
+    const { external_web_access: _unsupported, ...rest } = tool;
+    return rest;
+  });
+}
+
 function rejectsWebSearchOptions(route) {
   return ["fireworks", "opencode-go"].includes(providerForModel(route)?.id);
 }
@@ -3188,6 +3209,9 @@ async function buildRoutedRequest({ request, payload, route, agedInput }) {
   }
   if (needsStrictOpenCodeToolCompatibility(route)) {
     tools = stripSearchContentTypes(tools);
+  }
+  if (rejectsExternalWebAccess(route)) {
+    tools = stripWebSearchExternalAccess(tools);
   }
   if (needsMoonshotSchemaCompatibility(route)) {
     // After the namespace flattening above, so the connector tools Codex ships

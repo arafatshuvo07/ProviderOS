@@ -7326,6 +7326,45 @@ test("router normalizes forced tool choices before LiteLLM for auto-tool-choice 
   }
 });
 
+test("router drops external_web_access only for Console Go Grok Responses routes", async () => {
+  const gatewayRequests = [];
+  const gateway = await mockServer(async (request, response) => {
+    gatewayRequests.push(await bodyJson(request));
+    json(response, 200, { id: "resp_test", object: "response", output: [] });
+  });
+  const routerPort = await openPort();
+  const router = run("router.mjs", {
+    CODEX_ROUTER_PORT: String(routerPort),
+    CODEX_ROUTER_GATEWAY_BASE_URL: `http://127.0.0.1:${gateway.port}/v1`,
+    CODEX_ROUTER_QUIET: "1",
+  });
+  const webSearch = { type: "web_search", external_web_access: true };
+
+  async function route(model) {
+    const response = await fetch(`${routerBase(routerPort)}/responses`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${CALLER_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, input: "test", tools: [webSearch] }),
+    });
+    assert.equal(response.status, 200, router.testErrors());
+    return gatewayRequests.at(-1).tools.find((tool) => tool.type === "web_search");
+  }
+
+  try {
+    await waitFor(`${routerBase(routerPort)}/models`, router);
+    // OpenCode Go's Grok endpoint answers "Argument not supported:
+    // external_web_access" and refuses the whole turn.
+    for (const model of ["opencode-go-responses/grok-4.5", "opencode-go-responses/grok-4.6"]) {
+      assert.deepEqual(await route(model), { type: "web_search" }, model);
+    }
+    // Its GPT Responses route accepts the field, so it is left in place.
+    assert.deepEqual(await route("opencode-go-responses/gpt-5.6-luna"), webSearch);
+  } finally {
+    await stopChild(router);
+    await closeServer(gateway.server);
+  }
+});
+
 test("router applies Moonshot ref repair only to the proven Console Go Kimi route", async () => {
   const gatewayRequests = [];
   const gateway = await mockServer(async (request, response) => {

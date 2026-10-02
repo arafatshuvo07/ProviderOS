@@ -11,6 +11,13 @@
 
 ## Unreleased
 
+- **Grok on opencode Go works again.** Codex declares its hosted `web_search`
+  tool with `external_web_access` on every turn, and opencode Go's Grok
+  Responses routes refuse the whole turn with `Argument not supported:
+  external_web_access`. The router now drops that one field for
+  `opencode-go-responses/grok-*` only; GPT and Muse Spark on the same endpoint
+  accept it and keep it.
+
 - **Any model opencode Go adds can be selected from the Control Center.** A
   live Go id that the registry did not ship yet (for example `mimo-v2.6-flash`
   or `grok-4.7`) was shown as "Not yet supported" because ProviderOS could not
