@@ -3,8 +3,8 @@ class Provideros < Formula
 
   desc "Use external coding models inside the Codex App and CLI"
   homepage "https://github.com/arafatshuvo07/ProviderOS"
-  url "https://github.com/arafatshuvo07/ProviderOS/releases/download/v0.5.2/provideros-0.5.2.tar.gz"
-  sha256 "a245e0fef9e386862f20ab459bc66ab98089f81e4b6c31230b6cb24d55c657e5"
+  url "https://github.com/arafatshuvo07/ProviderOS/releases/download/v0.5.3/provideros-0.5.3.tar.gz"
+  sha256 "3a2434327a7ed340a2fcbd36db3d71c018c8dad8ef40f1f7344652ec341705f6"
   license "MIT"
 
   depends_on "pkgconf" => :build
