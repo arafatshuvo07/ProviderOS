@@ -11,6 +11,17 @@
 
 ## Unreleased
 
+- **Updates no longer break after the Codex app rewrites `config.toml`.** When
+  the user picks a model, the Codex app re-serializes the config and drops every
+  comment, including ProviderOS's ownership markers; the managed inline
+  `multi_agent_v2` value also comes back as a `[features.multi_agent_v2]` table.
+  The next install or update then either added a second `multi_agent_v2` (a
+  duplicate key that stops Codex loading its config at all) or refused with
+  "Refusing to replace user-owned model provider codex-router". A
+  `[features.multi_agent_v2]` table now counts as an existing setting, and the
+  exact ProviderOS provider table is re-adopted when the router's own catalog
+  path is still present, even without markers.
+
 - **opencode Go ships DeepSeek V4.1 Flash and GPT-6 Luna, and curated models
   name their provider instead of "(curated)".** Both ids are on the opencode Go
   subscription's live catalog, but the checked-in Go set did not carry them, so

@@ -319,6 +319,11 @@ function withoutManagedMultiAgentV2(input) {
 function hasModernMultiAgentConfig(input) {
   const lines = input.split("\n");
   if (lines.some((line) => /^\s*features\.multi_agent_v2\s*=/.test(line))) return true;
+  // The Codex app rewrites config.toml without comments, which turns the
+  // managed inline line into a `[features.multi_agent_v2]` table. Adding the
+  // inline line again beside that table is a duplicate key, and Codex then
+  // refuses to load the whole config.
+  if (lines.some((line) => /^\s*\[features\.multi_agent_v2\]\s*(?:#.*)?$/.test(line))) return true;
   if (lines.some((line) => /^\s*\[agents\.[^\]]+\]\s*(?:#.*)?$/.test(line))) return true;
   const featuresHeader = lines.findIndex((line) =>
     /^\s*\[features\]\s*(?:#.*)?$/.test(line),
@@ -1086,7 +1091,16 @@ function hasUnmanagedRouterProvider(contents) {
 }
 
 function legacyManagedRouterProvider(contents) {
-  if (!contents.includes(startMarker) || !contents.includes(endMarker)) {
+  // The Codex app rewrites config.toml without comments when the user picks a
+  // model, so the markers can vanish while the managed values stay. The root
+  // catalog path is router-owned state, and the shape checks below still
+  // require the exact ProviderOS table pointing at the managed router URL.
+  const markersPresent = contents.includes(startMarker) && contents.includes(endMarker);
+  const managedCatalogPresent = [
+    MERGED_CATALOG_PATH,
+    ...LEGACY_STATE_DIRS.map((directory) => path.join(directory, "merged-models.json")),
+  ].some((catalogPath) => contents.includes(catalogPath));
+  if (!markersPresent && !managedCatalogPresent) {
     return undefined;
   }
   const lines = contents.split("\n");

@@ -1208,6 +1208,43 @@ test("config manager adopts the exact legacy router-owned provider table", () =>
   }
 });
 
+test("config manager re-adopts its own settings after the Codex app strips the markers", () => {
+  const codexHome = mkdtempSync(path.join(os.tmpdir(), "codex-router-markers-stripped-"));
+  const stateDir = path.join(codexHome, "router-state");
+  const configPath = path.join(codexHome, "config.toml");
+  writeFileSync(
+    configPath,
+    `model = "gpt-5.5"\n\n[features]\nmulti_agent = true\n`,
+    { mode: 0o600 },
+  );
+
+  try {
+    run("enable", codexHome, stateDir);
+    // The Codex app re-serializes config.toml when the user picks a model: every
+    // comment is dropped and the inline multi_agent_v2 value becomes a table.
+    const rewritten = readFileSync(configPath, "utf8")
+      .split("\n")
+      .filter((line) => !/^# (?:BEGIN|END) codex-router-/.test(line))
+      .join("\n")
+      .replace(
+        /^multi_agent_v2 = \{ enabled = true, max_concurrent_threads_per_session = (\d+), (.*) \}$/m,
+        (_, threads, rest) =>
+          `\n[features.multi_agent_v2]\nenabled = true\nmax_concurrent_threads_per_session = ${threads}\n` +
+          rest.split(", ").join("\n"),
+      );
+    writeFileSync(configPath, rewritten, { mode: 0o600 });
+
+    run("enable", codexHome, stateDir);
+    const repaired = readFileSync(configPath, "utf8");
+    assert.equal((repaired.match(/\[model_providers\.codex-router\]/g) || []).length, 1);
+    assert.equal((repaired.match(/^\s*\[?(?:features\.)?multi_agent_v2\b/gm) || []).length, 1);
+    assert.equal((repaired.match(/^openai_base_url\s*=/gm) || []).length, 1);
+    assert.equal((repaired.match(/^model_catalog_json\s*=/gm) || []).length, 1);
+  } finally {
+    rmSync(codexHome, { recursive: true, force: true });
+  }
+});
+
 test("config manager refuses a modified legacy router provider table", () => {
   const codexHome = mkdtempSync(path.join(os.tmpdir(), "codex-router-provider-modified-"));
   const stateDir = path.join(codexHome, "router-state");
