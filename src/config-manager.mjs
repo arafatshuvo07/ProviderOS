@@ -1095,11 +1095,14 @@ function legacyManagedRouterProvider(contents) {
   // model, so the markers can vanish while the managed values stay. The root
   // catalog path is router-owned state, and the shape checks below still
   // require the exact ProviderOS table pointing at the managed router URL.
+  // Compare the decoded value: on Windows the stored path carries escaped
+  // backslashes, so a raw substring search never matches it.
   const markersPresent = contents.includes(startMarker) && contents.includes(endMarker);
+  const catalogValue = rootValue(splitRoot(contents).rootLines, "model_catalog_json");
   const managedCatalogPresent = [
     MERGED_CATALOG_PATH,
     ...LEGACY_STATE_DIRS.map((directory) => path.join(directory, "merged-models.json")),
-  ].some((catalogPath) => contents.includes(catalogPath));
+  ].includes(catalogValue);
   if (!markersPresent && !managedCatalogPresent) {
     return undefined;
   }
@@ -1173,7 +1176,9 @@ function clean(contents) {
   ];
   const knownManaged =
     markerPairs.some(([start]) => contents.includes(start)) ||
-    knownCatalogPaths.some((catalogPath) => contents.includes(catalogPath));
+    knownCatalogPaths.some((catalogPath) => contents.includes(catalogPath)) ||
+    // An escaped Windows path never matches the raw text; compare the value.
+    knownCatalogPaths.includes(rootValue(splitRoot(contents).rootLines, "model_catalog_json"));
   const withoutBlock = removeEmptyFeaturesTable(
     removeCreatedAgentsTableIfEmpty(removeMarkedBlock(contents)),
   );

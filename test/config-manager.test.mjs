@@ -1210,7 +1210,9 @@ test("config manager adopts the exact legacy router-owned provider table", () =>
 
 test("config manager re-adopts its own settings after the Codex app strips the markers", () => {
   const codexHome = mkdtempSync(path.join(os.tmpdir(), "codex-router-markers-stripped-"));
-  const stateDir = path.join(codexHome, "router-state");
+  // A backslash makes TOML escape the stored catalog path the way every
+  // Windows path is escaped, so this runs the Windows comparison everywhere.
+  const stateDir = path.join(codexHome, "router\\state");
   const configPath = path.join(codexHome, "config.toml");
   writeFileSync(
     configPath,

@@ -998,6 +998,9 @@ test("fallback-only splits do not claim account breakdown or a complete range mi
       if (message.type() === "error") pageErrors.push(message.text());
     });
 
+    // The fixture's fallback bucket is dated 2026-08-28 and the chart shows a
+    // trailing 30-day range, so pin the page clock or the bar ages out.
+    await page.clock.setFixedTime(new Date("2026-08-30T12:00:00.000Z"));
     await page.goto(`${url}?fallbackUsage=1`, { waitUntil: "domcontentloaded", timeout: 30_000 });
     await page.waitForFunction(() => window.routerControlTest.navigationReady());
     assert.equal(
